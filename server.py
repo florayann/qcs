@@ -32,6 +32,7 @@ testdata = [
 class HelloWorld(Resource):
     def __init__(self):
         self.data = testdata
+        self.password = "password"
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('name', type=str, required=True,
             help='No name provided')
@@ -41,6 +42,12 @@ class HelloWorld(Resource):
             help='No question provided')
         self.reqparse.add_argument('id', type=str, required=True,
             help='No id provided')
+        
+        self.delete_reqparse = reqparse.RequestParser()
+        self.delete_reqparse.add_argument('id', type=str, required=True,
+            help='No name provided')
+        self.delete_reqparse.add_argument('password', type=str, required=True,
+            help='No password provided')
         super().__init__()
         
     def get(self):
@@ -54,6 +61,18 @@ class HelloWorld(Resource):
                 return self.data
         self.data.append(newkid)
         return self.data
+
+    def delete(self):
+        kid = self.delete_reqparse.parse_args()
+        
+        if kid["password"] != self.password:
+            return {"message": "Incorrect password"}, 409
+        for i, kids in enumerate(self.data):
+            if kids["id"] == kid["id"]:
+                del self.data[i]
+                break
+        return self.data
+        
 
 api.add_resource(HelloWorld, '/hello')
 
