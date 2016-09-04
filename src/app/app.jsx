@@ -5,35 +5,35 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 import AppBar from 'material-ui/AppBar';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import Avatar from 'material-ui/Avatar';
+import $ from 'jquery';
 
 injectTapEventPlugin();
 
-var testData = [
-    {
-	"name":"Flora",
-	"room": "216",
-	"question": "Mp4",
-	"id": "f19"
-    },
-    {
-	"name":"Thomas",
-	"room": "218",
-	"question": "Lab 2",
-	"id": "t2"
-    },
-    {
-	"name":"Dummy",
-	"room": "Lost",
-	"question": "sldksd",
-	"id": "dum21"
-    }
-]
-
 var Kids = React.createClass({
+    getInitialState: function() {
+	return {data: []};
+    },
+    loadKidsFromServer: function() {
+	$.ajax({
+	    url: this.props.url,
+	    dataType: 'json',
+	    cache: false,
+	    success: function(data) {
+		this.setState({data: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+	    }.bind(this)
+	});
+    },
+    componentDidMount: function() {
+	this.loadKidsFromServer();
+	setInterval(this.loadKidsFromServer, 2000);
+    },
     render: function() {
 	return (
 	    <div className="Kids">
-		<KidsList data={this.props.data} />
+		<KidsList data={this.state.data} />
 	    </div>
 	);
     }
@@ -80,7 +80,7 @@ var App = React.createClass({
 	    <MuiThemeProvider>
 		<div>
 		    <QAppBar/>
-		    <Kids data={this.props.data}/>
+		    <Kids url={this.props.url}/>
 		</div>
 	    </MuiThemeProvider>
 	);
@@ -88,6 +88,6 @@ var App = React.createClass({
 });
 
 ReactDOM.render(
-    <App data={testData}/>,
+    <App url="/hello" />,
     document.getElementById('app')
 );
