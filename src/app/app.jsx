@@ -12,6 +12,7 @@ import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField';
 import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
+import ActionDone from 'material-ui/svg-icons/action/done';
 
 injectTapEventPlugin();
 
@@ -27,7 +28,7 @@ var styles = {
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: []};
+	return {data: [], password:""};
     },
     loadKidsFromServer: function() {
 	$.ajax({
@@ -61,7 +62,7 @@ var Kids = React.createClass({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'DELETE',
-	    data: {id: kid.id, password: kid.password},
+	    data: {id: kid.id, password: this.state.password},
 	    success: function(data) {
 		this.setState({data: data});
 	    }.bind(this),
@@ -70,6 +71,9 @@ var Kids = React.createClass({
 	    }.bind(this)
 	});
     },
+    handlePasswordChange: function(text) {
+	this.setState({password: text});
+    },
     componentDidMount: function() {
 	this.loadKidsFromServer();
 	setInterval(this.loadKidsFromServer, 2000);
@@ -77,7 +81,12 @@ var Kids = React.createClass({
     render: function() {
 	return (
 	    <div className="Kids">
-		<QDrawer open={this.props.open} onRequestChange={this.props.onRequestChange}/>
+		<QDrawer
+		    open={this.props.open}
+		    onRequestChange={this.props.onRequestChange}
+		    password={this.state.password}
+		    onPasswordChange={this.handlePasswordChange}
+		/>
 		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit}/>
 	    </div>
 	);
@@ -90,11 +99,19 @@ var QDrawer = React.createClass({
 	    this.props.onRequestChange();
 	}
     },
+    handlePasswordChange: function(e) {
+	this.props.onPasswordChange(e.target.value);
+    },
     render: function() {
 	return (
 	    <div>
 		<Drawer open={this.props.open} docked={false} onRequestChange={this.handleRequestChange}>
-		    <MenuItem>Join as Instructor</MenuItem>
+		    <TextField
+			hintText="Instructor Password"
+			value={this.props.password}
+			onChange={this.handlePasswordChange}
+		    />
+		    {/* <MenuItem>Join as Instructor</MenuItem> */}
 		</Drawer>
 	    </div>
 	);
