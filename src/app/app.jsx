@@ -204,10 +204,10 @@ var AddKid = React.createClass({
 	this.setState({id: e.target.value});
     },
     handleExpandChange: function(expanded) {
-	this.setState({expanded: expanded})
+	this.setState({expanded: expanded});
     },
     reduce: function() {
-	this.setState({expanded: false})
+	this.setState({expanded: false});
     },
     submitKid: function(e) {
 	this.props.onKidSubmit({
