@@ -1,5 +1,6 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Resource, Api
+from flask.ext.restful import reqparse
 import os
 
 app = Flask(__name__, static_url_path='', static_folder='build')
@@ -29,8 +30,30 @@ testdata = [
 
 
 class HelloWorld(Resource):
+    def __init__(self):
+        self.data = testdata
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('name', type=str, required=True,
+            help='No name provided')
+        self.reqparse.add_argument('room', type=str, required=True,
+            help='No room provided')
+        self.reqparse.add_argument('question', type=str, required=True,
+            help='No question provided')
+        self.reqparse.add_argument('id', type=str, required=True,
+            help='No id provided')
+        super().__init__()
+        
     def get(self):
-        return testdata
+        return self.data
+    
+    def post(self):
+        newkid = self.reqparse.parse_args()
+        for i, kid in enumerate(self.data):
+            if kid["id"] == newkid["id"]:
+                self.data[i] = newkid
+                return self.data
+        self.data.append(newkid)
+        return self.data
 
 api.add_resource(HelloWorld, '/hello')
 
