@@ -13,8 +13,30 @@ import TextField from 'material-ui/TextField';
 import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
 import ActionDone from 'material-ui/svg-icons/action/done';
+import IconButton from 'material-ui/IconButton';
 
 injectTapEventPlugin();
+
+var testdata = [
+    {
+	"name":"Flora",
+	"room": "216",
+	"question": "Mp4",
+	"id": "f19"
+    },
+    {
+	"name":"Thomas",
+	"room": "218",
+	"question": "Lab 2",
+	"id": "t2"
+    },
+    {
+	"name":"Dummy",
+	"room": "Lost",
+	"question": "sldksd",
+	"id": "dum21"
+    }
+]
 
 var styles = {
     addButton: {
@@ -23,12 +45,16 @@ var styles = {
 	bottom: 0,
 	right: 0,
 	position: 'absolute'
+    },
+    done: {
+	right: 0,
+	position: 'absolute'
     }
 }
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: [], password:""};
+	return {data: testdata, password:""};
     },
     loadKidsFromServer: function() {
 	$.ajax({
@@ -87,7 +113,7 @@ var Kids = React.createClass({
 		    password={this.state.password}
 		    onPasswordChange={this.handlePasswordChange}
 		/>
-		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit}/>
+		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit} onKidDelete={this.handleKidDelete} password={this.state.password}/>
 	    </div>
 	);
     }
@@ -122,9 +148,9 @@ var KidsList = React.createClass({
     render: function() {
 	var kidsNodes = this.props.data.map(function(kid) {
 	    return (
-		<Kid name={kid.name} room={kid.room} question={kid.question} key={kid.id} />
+		<Kid name={kid.name} room={kid.room} question={kid.question} id={kid.id} key={kid.id} password={this.props.password} onKidDelete={this.props.onKidDelete}/>
 	    );
-	});
+	}.bind(this));
 	return (
 	    <div className="kidsList">
 		{kidsNodes}
@@ -217,6 +243,9 @@ var AddKid = React.createClass({
 });
 
 var Kid = React.createClass({
+    handleButtonTouchTap: function(e) {
+	this.props.onKidDelete({id: this.props.id});
+    },
     render: function() {
 	return (
 	    <Card>
@@ -224,7 +253,11 @@ var Kid = React.createClass({
 		    title={this.props.name + " - " + this.props.room}
 		    subtitle={this.props.question}
 		    avatar={<Avatar>{this.props.name[0]}</Avatar>}
-		/>
+		>
+		    <IconButton disabled={!this.props.password} style={styles.done} onTouchTap={this.handleButtonTouchTap}>
+			<ActionDone/>
+		    </IconButton>
+		</CardHeader>
 	    </Card>
 	);
     }
