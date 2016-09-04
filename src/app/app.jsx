@@ -227,6 +227,7 @@ var AddKid = React.createClass({
 		    subtitle="Expand to add!"
 		    actAsExpander={true}
 		    showExpandableButton={true}
+		    avatar={<Avatar>{this.state.expanded ? "-" : "+"}</Avatar>}
 		/>
 		<CardText expandable={true}>
 		    <TextField
