@@ -66,16 +66,19 @@ var Kids = React.createClass({
     getInitialState: function() {
 	return {data: testdata, password:""};
     },
-    loadKidsFromServer: function() {
+    loadKidsFromServer: function(force) {
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
 	    cache: false,
+	    data: force ? {force: force} : {},
 	    success: function(data) {
 		this.setState({data: data});
+		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
+		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this)
 	});
     },
@@ -111,8 +114,7 @@ var Kids = React.createClass({
 	this.setState({password: text});
     },
     componentDidMount: function() {
-	this.loadKidsFromServer();
-	setInterval(this.loadKidsFromServer, 2000);
+	this.loadKidsFromServer(true);
     },
     render: function() {
 	return (

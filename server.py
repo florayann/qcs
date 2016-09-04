@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
 from flask_restful import reqparse
+import time
 import os
 
 app = Flask(__name__, static_url_path='', static_folder='build')
@@ -25,6 +26,12 @@ testdata = [
 	"room": "Lost",
 	"question": "sldksd",
 	"id": "dum21"
+    },
+    {
+	"name":"Flask",
+	"room": "React",
+	"question": "web programming",
+	"id": "flask11"
     }
 ]
 
@@ -48,11 +55,23 @@ class HelloWorld(Resource):
             help='No name provided')
         self.delete_reqparse.add_argument('password', type=str, required=True,
             help='No password provided')
+
+        self.get_reqparse = reqparse.RequestParser()
+        self.get_reqparse.add_argument('force', type=str)
+        
         super().__init__()
         
     def get(self):
+        if self.get_reqparse.parse_args()["force"]:
+            return self.data
+        
+        h = hash(str(self.data))
+        
+        while h == hash(str(self.data)):
+            time.sleep(1.0)
+
         return self.data
-    
+        
     def post(self):
         newkid = self.reqparse.parse_args()
         for i, kid in enumerate(self.data):
@@ -77,4 +96,4 @@ class HelloWorld(Resource):
 api.add_resource(HelloWorld, '/hello')
 
 if __name__ == '__main__':
-    app.run(debug=True, port=int(os.environ.get("PORT", 3001)))
+    app.run(debug=True, port=int(os.environ.get("PORT", 3001)), threaded=True)
