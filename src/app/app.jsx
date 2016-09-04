@@ -10,6 +10,8 @@ import FloatingActionButton from 'material-ui/FloatingActionButton';
 import ContentAdd from 'material-ui/svg-icons/content/add';
 import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField';
+import Drawer from 'material-ui/Drawer';
+import MenuItem from 'material-ui/MenuItem';
 
 injectTapEventPlugin();
 
@@ -54,6 +56,20 @@ var Kids = React.createClass({
 	    }.bind(this)
 	});
     },
+    handleKidDelete: function(kid) {
+	$.ajax({
+	    url: this.props.url,
+	    dataType: 'json',
+	    type: 'DELETE',
+	    data: {id: kid.id, password: kid.password},
+	    success: function(data) {
+		this.setState({data: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+	    }.bind(this)
+	});
+    },
     componentDidMount: function() {
 	this.loadKidsFromServer();
 	setInterval(this.loadKidsFromServer, 2000);
@@ -61,7 +77,25 @@ var Kids = React.createClass({
     render: function() {
 	return (
 	    <div className="Kids">
+		<QDrawer open={this.props.open} onRequestChange={this.props.onRequestChange}/>
 		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit}/>
+	    </div>
+	);
+    }
+});
+
+var QDrawer = React.createClass({
+    handleRequestChange: function(open, reason) {
+	if (!open) {
+	    this.props.onRequestChange();
+	}
+    },
+    render: function() {
+	return (
+	    <div>
+		<Drawer open={this.props.open} docked={false} onRequestChange={this.handleRequestChange}>
+		    <MenuItem>Join as Instructor</MenuItem>
+		</Drawer>
 	    </div>
 	);
     }
@@ -179,11 +213,16 @@ var Kid = React.createClass({
     }
 })
 
-const QAppBar = () => (
-    <AppBar
-	title="q.cs"
-    />
-);
+var QAppBar = React.createClass({
+    render: function () {
+	return (
+	    <AppBar
+		title="q.cs"
+		onLeftIconButtonTouchTap={this.props.onLeftIconButtonTouchTap}
+	    />
+	);
+    }
+});
 
 const AddButton = () => (
     <FloatingActionButton secondary={true} style={styles.addButton}>
@@ -192,12 +231,18 @@ const AddButton = () => (
 );
 
 var App = React.createClass({
+    getInitialState: function() {
+	return {open:false};
+    },
+    handleLeftIconButtonTouchTap: function (e) {
+	this.setState({open: !this.state.open});
+    },
     render: function() {
 	return(
 	    <MuiThemeProvider>
 		<div>
-		    <QAppBar/>
-		    <Kids url={this.props.url}/>
+		    <QAppBar onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}/>
+		    <Kids url={this.props.url} open={this.state.open} onRequestChange={this.handleLeftIconButtonTouchTap}/>
 		</div>
 	    </MuiThemeProvider>
 	);
