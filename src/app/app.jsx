@@ -250,11 +250,10 @@ var Kid = React.createClass({
     },
     generateColor: function() {
 	var n = Math.seedrandom(this.props.id);
-	/* var groups = Object.keys(material_palette);*/
-	var groups = ["Red", "Pink", "Purple", "Deep Purple", "Indigo", "Blue", "Light Blue", "Cyan", "Teal", "Green", "Light Green"];
+	var groups = Object.keys(material_palette);
 	var group = groups[Math.floor(groups.length * Math.random())];
 	var colors = Object.keys(material_palette[group]);
-	var coloridx = Math.floor(groups.length * Math.random());
+	var coloridx = Math.floor(colors.length * Math.random());
 	var color = material_palette[group][colors[coloridx]];
 	return color;
     },
