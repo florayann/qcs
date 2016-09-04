@@ -14,9 +14,11 @@ import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
 import ActionDone from 'material-ui/svg-icons/action/done';
 import IconButton from 'material-ui/IconButton';
+import seedrandom from 'seedrandom';
 
 injectTapEventPlugin();
 
+var material_palette = require("!json!./material_palette.json")
 var testdata = [
     {
 	"name":"Flora",
@@ -246,13 +248,23 @@ var Kid = React.createClass({
     handleButtonTouchTap: function(e) {
 	this.props.onKidDelete({id: this.props.id});
     },
+    generateColor: function() {
+	var n = Math.seedrandom(this.props.id);
+	/* var groups = Object.keys(material_palette);*/
+	var groups = ["Red", "Pink", "Purple", "Deep Purple", "Indigo", "Blue", "Light Blue", "Cyan", "Teal", "Green", "Light Green"];
+	var group = groups[Math.floor(groups.length * Math.random())];
+	var colors = Object.keys(material_palette[group]);
+	var coloridx = Math.floor(groups.length * Math.random());
+	var color = material_palette[group][colors[coloridx]];
+	return color;
+    },
     render: function() {
 	return (
 	    <Card>
 		<CardHeader
 		    title={this.props.name + " - " + this.props.room}
 		    subtitle={this.props.question}
-		    avatar={<Avatar>{this.props.name[0]}</Avatar>}
+		    avatar={<Avatar backgroundColor={this.generateColor()}>{this.props.name[0]}</Avatar>}
 		>
 		    <IconButton disabled={!this.props.password} style={styles.done} onTouchTap={this.handleButtonTouchTap}>
 			<ActionDone/>
