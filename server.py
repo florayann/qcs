@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
-from flask.ext.restful import reqparse
+from flask_restful import reqparse
 import os
 
 app = Flask(__name__, static_url_path='', static_folder='build')
