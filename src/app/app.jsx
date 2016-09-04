@@ -51,7 +51,15 @@ var styles = {
     done: {
 	right: 0,
 	position: 'absolute'
-    }
+    },
+    container: {
+	marginLeft: "25%",
+	marginRight: "25%",
+	marginTop: "5%"
+    },
+    containerMobile: {
+	margin: 0
+    }   
 }
 
 var Kids = React.createClass({
@@ -147,6 +155,23 @@ var QDrawer = React.createClass({
 });
 
 var KidsList = React.createClass({
+    checkMobile: function() {
+	if (window.matchMedia("only screen and (max-width: 760px)").matches) {
+            this.setState({s: styles.containerMobile});
+	}
+	else {
+	    this.setState({s: styles.container});
+	}
+    },
+    componentWillMount: function() {
+        this.checkMobile();
+    },
+    componentDidMount: function() {
+        window.addEventListener("resize", this.checkMobile);
+    },
+    componentWillUnmount: function() {
+        window.removeEventListener("resize", this.checkMobile);
+    },
     render: function() {
 	var kidsNodes = this.props.data.map(function(kid) {
 	    return (
@@ -154,7 +179,7 @@ var KidsList = React.createClass({
 	    );
 	}.bind(this));
 	return (
-	    <div className="kidsList">
+	    <div className="kidsList" style={this.state.s}>
 		{kidsNodes}
 		<AddKid onKidSubmit={this.props.onKidSubmit}/>
 	    </div>
