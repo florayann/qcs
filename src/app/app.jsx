@@ -128,7 +128,7 @@ var Kids = React.createClass({
 	this.updateDocumentTitle();
     },
     updateDocumentTitle: function() {
-	var len = this.state.data.length
+	var len = this.state.data.length;
 	document.title = len > 1 ? "".concat("(", len.toString(), ") ", this.props.baseTitle) : this.props.baseTitle;
     },
     render: function() {
@@ -360,7 +360,7 @@ const AddButton = () => (
 
 var App = React.createClass({
     getInitialState: function() {
-	return {open:false};
+	return {open:false, queueName: "CS 233"};
     },
     handleLeftIconButtonTouchTap: function (e) {
 	this.setState({open: !this.state.open});
@@ -370,7 +370,7 @@ var App = React.createClass({
 	    <MuiThemeProvider>
 		<div>
 		    <QAppBar onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}/>
-		    <Kids url={this.props.url} open={this.state.open} onRequestChange={this.handleLeftIconButtonTouchTap} baseTitle={document.title}/>
+		    <Kids url={this.props.url} open={this.state.open} onRequestChange={this.handleLeftIconButtonTouchTap} baseTitle={this.state.queueName}/>
 		</div>
 	    </MuiThemeProvider>
 	);
