@@ -79,6 +79,7 @@ var Kids = React.createClass({
 		if (this.state.password && len < this.state.data.length) {
 		    this.refs.notify.play();
 		}
+		this.updateDocumentTitle();
 		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
@@ -95,6 +96,7 @@ var Kids = React.createClass({
 	    data: kid,
 	    success: function(data) {
 		this.setState({data: data});
+		this.updateDocumentTitle();
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -109,6 +111,7 @@ var Kids = React.createClass({
 	    data: {id: kid.id, password: this.state.password},
 	    success: function(data) {
 		this.setState({data: data});
+		this.updateDocumentTitle();
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -120,6 +123,11 @@ var Kids = React.createClass({
     },
     componentDidMount: function() {
 	this.loadKidsFromServer(true);
+	this.updateDocumentTitle();
+    },
+    updateDocumentTitle: function() {
+	var len = this.state.data.length
+	document.title = len > 1 ? "".concat("(", len.toString(), ") ", this.props.baseTitle) : this.props.baseTitle;
     },
     render: function() {
 	return (
@@ -340,7 +348,7 @@ var App = React.createClass({
 	    <MuiThemeProvider>
 		<div>
 		    <QAppBar onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}/>
-		    <Kids url={this.props.url} open={this.state.open} onRequestChange={this.handleLeftIconButtonTouchTap}/>
+		    <Kids url={this.props.url} open={this.state.open} onRequestChange={this.handleLeftIconButtonTouchTap} baseTitle={document.title}/>
 		</div>
 	    </MuiThemeProvider>
 	);
