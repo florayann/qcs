@@ -67,6 +67,8 @@ var Kids = React.createClass({
 	return {data: testdata, password:""};
     },
     loadKidsFromServer: function(force) {
+	var len = this.state.data.length;
+
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
@@ -74,6 +76,9 @@ var Kids = React.createClass({
 	    data: force ? {force: force} : {},
 	    success: function(data) {
 		this.setState({data: data});
+		if (this.state.password && len < this.state.data.length) {
+		    this.refs.notify.play();
+		}
 		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
@@ -126,6 +131,9 @@ var Kids = React.createClass({
 		    onPasswordChange={this.handlePasswordChange}
 		/>
 		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit} onKidDelete={this.handleKidDelete} password={this.state.password}/>
+		<audio ref="notify">
+		    <source src="/notify.wav" type="audio/wav"/>
+		</audio>
 	    </div>
 	);
     }
