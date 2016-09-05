@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask_restful import Resource, Api
 from flask_restful import reqparse
 from flask_restful.inputs import boolean
+import json
 import time
 import os
 
@@ -65,6 +66,10 @@ class HelloWorld(Resource):
 
         self.get_reqparse = reqparse.RequestParser()
         self.get_reqparse.add_argument('force', type=str)
+
+        self.put_reqparse = reqparse.RequestParser()
+        self.put_reqparse.add_argument('data', type=str, required=True, help='No list provided')
+        self.put_reqparse.add_argument('password', type=str, required=True, help='No password provided')
         
         super().__init__()
         
@@ -113,6 +118,18 @@ class HelloWorld(Resource):
             if kids["id"] == kid["id"]:
                 del self.data[i]
                 break
+        return self.data
+
+    def put(self):
+        args = self.put_reqparse.parse_args()
+        kids = json.loads(args["data"])
+        password = args["password"]
+        
+        if password != self.password:
+            return {"message": "Incorrect password: {}".format(password)}, 409
+
+        self.data = kids
+        
         return self.data
         
 

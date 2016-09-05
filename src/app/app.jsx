@@ -17,6 +17,7 @@ import IconButton from 'material-ui/IconButton';
 import seedrandom from 'seedrandom';
 import FlipMove from 'react-flip-move';
 import CircularProgress from 'material-ui/CircularProgress';
+import Snackbar from 'material-ui/Snackbar';
 
 injectTapEventPlugin();
 
@@ -67,7 +68,7 @@ var styles = {
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: testdata, password:""};
+	return {data: testdata, undoData: [], password:"", snackOpen: false};
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
@@ -113,6 +114,7 @@ var Kids = React.createClass({
 	    type: 'DELETE',
 	    data: {id: kid.id, password: this.state.password},
 	    success: function(data) {
+		this.setState({undoData: this.state.data.slice(0), snackOpen: true});
 		this.setState({data: data});
 		this.updateDocumentTitle();
 	    }.bind(this),
@@ -120,6 +122,24 @@ var Kids = React.createClass({
 		console.error(this.props.url, status, err.toString());
 	    }.bind(this)
 	});
+    },
+    handleUndo: function() {
+	$.ajax({
+	    url: this.props.url,
+	    dataType: 'json',
+	    type: 'PUT',
+	    data: {data: JSON.stringify(this.state.undoData), password: this.state.password},
+	    success: function(data) {
+		this.setState({data: data, snackOpen: false});
+		this.updateDocumentTitle();
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+	    }.bind(this)
+	});
+    },
+    handleSnackRequestClose: function() {
+	this.setState({snackOpen: false});
     },
     handlePasswordChange: function(text) {
 	this.setState({password: text});
@@ -145,6 +165,15 @@ var Kids = React.createClass({
 		<audio ref="notify">
 		    <source src="/notify.wav" type="audio/wav"/>
 		</audio>
+
+		<Snackbar
+		    open={false}
+		    message="Kid removed from queue"
+		    action="undo"
+		    autoHideDuration={4000}
+		    onActionTouchTap={this.handleUndo}
+		    onRequestClose={this.handleSnackRequestClose}
+		/>
 	    </div>
 	);
     }
