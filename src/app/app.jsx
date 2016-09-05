@@ -245,6 +245,7 @@ var AddKid = React.createClass({
 			errorText={this.state.name ? "" : "This field is required"}
 			value={this.state.name}
 			onChange={this.handleNameChange}
+			autoFocus={true}
 		    />
 		    <br/>
 		    <TextField
