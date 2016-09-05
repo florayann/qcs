@@ -57,7 +57,8 @@ var styles = {
     container: {
 	marginLeft: "25%",
 	marginRight: "25%",
-	marginTop: "5%"
+	marginTop: "5%",
+	marginBottom: "5%"
     },
     containerMobile: {
 	margin: 0
