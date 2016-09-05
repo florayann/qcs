@@ -16,6 +16,7 @@ import ActionDone from 'material-ui/svg-icons/action/done';
 import IconButton from 'material-ui/IconButton';
 import seedrandom from 'seedrandom';
 import FlipMove from 'react-flip-move';
+import CircularProgress from 'material-ui/CircularProgress';
 
 injectTapEventPlugin();
 
@@ -139,7 +140,7 @@ var Kids = React.createClass({
 		    password={this.state.password}
 		    onPasswordChange={this.handlePasswordChange}
 		/>
-		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit} onKidDelete={this.handleKidDelete} password={this.state.password}/>
+		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit} onKidDelete={this.handleKidDelete} onKidAnswer={this.handleKidSubmit} password={this.state.password}/>
 		<audio ref="notify">
 		    <source src="/notify.wav" type="audio/wav"/>
 		</audio>
@@ -194,7 +195,16 @@ var KidsList = React.createClass({
     render: function() {
 	var kidsNodes = this.props.data.map(function(kid) {
 	    return (
-		<Kid name={kid.name} room={kid.room} question={kid.question} id={kid.id} key={kid.id} password={this.props.password} onKidDelete={this.props.onKidDelete}/>
+		<Kid name={kid.name}
+		     room={kid.room}
+		     question={kid.question}
+		     id={kid.id}
+		     answer={kid.answer}
+		     key={kid.id}
+		     password={this.props.password}
+		     onKidDelete={this.props.onKidDelete}
+		     onKidAnswer={this.props.onKidAnswer}
+		/>
 	    );
 	}.bind(this));
 	return (
@@ -296,6 +306,14 @@ var Kid = React.createClass({
     handleButtonTouchTap: function(e) {
 	this.props.onKidDelete({id: this.props.id});
     },
+    handleTouchTap: function(e) {
+	this.props.onKidAnswer({id: this.props.id,
+				name: this.props.name,
+				room: this.props.room,
+				question: this.props.question,
+				answer: !this.props.answer,
+				password: this.props.password});
+    },
     generateColor: function() {
 	var n = Math.seedrandom(this.props.id);
 	var groups = Object.keys(material_palette);
@@ -311,8 +329,9 @@ var Kid = React.createClass({
 		<CardHeader
 		    title={this.props.name + " - " + this.props.room}
 		    subtitle={this.props.question}
-		    avatar={<Avatar backgroundColor={this.generateColor()}>{this.props.name[0]}</Avatar>}
+		    avatar={<Avatar backgroundColor={this.generateColor()} onTouchTap={this.props.password ? this.handleTouchTap : undefined}>{this.props.name[0]} </Avatar>}
 		>
+		    {this.props.answer ? <CircularProgress size={0.5} style={styles.done}/> : null}
 		    <IconButton disabled={!this.props.password} style={styles.done} onTouchTap={this.handleButtonTouchTap}>
 			<ActionDone/>
 		    </IconButton>

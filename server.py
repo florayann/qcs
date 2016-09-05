@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
 from flask_restful import reqparse
+from flask_restful.inputs import boolean
 import time
 import os
 
@@ -13,25 +14,29 @@ testdata = [
 	"name":"Flora",
 	"room": "216",
 	"question": "Mp4",
-	"id": "f19"
+	"id": "f19",
+    "answer": False,
     },
     {
 	"name":"Thomas",
 	"room": "218",
 	"question": "Lab 2",
-	"id": "t2"
+	"id": "t2",
+    "answer": False,
     },
     {
 	"name":"Dummy",
 	"room": "Lost",
 	"question": "sldksd",
-	"id": "dum21"
+	"id": "dum21",
+    "answer": False,
     },
     {
 	"name":"Flask",
 	"room": "React",
 	"question": "web programming",
-	"id": "flask11"
+	"id": "flask11",
+    "answer": False,
     }
 ]
 
@@ -49,6 +54,8 @@ class HelloWorld(Resource):
             help='No question provided')
         self.reqparse.add_argument('id', type=str, required=True,
             help='No id provided')
+        self.reqparse.add_argument('answer', type=boolean)
+        self.reqparse.add_argument('password', type=str)
         
         self.delete_reqparse = reqparse.RequestParser()
         self.delete_reqparse.add_argument('id', type=str, required=True,
@@ -74,6 +81,22 @@ class HelloWorld(Resource):
         
     def post(self):
         newkid = self.reqparse.parse_args()
+
+        if newkid["answer"]:
+            if newkid["password"] and newkid["password"] == self.password:
+                for i, kid in enumerate(self.data):
+                    if kid["id"] == newkid["id"]:
+                        del newkid["password"]
+                        self.data[i] = newkid
+                        continue
+                    if kid["answer"]:
+                        kid["answer"] = False
+                return self.data
+            else:
+                return {"message": "Incorrect password"}, 409
+
+        del newkid["password"]
+                
         for i, kid in enumerate(self.data):
             if kid["id"] == newkid["id"]:
                 self.data[i] = newkid
