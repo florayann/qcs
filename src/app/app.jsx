@@ -15,6 +15,7 @@ import MenuItem from 'material-ui/MenuItem';
 import ActionDone from 'material-ui/svg-icons/action/done';
 import IconButton from 'material-ui/IconButton';
 import seedrandom from 'seedrandom';
+import FlipMove from 'react-flip-move';
 
 injectTapEventPlugin();
 
@@ -198,7 +199,9 @@ var KidsList = React.createClass({
 	}.bind(this));
 	return (
 	    <div className="kidsList" style={this.state.s}>
-		{kidsNodes}
+		<FlipMove enterAnimation="accordianVertical" leaveAnimation="accordianVertical">
+		    {kidsNodes}
+		</FlipMove>
 		<AddKid onKidSubmit={this.props.onKidSubmit}/>
 	    </div>
 	);
