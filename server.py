@@ -62,8 +62,13 @@ class QDataBase():
 
     def add_queue(self, class_id, queue_name):
         queue_id = int(self.r.incr("next_queue_id".format(class_id)))
-        self.r.rpush("class:{}:queues".format(class_id), queue_id)
+        self.r.sadd("class:{}:queues".format(class_id), queue_id)
         self.set("queue:{}:name".format(queue_id), queue_name)
+
+    def remove_queue(self, class_id, queue_id):
+        self.r.srem("class:{}:queues".format(class_id), queue_id)
+        self.r.delete("queue:{}:*".format(queue_id))
+        self.r.delete("queue:{}".format(queue_id))
 
     def add_question(self, queue_id, question, question_id):
         self.r.incr("queue:{}:rev".format(queue_id))
