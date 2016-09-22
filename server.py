@@ -41,8 +41,7 @@ testdata = [
     }
 ]
 
-
-class HelloWorld(Resource):
+class Queue(Resource):
     def __init__(self):
         self.data = testdata
         self.password = "password"
@@ -73,7 +72,7 @@ class HelloWorld(Resource):
         
         super().__init__()
         
-    def get(self):
+    def get(self, qid):
         if self.get_reqparse.parse_args()["force"]:
             return self.data
         
@@ -84,7 +83,7 @@ class HelloWorld(Resource):
 
         return self.data
         
-    def post(self):
+    def post(self, qid):
         newkid = self.reqparse.parse_args()
 
         if newkid["answer"]:
@@ -109,7 +108,7 @@ class HelloWorld(Resource):
         self.data.append(newkid)
         return self.data
 
-    def delete(self):
+    def delete(self, qid):
         kid = self.delete_reqparse.parse_args()
         
         if kid["password"] != self.password:
@@ -120,7 +119,7 @@ class HelloWorld(Resource):
                 break
         return self.data
 
-    def put(self):
+    def put(self, qid):
         args = self.put_reqparse.parse_args()
         kids = json.loads(args["data"])
         password = args["password"]
@@ -133,7 +132,7 @@ class HelloWorld(Resource):
         return self.data
         
 
-api.add_resource(HelloWorld, '/hello')
+api.add_resource(Queue, "/queue/<int:qid>")
 
 if __name__ == '__main__':
     app.run(debug=True, port=int(os.environ.get("PORT", 3001)), threaded=True)
