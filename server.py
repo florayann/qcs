@@ -43,8 +43,13 @@ testdata = [
 ]
 
 class QDataBase():
-    r = redis.StrictRedis(host='192.168.247.129', port=6379, db=0)
-    dr = redis.StrictRedis(host='192.168.247.129', port=6379, db=0, decode_responses=True)
+    r = redis.StrictRedis(host='192.168.247.129',
+                          port=6379,
+                          db=0)
+    dr = redis.StrictRedis(host='192.168.247.129',
+                           port=6379,
+                           db=0,
+                           decode_responses=True)
     
     def get_queue(self, queue_id):
         question_ids = self.dr.zrange("queue:{}:qs".format(queue_id), 0, -1)
@@ -73,7 +78,9 @@ class QDataBase():
     def add_question(self, queue_id, question, question_id):
         self.r.incr("queue:{}:rev".format(queue_id))
         if self.r.zrank("queue:{}:qs".format(queue_id), question_id) is None:
-            self.r.zadd("queue:{}:qs".format(queue_id), int(time.time() * 1000), question_id)
+            self.r.zadd("queue:{}:qs".format(queue_id),
+                        int(time.time() * 1000),
+                        question_id)
         self.r.hmset("queue:{}:qs:{}".format(queue_id, question_id), question)
 
     def remove_question(self, queue_id, question_id):
@@ -85,7 +92,8 @@ class QDataBase():
         return int(self.r.get("queue:{}:rev".format(queue_id)))
 
     def is_kid_answer(self, queue_id, question_id):
-        return self.dr.hmget("queue:{}:qs:{}".format(queue_id, question_id), "answer")[0] in ["True", "true", "1"]
+        return self.dr.hmget("queue:{}:qs:{}".format(queue_id, question_id),
+                             "answer")[0] in ["True", "true", "1"]
 
 class Queue(Resource):
     def __init__(self):
@@ -113,8 +121,14 @@ class Queue(Resource):
         self.get_reqparse.add_argument('force', type=str)
 
         self.put_reqparse = reqparse.RequestParser()
-        self.put_reqparse.add_argument('data', type=str, required=True, help='No list provided')
-        self.put_reqparse.add_argument('password', type=str, required=True, help='No password provided')
+        self.put_reqparse.add_argument('data',
+                                       type=str,
+                                       required=True,
+                                       help='No list provided')
+        self.put_reqparse.add_argument('password',
+                                       type=str,
+                                       required=True,
+                                       help='No password provided')
         
         super().__init__()
         
@@ -132,7 +146,8 @@ class Queue(Resource):
     def post(self, queue_id):
         newkid = self.reqparse.parse_args()
 
-        if newkid["answer"] is not None and newkid["answer"] != self.qdb.is_kid_answer(queue_id, newkid["id"]):
+        if (newkid["answer"] is not None and
+            newkid["answer"] != self.qdb.is_kid_answer(queue_id, newkid["id"])):
             if newkid["password"] and newkid["password"] == self.password:
                 del newkid["password"]
                 self.qdb.add_question(queue_id, newkid, newkid["id"])
