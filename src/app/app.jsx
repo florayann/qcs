@@ -408,6 +408,6 @@ var App = React.createClass({
 });
 
 ReactDOM.render(
-    <App url="/hello" />,
+    <App url="/queue/1" />,
     document.getElementById('app')
 );
