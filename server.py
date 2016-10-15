@@ -159,7 +159,7 @@ class Queue(Resource):
 
         self.qdb.add_question(queue_id, newkid, newkid["id"])
 
-        return self.data
+        return self.qdb.get_queue(queue_id)
 
     def delete(self, queue_id):
         kid = self.delete_reqparse.parse_args()
