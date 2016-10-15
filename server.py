@@ -169,7 +169,7 @@ class Queue(Resource):
 
         self.qdb.remove_question(queue_id, kid["id"])
         
-        return self.data
+        return self.qdb.get_queue(queue_id)
 
     def put(self, queue_id):
         args = self.put_reqparse.parse_args()
