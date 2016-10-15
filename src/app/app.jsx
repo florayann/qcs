@@ -84,11 +84,11 @@ var Kids = React.createClass({
 		    this.refs.notify.play();
 		}
 		this.updateDocumentTitle();
-		setTimeout(this.loadKidsFromServer, 2000);
+		setTimeout(this.loadKidsFromServer, 2000, force);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		setTimeout(this.loadKidsFromServer, 2000);
+		setTimeout(this.loadKidsFromServer, 2000, force);
 	    }.bind(this)
 	});
     },
@@ -104,6 +104,7 @@ var Kids = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
+		setTimeout(this.handleKidSubmit, 2000, kid);
 	    }.bind(this)
 	});
     },
@@ -120,6 +121,7 @@ var Kids = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
+		setTimeout(this.handleKidDelete, 2000, kid);
 	    }.bind(this)
 	});
     },
