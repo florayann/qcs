@@ -11,37 +11,6 @@ app = Flask(__name__, static_url_path='', static_folder='build')
 app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 api = Api(app)
 
-testdata = [
-    {
-	"name":"Flora",
-	"room": "216",
-	"question": "Mp4",
-	"id": "f19",
-    "answer": False,
-    },
-    {
-	"name":"Thomas",
-	"room": "218",
-	"question": "Lab 2",
-	"id": "t2",
-    "answer": False,
-    },
-    {
-	"name":"Dummy",
-	"room": "Lost",
-	"question": "sldksd",
-	"id": "dum21",
-    "answer": False,
-    },
-    {
-	"name":"Flask",
-	"room": "React",
-	"question": "web programming",
-	"id": "flask11",
-    "answer": False,
-    }
-]
-
 class QDataBase():
     r = redis.StrictRedis(host='192.168.247.129',
                           port=6379,
