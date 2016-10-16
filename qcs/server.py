@@ -8,14 +8,16 @@ import os
 import redis
 
 app = Flask(__name__, static_url_path='', static_folder='build')
+app.config.from_object("qcs.default_settings")
+app.config.from_envvar("QCS_SETTINGS", silent=True)
 app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 api = Api(app)
 
 class QDataBase():
-    r = redis.StrictRedis(host='192.168.247.129',
+    r = redis.StrictRedis(host=app.config["DBHOST"],
                           port=6379,
                           db=0)
-    dr = redis.StrictRedis(host='192.168.247.129',
+    dr = redis.StrictRedis(host=app.config["DBHOST"],
                            port=6379,
                            db=0,
                            decode_responses=True)
