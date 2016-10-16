@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn qcs daemon
+After=network.target
+
+[Service]
+user=tfliu2
+group=csvm233-stf
+WorkingDirectory=/var/www/qcs
+ExecStart=/var/www/qcs/run_prod_server.sh
+
+[Install]
+WantedBy = multi-user.target
