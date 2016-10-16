@@ -68,7 +68,7 @@ var styles = {
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: testdata, undoData: [], password:"", snackOpen: false};
+	return {data: [], undoData: [], password:"", snackOpen: false};
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
