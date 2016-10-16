@@ -1,10 +1,10 @@
 {
-  "name": "material-ui-example-webpack",
-  "version": "0.15.0",
-  "description": "Sample project that uses Material-UI",
+  "name": "qcs",
+  "version": "0.0.0",
+  "description": "Queue for answering questions",
   "repository": {
     "type": "git",
-    "url": "https://github.com/callemall/material-ui.git"
+    "url": "https://github.com/florayann/qcs"
   },
   "scripts": {
     "start": "webpack-dev-server --config webpack-dev-server.config.js --progress --inline --colors",
