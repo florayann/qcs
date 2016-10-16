@@ -84,7 +84,7 @@ var Kids = React.createClass({
 		    this.refs.notify.play();
 		}
 		this.updateDocumentTitle();
-		setTimeout(this.loadKidsFromServer, 2000, force);
+		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
