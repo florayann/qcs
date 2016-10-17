@@ -21,6 +21,16 @@ class QDataBase():
                            port=6379,
                            db=0,
                            decode_responses=True)
+
+    def get_classes(self):
+        return [int(i) for i in self.r.smembers("class")]
+
+    def add_class(self):
+        class_id = int(self.r.incr("next_class_id".format(class_id)))
+        
+    def get_queue_info(self, queue_id):
+        name = self.dr.get("queue:{}:name".format(queue_id))
+        return {"name": name}
     
     def get_queue(self, queue_id):
         question_ids = self.dr.zrange("queue:{}:qs".format(queue_id), 0, -1)
@@ -36,8 +46,11 @@ class QDataBase():
 
         return result
 
+    def get_queues(self, class_id):
+        return [int(i) for i in self.r.smembers("class:{}:queues".format(class_id))]
+        
     def add_queue(self, class_id, queue_name):
-        queue_id = int(self.r.incr("next_queue_id".format(class_id)))
+        queue_id = int(self.r.incr("next_queue_id"))
         self.r.sadd("class:{}:queues".format(class_id), queue_id)
         self.set("queue:{}:name".format(queue_id), queue_name)
 
