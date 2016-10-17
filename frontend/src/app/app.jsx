@@ -68,7 +68,7 @@ var styles = {
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: [], undoData: [], password:"", snackOpen: false};
+	return {data: [], undoData: [], snackOpen: false};
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
@@ -80,7 +80,7 @@ var Kids = React.createClass({
 	    data: force ? {force: force} : {},
 	    success: function(data) {
 		this.setState({data: data});
-		if (this.state.password && len < this.state.data.length) {
+		if (this.props.password && len < this.state.data.length) {
 		    this.refs.notify.play();
 		}
 		this.updateDocumentTitle();
@@ -113,7 +113,7 @@ var Kids = React.createClass({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'DELETE',
-	    data: {id: kid.id, password: this.state.password},
+	    data: {id: kid.id, password: this.props.password},
 	    success: function(data) {
 		this.setState({undoData: this.state.data.slice(0), snackOpen: true});
 		this.setState({data: data});
@@ -130,7 +130,7 @@ var Kids = React.createClass({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'PUT',
-	    data: {data: JSON.stringify(this.state.undoData), password: this.state.password},
+	    data: {data: JSON.stringify(this.state.undoData), password: this.props.password},
 	    success: function(data) {
 		this.setState({data: data, snackOpen: false});
 		this.updateDocumentTitle();
@@ -143,9 +143,6 @@ var Kids = React.createClass({
     handleSnackRequestClose: function() {
 	this.setState({snackOpen: false});
     },
-    handlePasswordChange: function(text) {
-	this.setState({password: text});
-    },
     componentDidMount: function() {
 	this.loadKidsFromServer(true);
 	this.updateDocumentTitle();
@@ -157,13 +154,7 @@ var Kids = React.createClass({
     render: function() {
 	return (
 	    <div className="Kids">
-		<QDrawer
-		    open={this.props.open}
-		    onRequestChange={this.props.onRequestChange}
-		    password={this.state.password}
-		    onPasswordChange={this.handlePasswordChange}
-		/>
-		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit} onKidDelete={this.handleKidDelete} onKidAnswer={this.handleKidSubmit} password={this.state.password}/>
+		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit} onKidDelete={this.handleKidDelete} onKidAnswer={this.handleKidSubmit} password={this.props.password}/>
 		<audio ref="notify">
 		    <source src="/notify.wav" type="audio/wav"/>
 		</audio>
@@ -397,12 +388,24 @@ var App = React.createClass({
     handleLeftIconButtonTouchTap: function (e) {
 	this.setState({open: !this.state.open});
     },
+    handlePasswordChange: function(text) {
+	this.setState({password: text});
+    },
     render: function() {
 	return(
 	    <MuiThemeProvider>
 		<div>
 		    <QAppBar onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}/>
-		    <Kids url={this.props.url} open={this.state.open} onRequestChange={this.handleLeftIconButtonTouchTap} baseTitle={this.state.queueName}/>
+		    <QDrawer
+			open={this.state.open}
+			onRequestChange={this.handleLeftIconButtonTouchTap}
+			password={this.state.password}
+			onPasswordChange={this.handlePasswordChange}
+		    />
+		    
+		    <Kids url={this.props.url}
+			  baseTitle={this.state.queueName}
+			  password={this.state.password}/>
 		</div>
 	    </MuiThemeProvider>
 	);
