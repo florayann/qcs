@@ -368,7 +368,7 @@ var QAppBar = React.createClass({
     render: function () {
 	return (
 	    <AppBar
-		title="q.cs"
+		title={this.props.queueName}
 		onLeftIconButtonTouchTap={this.props.onLeftIconButtonTouchTap}
 	    />
 	);
@@ -395,7 +395,8 @@ var App = React.createClass({
 	return(
 	    <MuiThemeProvider>
 		<div>
-		    <QAppBar onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}/>
+		    <QAppBar queueName={this.state.queueName}
+			     onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}/>
 		    <QDrawer
 			open={this.state.open}
 			onRequestChange={this.handleLeftIconButtonTouchTap}
