@@ -1,14 +1,13 @@
 import redis
 
 class QDataBase():
-    def __init__(self, host):
-        r = redis.StrictRedis(host=host,
-                              port=6379,
-                              db=0)
-        dr = redis.StrictRedis(host=host,
-                               port=6379,
-                               db=0,
-                               decode_responses=True)
+    r = redis.StrictRedis(host=app.config["DBHOST"],
+                          port=6379,
+                          db=0)
+    dr = redis.StrictRedis(host=app.config["DBHOST"],
+                           port=6379,
+                           db=0,
+                           decode_responses=True)
 
     def get_classes(self):
         class_ids = [int(i) for i in self.r.smembers("class")]
