@@ -16,7 +16,7 @@ api = Api(app)
 
 class Queue(Resource):
     def __init__(self):
-        self.qdb = QDataBase()
+        self.qdb = QDataBase(app.config["DBHOST"])
         self.password = "password"
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('name', type=str, required=True,
@@ -118,7 +118,7 @@ class Queue(Resource):
 
 class QueueInfo(Resource):
     def __init__(self):
-        self.qdb = QDataBase()
+        self.qdb = QDataBase(app.config["DBHOST"])
 
     def get(self, queue_id):
         return self.qdb.get_queue_info(queue_id)
@@ -126,7 +126,7 @@ class QueueInfo(Resource):
 
 class Classes(Resource):
     def __init__(self):
-        self.qdb = QDataBase()
+        self.qdb = QDataBase(app.config["DBHOST"])
 
     def get(self):
         return self.qdb.get_classes()
@@ -134,7 +134,7 @@ class Classes(Resource):
 
 class QClass(Resource):
     def __init__(self):
-        self.qdb = QDataBase()
+        self.qdb = QDataBase(app.config["DBHOST"])
 
     def get(self, class_id):
         return self.qdb.get_queues(class_id)
