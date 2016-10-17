@@ -18,6 +18,8 @@ import seedrandom from 'seedrandom';
 import FlipMove from 'react-flip-move';
 import CircularProgress from 'material-ui/CircularProgress';
 import Snackbar from 'material-ui/Snackbar';
+import {List, ListItem} from 'material-ui/List';
+import Subheader from 'material-ui/Subheader';
 
 injectTapEventPlugin();
 
@@ -153,10 +155,15 @@ var Kids = React.createClass({
     },
     render: function() {
 	return (
-	    <div className="Kids">
-		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit} onKidDelete={this.handleKidDelete} onKidAnswer={this.handleKidSubmit} password={this.props.password}/>
+		<div className="Kids">
+		    <KidsList data={this.state.data}
+			      onKidSubmit={this.handleKidSubmit}
+			      onKidDelete={this.handleKidDelete}
+			      onKidAnswer={this.handleKidSubmit}
+			      password={this.props.password}
+		    />
 		<audio ref="notify">
-		    <source src="/notify.wav" type="audio/wav"/>
+		<source src="/notify.wav" type="audio/wav"/>
 		</audio>
 
 		<Snackbar
@@ -168,6 +175,69 @@ var Kids = React.createClass({
 		    onRequestClose={this.handleSnackRequestClose}
 		/>
 	    </div>
+	);
+    }
+});
+
+var QClass = React.createClass({
+    getInitialState: function() {
+	return {queues: {2: "office hours"}, open: false};
+    },
+    handleNestedListToggle: function(item) {
+	if (item.state.open) {
+	    this.loadQueuesFromServer();
+	}
+    },
+    loadQueuesFromServer: function() {
+	$.ajax({
+	    url: this.props.url,
+	    dataType: 'json',
+	    cache: false,
+	    success: function(data) {
+		this.setState({queues: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+	    }.bind(this)
+	});
+    },
+    render: function() {
+	var queueNodes = Object.keys(this.state.queues).map(function (queueId) {
+	    return (
+		<ListItem primaryText={this.state.queues[queueId]}
+			  key={queueId}
+			  onTouchTap={function () {this.props.onSelectQueue(queueId)}.bind(this)}
+		/>
+	    );
+	}.bind(this));
+	
+	return (
+	    <ListItem primaryText={this.props.name}
+		      key={this.props.classId}
+		      primaryTogglesNestedList={true}
+		      nestedItems={queueNodes}
+		      onNestedListToggle={this.handleNestedListToggle}
+	    />
+	);
+    }
+});
+
+var ClassList = React.createClass({
+    render: function() {
+	var classNodes = Object.keys(this.props.classes).map(function (classId) {
+	    return (
+		<QClass classId={classId}
+			name={this.props.classes[classId]}
+			onSelectQueue={this.props.onSelectQueue}
+			url={this.props.url + classId}
+		/>
+	    );
+	}.bind(this));
+	return (
+	    <List>
+		<Subheader>Classes</Subheader>
+		{classNodes}
+	    </List>
 	);
     }
 });
@@ -185,6 +255,11 @@ var QDrawer = React.createClass({
 	return (
 	    <div>
 		<Drawer open={this.props.open} docked={false} onRequestChange={this.handleRequestChange}>
+		    <AppBar title="q.cs" showMenuIconButton={false}/>
+		    <ClassList classes={this.props.classes}
+			       onSelectQueue={this.props.onSelectQueue}
+			       url={this.props.url}
+		    />
 		    <TextField
 			hintText="Instructor Password"
 			value={this.props.password}
@@ -383,13 +458,37 @@ const AddButton = () => (
 
 var App = React.createClass({
     getInitialState: function() {
-	return {open:false, queueName: "CS 233", queueId: 0};
+	return {open:false,
+		queueName: "q.cs",
+		queueId: 0,
+		classes: {1: "CS 233r4"},
+	};
     },
     handleLeftIconButtonTouchTap: function (e) {
 	this.setState({open: !this.state.open});
     },
     handlePasswordChange: function(text) {
 	this.setState({password: text});
+    },
+    handleSelectQueue: function(queueId) {
+	this.setState({queueId: queueId});
+    },
+    loadClassesFromServer: function() {
+	$.ajax({
+	    url: this.props.class_url,
+	    dataType: 'json',
+	    cache: false,
+	    success: function(data) {
+		this.setState({classes: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+		setTimeout(this.loadClassesFromServer, 2000);
+	    }.bind(this)
+	})
+    },
+    componentDidMount: function() {
+	this.loadClassesFromServer();
     },
     render: function() {
 	return(
@@ -402,11 +501,17 @@ var App = React.createClass({
 			onRequestChange={this.handleLeftIconButtonTouchTap}
 			password={this.state.password}
 			onPasswordChange={this.handlePasswordChange}
+			classes={this.state.classes}
+			onSelectQueue={this.handleSelectQueue}
+			url={this.props.queues_url}
 		    />
-		    
-		    <Kids url={this.props.url}
+
+		    {this.state.queueId == 0 ? null : 
+		    <Kids url={this.props.queue_url + this.state.queueId}
 			  baseTitle={this.state.queueName}
-			  password={this.state.password}/>
+			  password={this.state.password}
+			  queueId={this.state.queueId}
+		    />}
 		</div>
 	    </MuiThemeProvider>
 	);
@@ -414,6 +519,6 @@ var App = React.createClass({
 });
 
 ReactDOM.render(
-    <App url="/queue/1" />,
+    <App class_url="/classes" queue_url="/queue/" queues_url="/class/"/>,
     document.getElementById('app')
 );
