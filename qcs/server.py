@@ -166,9 +166,36 @@ class Queue(Resource):
         self.data = kids
         
         return self.data
-        
+
+
+class QueueInfo(Resource):
+    def __init__(self):
+        self.qdb = QDataBase()
+
+    def get(self, queue_id):
+        return self.qdb.get_queue_info(queue_id)
+
+
+class Classes(Resource):
+    def __init__(self):
+        self.qdb = QDataBase()
+
+    def get(self):
+        return self.qdb.get_classes()
+
+
+class QClass(Resource):
+    def __init__(self):
+        self.qdb = QDataBase()
+
+    def get(self, class_id):
+        return self.qdb.get_queues(class_id)
+
 
 api.add_resource(Queue, "/queue/<int:queue_id>")
+api.add_resource(QueueInfo, "/queue/info/<int:queue_id>")
+api.add_resource(Classes, "/classes")
+api.add_resource(QClass, "/class/<int:class_id>")
 
 if __name__ == '__main__':
     app.run(debug=True, port=int(os.environ.get("PORT", 3001)), threaded=True)
