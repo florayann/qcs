@@ -15,12 +15,16 @@ import MenuItem from 'material-ui/MenuItem';
 import ActionDone from 'material-ui/svg-icons/action/done';
 import ActionDelete from 'material-ui/svg-icons/action/delete';
 import IconButton from 'material-ui/IconButton';
+import IconMenu from 'material-ui/IconMenu';
 import seedrandom from 'seedrandom';
 import FlipMove from 'react-flip-move';
 import CircularProgress from 'material-ui/CircularProgress';
 import Snackbar from 'material-ui/Snackbar';
 import {List, ListItem} from 'material-ui/List';
 import Subheader from 'material-ui/Subheader';
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+import {white} from 'material-ui/styles/colors';
+
 
 injectTapEventPlugin();
 
@@ -449,12 +453,27 @@ var Kid = React.createClass({
     }
 })
 
+var QAppBarMenu = React.createClass({
+    render: function () {
+	return (
+	    <IconMenu iconButtonElement={<IconButton><MoreVertIcon color={white}/></IconButton>}
+		      anchorOrigin={{horizontal: 'right', vertical: 'top'}}
+		      targetOrigin={{horizontal: 'right', vertical: 'top'}}
+	    >
+		<MenuItem primaryText="Refresh" />
+		<MenuItem primaryText="Sign out" />
+	    </IconMenu>
+	);
+    }
+});
+
 var QAppBar = React.createClass({
     render: function () {
 	return (
 	    <AppBar
 		title={this.props.queueName}
 		onLeftIconButtonTouchTap={this.props.onLeftIconButtonTouchTap}
+		iconElementRight={<QAppBarMenu/>}
 	    />
 	);
     }
