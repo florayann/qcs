@@ -206,7 +206,9 @@ var QClass = React.createClass({
 	    return (
 		<ListItem primaryText={this.state.queues[queueId]}
 			  key={queueId}
-			  onTouchTap={function () {this.props.onSelectQueue(queueId)}.bind(this)}
+			  onTouchTap={function () {
+				  this.props.onSelectQueue(queueId, this.state.queues[queueId])
+			      }.bind(this)}
 		/>
 	    );
 	}.bind(this));
@@ -470,8 +472,8 @@ var App = React.createClass({
     handlePasswordChange: function(text) {
 	this.setState({password: text});
     },
-    handleSelectQueue: function(queueId) {
-	this.setState({queueId: queueId});
+    handleSelectQueue: function(queueId, queueName) {
+	this.setState({queueId: queueId, queueName: queueName});
     },
     loadClassesFromServer: function() {
 	$.ajax({
