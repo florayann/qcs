@@ -229,6 +229,7 @@ var ClassList = React.createClass({
 	var classNodes = Object.keys(this.props.classes).map(function (classId) {
 	    return (
 		<QClass classId={classId}
+			key={classId}
 			name={this.props.classes[classId]}
 			onSelectQueue={this.props.onSelectQueue}
 			url={this.props.url + classId}
