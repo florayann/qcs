@@ -181,7 +181,7 @@ var Kids = React.createClass({
 
 var QClass = React.createClass({
     getInitialState: function() {
-	return {queues: {2: "office hours"}, open: false};
+	return {queues: {}, open: false};
     },
     handleNestedListToggle: function(item) {
 	if (item.state.open) {
