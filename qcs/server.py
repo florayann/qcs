@@ -21,6 +21,21 @@ class QDataBase():
                            port=6379,
                            db=0,
                            decode_responses=True)
+
+    def get_classes(self):
+        class_ids = [int(i) for i in self.r.smembers("class")]
+        pipe = self.dr.pipeline()
+        for class_id in class_ids:
+            pipe.get("class:{}:name".format(class_id))
+        class_names = pipe.execute()
+        return dict(zip(class_ids, class_names))
+
+    def add_class(self):
+        class_id = int(self.r.incr("next_class_id".format(class_id)))
+        
+    def get_queue_info(self, queue_id):
+        name = self.dr.get("queue:{}:name".format(queue_id))
+        return {"name": name}
     
     def get_queue(self, queue_id):
         question_ids = self.dr.zrange("queue:{}:qs".format(queue_id), 0, -1)
@@ -36,8 +51,19 @@ class QDataBase():
 
         return result
 
+    def get_queues(self, class_id):
+        queue_ids = [int(i) for i in self.r.smembers("class:{}:queues".format(class_id))]
+        pipe = self.dr.pipeline()
+        
+        for queue_id in queue_ids:
+            pipe.get("queue:{}:name".format(queue_id))
+
+        queue_names = pipe.execute()
+        
+        return dict(zip(queue_ids, queue_names))
+        
     def add_queue(self, class_id, queue_name):
-        queue_id = int(self.r.incr("next_queue_id".format(class_id)))
+        queue_id = int(self.r.incr("next_queue_id"))
         self.r.sadd("class:{}:queues".format(class_id), queue_id)
         self.set("queue:{}:name".format(queue_id), queue_name)
 
@@ -60,7 +86,10 @@ class QDataBase():
         self.r.delete("queue:{}:qs:{}".format(queue_id, question_id))
 
     def get_queue_revision(self, queue_id):
-        return int(self.r.get("queue:{}:rev".format(queue_id)))
+        rev = self.r.get("queue:{}:rev".format(queue_id))
+        if rev is None:
+            return None
+        return int(rev)
 
     def is_kid_answer(self, queue_id, question_id):
         return self.dr.hmget("queue:{}:qs:{}".format(queue_id, question_id),
@@ -108,6 +137,9 @@ class Queue(Resource):
             return self.qdb.get_queue(queue_id)
         
         q_revision = self.qdb.get_queue_revision(queue_id)
+
+        if q_revision is None:
+            return {"message": "Queue not found"}, 400
         
         while q_revision == self.qdb.get_queue_revision(queue_id):
             time.sleep(1.0)
@@ -115,6 +147,11 @@ class Queue(Resource):
         return self.qdb.get_queue(queue_id)
         
     def post(self, queue_id):
+        q_revision = self.qdb.get_queue_revision(queue_id)
+
+        if q_revision is None:
+            return {"message": "Queue not found"}, 400
+        
         newkid = self.reqparse.parse_args()
 
         if (newkid["answer"] is not None and
@@ -133,6 +170,11 @@ class Queue(Resource):
         return self.qdb.get_queue(queue_id)
 
     def delete(self, queue_id):
+        q_revision = self.qdb.get_queue_revision(queue_id)
+
+        if q_revision is None:
+            return {"message": "Queue not found"}, 400
+        
         kid = self.delete_reqparse.parse_args()
         
         if kid["password"] != self.password:
@@ -153,9 +195,36 @@ class Queue(Resource):
         self.data = kids
         
         return self.data
-        
+
+
+class QueueInfo(Resource):
+    def __init__(self):
+        self.qdb = QDataBase()
+
+    def get(self, queue_id):
+        return self.qdb.get_queue_info(queue_id)
+
+
+class Classes(Resource):
+    def __init__(self):
+        self.qdb = QDataBase()
+
+    def get(self):
+        return self.qdb.get_classes()
+
+
+class QClass(Resource):
+    def __init__(self):
+        self.qdb = QDataBase()
+
+    def get(self, class_id):
+        return self.qdb.get_queues(class_id)
+
 
 api.add_resource(Queue, "/queue/<int:queue_id>")
+api.add_resource(QueueInfo, "/queue/info/<int:queue_id>")
+api.add_resource(Classes, "/classes")
+api.add_resource(QClass, "/class/<int:class_id>")
 
 if __name__ == '__main__':
     app.run(debug=True, port=int(os.environ.get("PORT", 3001)), threaded=True)

@@ -13,11 +13,14 @@ import TextField from 'material-ui/TextField';
 import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
 import ActionDone from 'material-ui/svg-icons/action/done';
+import ActionDelete from 'material-ui/svg-icons/action/delete';
 import IconButton from 'material-ui/IconButton';
 import seedrandom from 'seedrandom';
 import FlipMove from 'react-flip-move';
 import CircularProgress from 'material-ui/CircularProgress';
 import Snackbar from 'material-ui/Snackbar';
+import {List, ListItem} from 'material-ui/List';
+import Subheader from 'material-ui/Subheader';
 
 injectTapEventPlugin();
 
@@ -68,7 +71,7 @@ var styles = {
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: [], undoData: [], password:"", snackOpen: false};
+	return {data: [], undoData: [], snackOpen: false};
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
@@ -80,7 +83,7 @@ var Kids = React.createClass({
 	    data: force ? {force: force} : {},
 	    success: function(data) {
 		this.setState({data: data});
-		if (this.state.password && len < this.state.data.length) {
+		if (this.props.password && len < this.state.data.length) {
 		    this.refs.notify.play();
 		}
 		this.updateDocumentTitle();
@@ -113,7 +116,7 @@ var Kids = React.createClass({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'DELETE',
-	    data: {id: kid.id, password: this.state.password},
+	    data: {id: kid.id, password: this.props.password},
 	    success: function(data) {
 		this.setState({undoData: this.state.data.slice(0), snackOpen: true});
 		this.setState({data: data});
@@ -130,7 +133,7 @@ var Kids = React.createClass({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'PUT',
-	    data: {data: JSON.stringify(this.state.undoData), password: this.state.password},
+	    data: {data: JSON.stringify(this.state.undoData), password: this.props.password},
 	    success: function(data) {
 		this.setState({data: data, snackOpen: false});
 		this.updateDocumentTitle();
@@ -143,9 +146,6 @@ var Kids = React.createClass({
     handleSnackRequestClose: function() {
 	this.setState({snackOpen: false});
     },
-    handlePasswordChange: function(text) {
-	this.setState({password: text});
-    },
     componentDidMount: function() {
 	this.loadKidsFromServer(true);
 	this.updateDocumentTitle();
@@ -156,16 +156,15 @@ var Kids = React.createClass({
     },
     render: function() {
 	return (
-	    <div className="Kids">
-		<QDrawer
-		    open={this.props.open}
-		    onRequestChange={this.props.onRequestChange}
-		    password={this.state.password}
-		    onPasswordChange={this.handlePasswordChange}
-		/>
-		<KidsList data={this.state.data} onKidSubmit={this.handleKidSubmit} onKidDelete={this.handleKidDelete} onKidAnswer={this.handleKidSubmit} password={this.state.password}/>
+		<div className="Kids">
+		    <KidsList data={this.state.data}
+			      onKidSubmit={this.handleKidSubmit}
+			      onKidDelete={this.handleKidDelete}
+			      onKidAnswer={this.handleKidSubmit}
+			      password={this.props.password}
+		    />
 		<audio ref="notify">
-		    <source src="/notify.wav" type="audio/wav"/>
+		<source src="/notify.wav" type="audio/wav"/>
 		</audio>
 
 		<Snackbar
@@ -177,6 +176,78 @@ var Kids = React.createClass({
 		    onRequestClose={this.handleSnackRequestClose}
 		/>
 	    </div>
+	);
+    }
+});
+
+var QClass = React.createClass({
+    getInitialState: function() {
+	return {queues: {}, open: false};
+    },
+    handleNestedListToggle: function(item) {
+	if (item.state.open) {
+	    this.loadQueuesFromServer();
+	}
+    },
+    loadQueuesFromServer: function() {
+	$.ajax({
+	    url: this.props.url,
+	    dataType: 'json',
+	    cache: false,
+	    success: function(data) {
+		this.setState({queues: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+	    }.bind(this)
+	});
+    },
+    render: function() {
+	var queueNodes = Object.keys(this.state.queues).map(function (queueId) {
+	    return (
+		<ListItem primaryText={this.state.queues[queueId]}
+			  key={queueId}
+			  onTouchTap={function () {
+				  this.props.onSelectQueue(queueId, this.state.queues[queueId])
+			      }.bind(this)}
+			  rightIconButton={<IconButton tooltip="Delete queue"> <ActionDelete/> </IconButton>}
+		/>
+	    );
+	}.bind(this));
+
+	queueNodes.push(<ListItem primaryText="New Queue"
+				  key="0"
+				  leftIcon={<ContentAdd />}
+			/>);
+	
+	return (
+	    <ListItem primaryText={this.props.name}
+		      key={this.props.classId}
+		      primaryTogglesNestedList={true}
+		      nestedItems={queueNodes}
+		      onNestedListToggle={this.handleNestedListToggle}
+	    />
+	);
+    }
+});
+
+var ClassList = React.createClass({
+    render: function() {
+	var classNodes = Object.keys(this.props.classes).map(function (classId) {
+	    return (
+		<QClass classId={classId}
+			key={classId}
+			name={this.props.classes[classId]}
+			onSelectQueue={this.props.onSelectQueue}
+			url={this.props.url + classId}
+		/>
+	    );
+	}.bind(this));
+	return (
+	    <List>
+		<Subheader>Classes</Subheader>
+		{classNodes}
+	    </List>
 	);
     }
 });
@@ -194,6 +265,11 @@ var QDrawer = React.createClass({
 	return (
 	    <div>
 		<Drawer open={this.props.open} docked={false} onRequestChange={this.handleRequestChange}>
+		    <AppBar title="q.cs" showMenuIconButton={false}/>
+		    <ClassList classes={this.props.classes}
+			       onSelectQueue={this.props.onSelectQueue}
+			       url={this.props.url}
+		    />
 		    <TextField
 			hintText="Instructor Password"
 			value={this.props.password}
@@ -377,7 +453,7 @@ var QAppBar = React.createClass({
     render: function () {
 	return (
 	    <AppBar
-		title="q.cs"
+		title={this.props.queueName}
 		onLeftIconButtonTouchTap={this.props.onLeftIconButtonTouchTap}
 	    />
 	);
@@ -392,17 +468,61 @@ const AddButton = () => (
 
 var App = React.createClass({
     getInitialState: function() {
-	return {open:false, queueName: "CS 233"};
+	return {open:false,
+		queueName: "q.cs",
+		queueId: 0,
+		classes: {},
+	};
     },
     handleLeftIconButtonTouchTap: function (e) {
 	this.setState({open: !this.state.open});
+    },
+    handlePasswordChange: function(text) {
+	this.setState({password: text});
+    },
+    handleSelectQueue: function(queueId, queueName) {
+	this.setState({queueId: queueId, queueName: queueName});
+	this.setState({open: false});
+    },
+    loadClassesFromServer: function() {
+	$.ajax({
+	    url: this.props.class_url,
+	    dataType: 'json',
+	    cache: false,
+	    success: function(data) {
+		this.setState({classes: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+		setTimeout(this.loadClassesFromServer, 2000);
+	    }.bind(this)
+	})
+    },
+    componentDidMount: function() {
+	this.loadClassesFromServer();
     },
     render: function() {
 	return(
 	    <MuiThemeProvider>
 		<div>
-		    <QAppBar onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}/>
-		    <Kids url={this.props.url} open={this.state.open} onRequestChange={this.handleLeftIconButtonTouchTap} baseTitle={this.state.queueName}/>
+		    <QAppBar queueName={this.state.queueName}
+			     onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}/>
+		    <QDrawer
+			open={this.state.open}
+			onRequestChange={this.handleLeftIconButtonTouchTap}
+			password={this.state.password}
+			onPasswordChange={this.handlePasswordChange}
+			classes={this.state.classes}
+			onSelectQueue={this.handleSelectQueue}
+			url={this.props.queues_url}
+		    />
+
+		    {this.state.queueId == 0 ? null : 
+		    <Kids url={this.props.queue_url + this.state.queueId}
+			  baseTitle={this.state.queueName}
+			  password={this.state.password}
+			  queueId={this.state.queueId}
+		    />}
 		</div>
 	    </MuiThemeProvider>
 	);
@@ -410,6 +530,6 @@ var App = React.createClass({
 });
 
 ReactDOM.render(
-    <App url="/queue/1" />,
+    <App class_url="/classes" queue_url="/queue/" queues_url="/class/"/>,
     document.getElementById('app')
 );
