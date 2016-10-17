@@ -392,7 +392,7 @@ const AddButton = () => (
 
 var App = React.createClass({
     getInitialState: function() {
-	return {open:false, queueName: "CS 233"};
+	return {open:false, queueName: "CS 233", queueId: 0};
     },
     handleLeftIconButtonTouchTap: function (e) {
 	this.setState({open: !this.state.open});
