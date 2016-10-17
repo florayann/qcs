@@ -214,6 +214,11 @@ var QClass = React.createClass({
 		/>
 	    );
 	}.bind(this));
+
+	queueNodes.push(<ListItem primaryText="New Queue"
+				  key="0"
+				  leftIcon={<ContentAdd />}
+			/>);
 	
 	return (
 	    <ListItem primaryText={this.props.name}
@@ -466,7 +471,7 @@ var App = React.createClass({
 	return {open:false,
 		queueName: "q.cs",
 		queueId: 0,
-		classes: {1: "CS 233r4"},
+		classes: {},
 	};
     },
     handleLeftIconButtonTouchTap: function (e) {
