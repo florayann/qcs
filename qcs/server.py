@@ -52,7 +52,15 @@ class QDataBase():
         return result
 
     def get_queues(self, class_id):
-        return [int(i) for i in self.r.smembers("class:{}:queues".format(class_id))]
+        queue_ids = [int(i) for i in self.r.smembers("class:{}:queues".format(class_id))]
+        pipe = self.dr.pipeline()
+        
+        for queue_id in queue_ids:
+            pipe.get("queue:{}:name".format(queue_id))
+
+        queue_names = pipe.execute()
+        
+        return dict(zip(queue_ids, queue_names))
         
     def add_queue(self, class_id, queue_name):
         queue_id = int(self.r.incr("next_queue_id"))
@@ -78,7 +86,10 @@ class QDataBase():
         self.r.delete("queue:{}:qs:{}".format(queue_id, question_id))
 
     def get_queue_revision(self, queue_id):
-        return int(self.r.get("queue:{}:rev".format(queue_id)))
+        rev = self.r.get("queue:{}:rev".format(queue_id))
+        if rev is None:
+            return None
+        return int(rev)
 
     def is_kid_answer(self, queue_id, question_id):
         return self.dr.hmget("queue:{}:qs:{}".format(queue_id, question_id),
@@ -126,6 +137,9 @@ class Queue(Resource):
             return self.qdb.get_queue(queue_id)
         
         q_revision = self.qdb.get_queue_revision(queue_id)
+
+        if q_revision is None:
+            return {"message": "Queue not found"}, 400
         
         while q_revision == self.qdb.get_queue_revision(queue_id):
             time.sleep(1.0)
@@ -133,6 +147,11 @@ class Queue(Resource):
         return self.qdb.get_queue(queue_id)
         
     def post(self, queue_id):
+        q_revision = self.qdb.get_queue_revision(queue_id)
+
+        if q_revision is None:
+            return {"message": "Queue not found"}, 400
+        
         newkid = self.reqparse.parse_args()
 
         if (newkid["answer"] is not None and
@@ -151,6 +170,11 @@ class Queue(Resource):
         return self.qdb.get_queue(queue_id)
 
     def delete(self, queue_id):
+        q_revision = self.qdb.get_queue_revision(queue_id)
+
+        if q_revision is None:
+            return {"message": "Queue not found"}, 400
+        
         kid = self.delete_reqparse.parse_args()
         
         if kid["password"] != self.password:
