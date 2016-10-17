@@ -474,6 +474,7 @@ var App = React.createClass({
     },
     handleSelectQueue: function(queueId, queueName) {
 	this.setState({queueId: queueId, queueName: queueName});
+	this.setState({open: false});
     },
     loadClassesFromServer: function() {
 	$.ajax({
