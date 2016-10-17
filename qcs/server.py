@@ -23,7 +23,12 @@ class QDataBase():
                            decode_responses=True)
 
     def get_classes(self):
-        return [int(i) for i in self.r.smembers("class")]
+        class_ids = [int(i) for i in self.r.smembers("class")]
+        pipe = self.dr.pipeline()
+        for class_id in class_ids:
+            pipe.get("class:{}:name".format(class_id))
+        class_names = pipe.execute()
+        return dict(zip(class_ids, class_names))
 
     def add_class(self):
         class_id = int(self.r.incr("next_class_id".format(class_id)))
