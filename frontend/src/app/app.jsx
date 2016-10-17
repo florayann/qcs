@@ -13,6 +13,7 @@ import TextField from 'material-ui/TextField';
 import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
 import ActionDone from 'material-ui/svg-icons/action/done';
+import ActionDelete from 'material-ui/svg-icons/action/delete';
 import IconButton from 'material-ui/IconButton';
 import seedrandom from 'seedrandom';
 import FlipMove from 'react-flip-move';
@@ -209,6 +210,7 @@ var QClass = React.createClass({
 			  onTouchTap={function () {
 				  this.props.onSelectQueue(queueId, this.state.queues[queueId])
 			      }.bind(this)}
+			  rightIconButton={<IconButton tooltip="Delete queue"> <ActionDelete/> </IconButton>}
 		/>
 	    );
 	}.bind(this));
