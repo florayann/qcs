@@ -15,12 +15,17 @@ import MenuItem from 'material-ui/MenuItem';
 import ActionDone from 'material-ui/svg-icons/action/done';
 import ActionDelete from 'material-ui/svg-icons/action/delete';
 import IconButton from 'material-ui/IconButton';
+import IconMenu from 'material-ui/IconMenu';
 import seedrandom from 'seedrandom';
 import FlipMove from 'react-flip-move';
 import CircularProgress from 'material-ui/CircularProgress';
 import Snackbar from 'material-ui/Snackbar';
 import {List, ListItem} from 'material-ui/List';
 import Subheader from 'material-ui/Subheader';
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+import {white} from 'material-ui/styles/colors';
+import Dialog from 'material-ui/Dialog';
+
 
 injectTapEventPlugin();
 
@@ -71,7 +76,7 @@ var styles = {
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: [], undoData: [], snackOpen: false};
+	return {data: [], snackOpen: false};
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
@@ -83,7 +88,7 @@ var Kids = React.createClass({
 	    data: force ? {force: force} : {},
 	    success: function(data) {
 		this.setState({data: data});
-		if (this.props.password && len < this.state.data.length) {
+		if (this.props.instructor && len < this.state.data.length) {
 		    this.refs.notify.play();
 		}
 		this.updateDocumentTitle();
@@ -91,7 +96,9 @@ var Kids = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		setTimeout(this.loadKidsFromServer, 2000, force);
+		if (status == 404) {
+		    setTimeout(this.loadKidsFromServer, 2000, force);
+		}
 	    }.bind(this)
 	});
     },
@@ -107,39 +114,30 @@ var Kids = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		setTimeout(this.handleKidSubmit, 2000, kid);
+		if (status == 404) {
+		    setTimeout(this.handleKidSubmit, 2000, kid);
+		}
 	    }.bind(this)
 	});
     },
     handleKidDelete: function(kid) {
+	var url = this.props.instructor ?
+		  "/instructor" + this.props.url :
+		  this.props.url;
 	$.ajax({
-	    url: this.props.url,
+	    url: url,
 	    dataType: 'json',
 	    type: 'DELETE',
-	    data: {id: kid.id, password: this.props.password},
+	    data: {id: kid.id},
 	    success: function(data) {
-		this.setState({undoData: this.state.data.slice(0), snackOpen: true});
 		this.setState({data: data});
 		this.updateDocumentTitle();
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		setTimeout(this.handleKidDelete, 2000, kid);
-	    }.bind(this)
-	});
-    },
-    handleUndo: function() {
-	$.ajax({
-	    url: this.props.url,
-	    dataType: 'json',
-	    type: 'PUT',
-	    data: {data: JSON.stringify(this.state.undoData), password: this.props.password},
-	    success: function(data) {
-		this.setState({data: data, snackOpen: false});
-		this.updateDocumentTitle();
-	    }.bind(this),
-	    error: function(xhr, status, err) {
-		console.error(this.props.url, status, err.toString());
+		if (status == 404) {
+		    setTimeout(this.handleKidDelete, 2000, kid);
+		}
 	    }.bind(this)
 	});
     },
@@ -161,7 +159,8 @@ var Kids = React.createClass({
 			      onKidSubmit={this.handleKidSubmit}
 			      onKidDelete={this.handleKidDelete}
 			      onKidAnswer={this.handleKidSubmit}
-			      password={this.props.password}
+			      username={this.props.username}
+			      instructor={this.props.instructor}
 		    />
 		<audio ref="notify">
 		<source src="/notify.wav" type="audio/wav"/>
@@ -172,7 +171,7 @@ var Kids = React.createClass({
 		    message="Kid removed from queue"
 		    action="undo"
 		    autoHideDuration={4000}
-		    onActionTouchTap={this.handleUndo}
+		    onActionTouchTap={null}
 		    onRequestClose={this.handleSnackRequestClose}
 		/>
 	    </div>
@@ -258,9 +257,6 @@ var QDrawer = React.createClass({
 	    this.props.onRequestChange();
 	}
     },
-    handlePasswordChange: function(e) {
-	this.props.onPasswordChange(e.target.value);
-    },
     render: function() {
 	return (
 	    <div>
@@ -269,11 +265,6 @@ var QDrawer = React.createClass({
 		    <ClassList classes={this.props.classes}
 			       onSelectQueue={this.props.onSelectQueue}
 			       url={this.props.url}
-		    />
-		    <TextField
-			hintText="Instructor Password"
-			value={this.props.password}
-			onChange={this.handlePasswordChange}
 		    />
 		    {/* <MenuItem>Join as Instructor</MenuItem> */}
 		</Drawer>
@@ -309,9 +300,10 @@ var KidsList = React.createClass({
 		     id={kid.id}
 		     answer={kid.answer}
 		     key={kid.id}
-		     password={this.props.password}
 		     onKidDelete={this.props.onKidDelete}
 		     onKidAnswer={this.props.onKidAnswer}
+		     username={this.props.username}
+		     instructor={this.props.instructor}
 		/>
 	    );
 	}.bind(this));
@@ -328,7 +320,7 @@ var KidsList = React.createClass({
 
 var AddKid = React.createClass({
     getInitialState: function() {
-	return {name: '', room: '', question:'', id:'', expanded:false};
+	return {name: '', room: '', question:'', expanded:false};
     },
     handleNameChange: function(e) {
 	this.setState({name: e.target.value});
@@ -338,9 +330,6 @@ var AddKid = React.createClass({
     },
     handleQuestionChange: function(e) {
 	this.setState({question: e.target.value});
-    },
-    handleIdChange: function(e) {
-	this.setState({id: e.target.value});
     },
     handleExpandChange: function(expanded) {
 	this.setState({expanded: expanded});
@@ -353,9 +342,8 @@ var AddKid = React.createClass({
 	    name: this.state.name.trim(),
 	    room: this.state.room.trim(),
 	    question: this.state.question.trim(),
-	    id: this.state.id.trim()
 	});
-	this.setState({name: '', room: '', question:'', id:''});
+	this.setState({name: '', room: '', question:''});
 	this.reduce();
     },
     render: function() {
@@ -391,16 +379,9 @@ var AddKid = React.createClass({
 			onChange={this.handleQuestionChange}
 		    />
 		    <br/>
-		    <TextField
-			hintText="NetID"
-			errorText={this.state.id ? "" : "This field is required"}
-			value={this.state.id}
-			onChange={this.handleIdChange}
-		    />
-		    <br/>
 		    <CardActions>
 			<FlatButton
-			    label="Submit" disabled={!(this.state.name && this.state.room && this.state.question && this.state.id)}
+			    label="Submit" disabled={!(this.state.name && this.state.room && this.state.question)}
 			    onTouchTap={this.submitKid}
 			/>
 		    </CardActions>
@@ -420,7 +401,7 @@ var Kid = React.createClass({
 				room: this.props.room,
 				question: this.props.question,
 				answer: !this.props.answer,
-				password: this.props.password});
+				});
     },
     generateColor: function() {
 	var n = Math.seedrandom(this.props.id);
@@ -437,17 +418,38 @@ var Kid = React.createClass({
 		<CardHeader
 		    title={this.props.name + " - " + this.props.room}
 		    subtitle={this.props.question}
-		    avatar={<Avatar backgroundColor={this.generateColor()} onTouchTap={this.props.password ? this.handleTouchTap : undefined}>{this.props.name[0]} </Avatar>}
+		    avatar={<Avatar backgroundColor={this.generateColor()} onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}>{this.props.name[0]} </Avatar>}
 		>
 		    {this.props.answer ? <CircularProgress size={0.5} style={styles.done}/> : null}
-		    <IconButton disabled={!this.props.password} style={styles.done} onTouchTap={this.handleButtonTouchTap}>
-			<ActionDone/>
-		    </IconButton>
+		    {this.props.instructor || this.props.username == this.props.id ?
+		     (
+			 <IconButton
+			     style={styles.done}
+			     onTouchTap={this.handleButtonTouchTap}>
+			     <ActionDone/>
+			 </IconButton>
+		     ) : null}
 		</CardHeader>
 	    </Card>
 	);
     }
 })
+
+var QAppBarMenu = React.createClass({
+    render: function () {
+	return (
+	    <IconMenu iconButtonElement={<IconButton><MoreVertIcon color={white}/></IconButton>}
+		      anchorOrigin={{horizontal: 'right', vertical: 'top'}}
+		      targetOrigin={{horizontal: 'right', vertical: 'top'}}
+	    >
+		<MenuItem primaryText="Refresh" />
+		<MenuItem primaryText="Log out"
+			  onTouchTap={this.props.onLogout}
+		/>
+	    </IconMenu>
+	);
+    }
+});
 
 var QAppBar = React.createClass({
     render: function () {
@@ -455,6 +457,7 @@ var QAppBar = React.createClass({
 	    <AppBar
 		title={this.props.queueName}
 		onLeftIconButtonTouchTap={this.props.onLeftIconButtonTouchTap}
+		iconElementRight={<QAppBarMenu onLogout={this.props.onLogout}/>}
 	    />
 	);
     }
@@ -466,23 +469,139 @@ const AddButton = () => (
     </FloatingActionButton>
 );
 
+
+var FakeAuthDialog = React.createClass({
+    getInitialState: function() {
+	return {username: "", open: true};
+    },
+    handleChange: function(e) {
+	this.setState({
+	    username: e.target.value,
+	});
+    },
+    handleLogin: function() {
+	this.props.onLogin({username: this.state.username});
+    },
+    handleKeyPress: function(target) {
+	if (target.charCode == 13) {
+            this.handleLogin();
+	}
+    },
+    render: function () {
+	const actions = [
+	    <FlatButton
+		label="Login"
+		primary={true}
+		onTouchTap={this.handleLogin}
+	    />,
+	];
+	
+	return (
+	    <Dialog
+		title="Fake Login"
+		actions={actions}
+		modal={true}
+		open={this.state.open}
+            >
+		<TextField
+		    hintText="NetID"
+		    errorText={this.state.username ? "" : "This field is required"}
+		    floatingLabelText="NetID"
+		    onChange={this.handleChange}
+		    onKeyPress={this.handleKeyPress}
+		    autoFocus={true}
+		    value={this.state.username}
+		/>
+            </Dialog>
+	);
+    }
+});
+
+var LoggedOut = React.createClass({
+    render: function () {
+	return (
+	    <div style={styles.container}>
+		<Card>
+		    <CardHeader
+			title="Logged out!"
+		    />
+		</Card>
+	    </div>
+	);
+    }
+});
+
 var App = React.createClass({
     getInitialState: function() {
 	return {open:false,
 		queueName: "q.cs",
 		queueId: 0,
+		queueInstructor: false,
 		classes: {},
+		username: "",
 	};
     },
     handleLeftIconButtonTouchTap: function (e) {
 	this.setState({open: !this.state.open});
     },
-    handlePasswordChange: function(text) {
-	this.setState({password: text});
-    },
     handleSelectQueue: function(queueId, queueName) {
-	this.setState({queueId: queueId, queueName: queueName});
+	this.setState({queueId: queueId, queueName: queueName, queueInstructor: false});
 	this.setState({open: false});
+	this.isQueueInstructor(queueId);
+    },
+    isQueueInstructor: function(queueId) {
+	$.ajax({
+	    url: "/instructor" + this.props.queue_url + queueId,
+	    dataType: 'json',
+	    type: 'GET',
+	    success: function(data) {
+		this.setState({queueInstructor: true});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		this.setState({queueInstructor: false});
+	    }.bind(this)
+	});
+    },
+    handleLogin: function(data) {
+	$.ajax({
+	    url: this.props.login_url,
+	    dataType: 'json',
+	    type: 'POST',
+	    contentType: 'application/json; charset=UTF-8',
+	    data: JSON.stringify(data),
+	    success: function(data) {
+		this.setState({username: data.username});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.login_url, status, err.toString());
+	    }.bind(this)
+	});
+    },
+    checkLoggedIn: function() {
+	$.ajax({
+	    url: this.props.login_url,
+	    dataType: 'json',
+	    type: 'GET',
+	    success: function(data) {
+		this.setState({username: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.login_url, status, err.toString());
+	    }.bind(this)
+	});
+    },
+    handleLogout: function() {
+	$.ajax({
+	    url: this.props.login_url,
+	    dataType: 'json',
+	    type: 'DELETE',
+	    success: function(data) {
+		this.setState({username: null});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.login_url, status, err.toString());
+	    }.bind(this)
+	});
     },
     loadClassesFromServer: function() {
 	$.ajax({
@@ -494,42 +613,55 @@ var App = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		setTimeout(this.loadClassesFromServer, 2000);
+		if (status == 404) {
+		    setTimeout(this.loadClassesFromServer, 2000);
+		}
 	    }.bind(this)
 	})
     },
     componentDidMount: function() {
+	this.checkLoggedIn();
 	this.loadClassesFromServer();
     },
     render: function() {
 	return(
 	    <MuiThemeProvider>
-		<div>
-		    <QAppBar queueName={this.state.queueName}
-			     onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}/>
-		    <QDrawer
-			open={this.state.open}
-			onRequestChange={this.handleLeftIconButtonTouchTap}
-			password={this.state.password}
-			onPasswordChange={this.handlePasswordChange}
-			classes={this.state.classes}
-			onSelectQueue={this.handleSelectQueue}
-			url={this.props.queues_url}
-		    />
+		{this.state.username != null ? (
+		     <div>
+			 <QAppBar queueName={this.state.queueName}
+				  onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}
+				  onLogout={this.handleLogout}
+			 />
+			 <QDrawer
+			     open={this.state.open}
+			     onRequestChange={this.handleLeftIconButtonTouchTap}
+			     classes={this.state.classes}
+			     onSelectQueue={this.handleSelectQueue}
+			     url={this.props.queues_url}
+			 />
 
-		    {this.state.queueId == 0 ? null : 
-		    <Kids url={this.props.queue_url + this.state.queueId}
-			  baseTitle={this.state.queueName}
-			  password={this.state.password}
-			  queueId={this.state.queueId}
-		    />}
-		</div>
+			 {__FAKEAUTH__ && !this.state.username ?
+			  <FakeAuthDialog onLogin={this.handleLogin} /> : null}
+
+			 {this.state.queueId == 0 ? null : 
+			  <Kids url={this.props.queue_url + this.state.queueId}
+				baseTitle={this.state.queueName}
+				queueId={this.state.queueId}
+				instructor={this.state.queueInstructor}
+				username={this.state.username}
+			  />}
+			  
+		     </div>) : <LoggedOut />}
 	    </MuiThemeProvider>
 	);
     }
 });
 
 ReactDOM.render(
-    <App class_url="/classes" queue_url="/queue/" queues_url="/class/"/>,
+    <App class_url="/classes"
+	 queue_url="/queue/"
+	 queues_url="/class/"
+	 login_url="/auth"
+    />,
     document.getElementById('app')
 );
