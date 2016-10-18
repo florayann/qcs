@@ -24,6 +24,22 @@ def login_required(function):
     return wrapper
 
 
+def instructor_required_queueop(function):
+    @wraps(function)
+    def wrapper(self, queue_id, *args, **kwargs):
+        if queue_id in session.get("instructing_queues", set()):
+            return function(self, queue_id, *args, **kwargs)
+        
+        if self.qdb.is_queue_instructor(queue_id, session["username"]):
+            if not session.get("instructing_queues", None):
+                session["instructing_queues"] = set()
+            session["instructing_queues"].add(queue_id)
+            return function(self, queue_id, *args, **kwargs)
+
+        return {"message": "You're not an instructor for this queue."}, 403
+    
+    return wrapper
+
 
 def queue_required(function):
     @wraps(function)
@@ -73,11 +89,10 @@ class Queue(Resource):
             help='No question provided')
         self.reqparse.add_argument('answer', type=boolean)
         self.reqparse.add_argument('password', type=str)
+        
         self.delete_reqparse = reqparse.RequestParser()
         self.delete_reqparse.add_argument('id', type=str, required=True,
             help='No name provided')
-        self.delete_reqparse.add_argument('password', type=str, required=True,
-            help='No password provided')
 
         self.get_reqparse = reqparse.RequestParser()
         self.get_reqparse.add_argument('force', type=str)
@@ -111,30 +126,15 @@ class Queue(Resource):
     def post(self, queue_id):
         newkid = self.reqparse.parse_args()
         newkid["id"] = session["username"]
-
-        if (newkid["answer"] is not None and
-            newkid["answer"] != self.qdb.is_kid_answer(queue_id, newkid["id"])):
-            if newkid["password"] and newkid["password"] == self.password:
-                del newkid["password"]
-                self.qdb.add_question(queue_id, newkid, newkid["id"])
-                return self.qdb.get_queue(queue_id)
-            else:
-                return {"message": "Incorrect password"}, 403
-
-        del newkid["password"]
-
+        newkid["answer"] = False
         self.qdb.add_question(queue_id, newkid, newkid["id"])
 
         return self.qdb.get_queue(queue_id)
 
+    @login_required
     @queue_required
     def delete(self, queue_id):
-        kid = self.delete_reqparse.parse_args()
-        
-        if kid["password"] != self.password:
-            return {"message": "Incorrect password"}, 403
-
-        self.qdb.remove_question(queue_id, kid["id"])
+        self.qdb.remove_question(queue_id, session["username"])
         
         return self.qdb.get_queue(queue_id)
 
@@ -149,6 +149,31 @@ class Queue(Resource):
         self.data = kids
         
         return self.data
+
+
+class InstructorQueue(Queue):
+    def __init__(self):
+        super().__init__()
+
+    @login_required
+    @instructor_required_queueop
+    @queue_required
+    def post(self, queue_id):
+        newkid = self.reqparse.parse_args()
+        newkid["id"] = session["username"]
+        self.qdb.add_question(queue_id, newkid, newkid["id"])
+
+        return self.qdb.get_queue(queue_id)
+
+    @login_required
+    @instructor_required_queueop
+    @queue_required
+    def delete(self, queue_id):
+        kid = self.delete_reqparse.parse_args()
+
+        self.qdb.remove_question(queue_id, kid["id"])
+
+        return self.qdb.get_queue(queue_id)
 
 
 class QueueInfo(Resource):
@@ -176,6 +201,7 @@ class QClass(Resource):
 
 
 api.add_resource(Queue, "/queue/<int:queue_id>")
+api.add_resource(InstructorQueue, "/instructor/queue/<int:queue_id>")
 api.add_resource(QueueInfo, "/queue/info/<int:queue_id>")
 api.add_resource(Classes, "/classes")
 api.add_resource(QClass, "/class/<int:class_id>")

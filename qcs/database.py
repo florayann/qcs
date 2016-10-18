@@ -19,12 +19,26 @@ class QDataBase():
         class_names = pipe.execute()
         return dict(zip(class_ids, class_names))
 
-    def add_class(self):
+    def add_class(self, name):
         class_id = int(self.r.incr("next_class_id".format(class_id)))
+        self.r.set("class:{}:name".format(class_id), name)
+
+    def add_instructor(self, class_id, netid):
+        self.r.sadd("class:{}:ins".format(class_id), netid)
+
+    def is_queue_instructor(self, queue_id, netid):
+        class_id = self.get_queue_info(queue_id)["class_id"]
+        return self.is_class_instructor(class_id, netid)
+
+    def is_class_instructor(self, class_id, netid):
+        return self.r.sismember("class:{}:ins".format(class_id), netid)
         
     def get_queue_info(self, queue_id):
         name = self.dr.get("queue:{}:name".format(queue_id))
-        return {"name": name}
+        class_id = int(self.r.get("queue:{}:class").format(queue_id))
+        return {"name": name,
+                "class_id": class_id,
+                }
     
     def get_queue(self, queue_id):
         question_ids = self.dr.zrange("queue:{}:qs".format(queue_id), 0, -1)
@@ -55,6 +69,7 @@ class QDataBase():
         queue_id = int(self.r.incr("next_queue_id"))
         self.r.sadd("class:{}:queues".format(class_id), queue_id)
         self.set("queue:{}:name".format(queue_id), queue_name)
+        self.set("queue:{}:class".format(queue_id), class_id)
 
     def remove_queue(self, class_id, queue_id):
         self.r.srem("class:{}:queues".format(class_id), queue_id)
