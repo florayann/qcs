@@ -76,7 +76,7 @@ var styles = {
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: [], undoData: [], snackOpen: false};
+	return {data: [], snackOpen: false};
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
@@ -88,7 +88,7 @@ var Kids = React.createClass({
 	    data: force ? {force: force} : {},
 	    success: function(data) {
 		this.setState({data: data});
-		if (this.props.password && len < this.state.data.length) {
+		if (this.props.instructor && len < this.state.data.length) {
 		    this.refs.notify.play();
 		}
 		this.updateDocumentTitle();
@@ -125,9 +125,8 @@ var Kids = React.createClass({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'DELETE',
-	    data: {id: kid.id, password: this.props.password},
+	    data: {id: kid.id},
 	    success: function(data) {
-		this.setState({undoData: this.state.data.slice(0), snackOpen: true});
 		this.setState({data: data});
 		this.updateDocumentTitle();
 	    }.bind(this),
@@ -136,21 +135,6 @@ var Kids = React.createClass({
 		if (status == 404) {
 		    setTimeout(this.handleKidDelete, 2000, kid);
 		}
-	    }.bind(this)
-	});
-    },
-    handleUndo: function() {
-	$.ajax({
-	    url: this.props.url,
-	    dataType: 'json',
-	    type: 'PUT',
-	    data: {data: JSON.stringify(this.state.undoData), password: this.props.password},
-	    success: function(data) {
-		this.setState({data: data, snackOpen: false});
-		this.updateDocumentTitle();
-	    }.bind(this),
-	    error: function(xhr, status, err) {
-		console.error(this.props.url, status, err.toString());
 	    }.bind(this)
 	});
     },
@@ -172,7 +156,7 @@ var Kids = React.createClass({
 			      onKidSubmit={this.handleKidSubmit}
 			      onKidDelete={this.handleKidDelete}
 			      onKidAnswer={this.handleKidSubmit}
-			      password={this.props.password}
+			      username={this.props.username}
 		    />
 		<audio ref="notify">
 		<source src="/notify.wav" type="audio/wav"/>
@@ -183,7 +167,7 @@ var Kids = React.createClass({
 		    message="Kid removed from queue"
 		    action="undo"
 		    autoHideDuration={4000}
-		    onActionTouchTap={this.handleUndo}
+		    onActionTouchTap={null}
 		    onRequestClose={this.handleSnackRequestClose}
 		/>
 	    </div>
@@ -269,9 +253,6 @@ var QDrawer = React.createClass({
 	    this.props.onRequestChange();
 	}
     },
-    handlePasswordChange: function(e) {
-	this.props.onPasswordChange(e.target.value);
-    },
     render: function() {
 	return (
 	    <div>
@@ -280,11 +261,6 @@ var QDrawer = React.createClass({
 		    <ClassList classes={this.props.classes}
 			       onSelectQueue={this.props.onSelectQueue}
 			       url={this.props.url}
-		    />
-		    <TextField
-			hintText="Instructor Password"
-			value={this.props.password}
-			onChange={this.handlePasswordChange}
 		    />
 		    {/* <MenuItem>Join as Instructor</MenuItem> */}
 		</Drawer>
@@ -320,9 +296,9 @@ var KidsList = React.createClass({
 		     id={kid.id}
 		     answer={kid.answer}
 		     key={kid.id}
-		     password={this.props.password}
 		     onKidDelete={this.props.onKidDelete}
 		     onKidAnswer={this.props.onKidAnswer}
+		     username={this.props.username}
 		/>
 	    );
 	}.bind(this));
@@ -420,7 +396,7 @@ var Kid = React.createClass({
 				room: this.props.room,
 				question: this.props.question,
 				answer: !this.props.answer,
-				password: this.props.password});
+				});
     },
     generateColor: function() {
 	var n = Math.seedrandom(this.props.id);
@@ -437,12 +413,17 @@ var Kid = React.createClass({
 		<CardHeader
 		    title={this.props.name + " - " + this.props.room}
 		    subtitle={this.props.question}
-		    avatar={<Avatar backgroundColor={this.generateColor()} onTouchTap={this.props.password ? this.handleTouchTap : undefined}>{this.props.name[0]} </Avatar>}
+		    avatar={<Avatar backgroundColor={this.generateColor()} onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}>{this.props.name[0]} </Avatar>}
 		>
 		    {this.props.answer ? <CircularProgress size={0.5} style={styles.done}/> : null}
-		    <IconButton disabled={!this.props.password} style={styles.done} onTouchTap={this.handleButtonTouchTap}>
-			<ActionDone/>
-		    </IconButton>
+		    {this.props.instructor || this.props.username == this.props.id ?
+		     (
+			 <IconButton
+			     style={styles.done}
+			     onTouchTap={this.handleButtonTouchTap}>
+			     <ActionDone/>
+			 </IconButton>
+		     ) : null}
 		</CardHeader>
 	    </Card>
 	);
@@ -550,15 +531,13 @@ var App = React.createClass({
 	return {open:false,
 		queueName: "q.cs",
 		queueId: 0,
+		queueInstructor: false,
 		classes: {},
 		username: "",
 	};
     },
     handleLeftIconButtonTouchTap: function (e) {
 	this.setState({open: !this.state.open});
-    },
-    handlePasswordChange: function(text) {
-	this.setState({password: text});
     },
     handleSelectQueue: function(queueId, queueName) {
 	this.setState({queueId: queueId, queueName: queueName});
@@ -572,7 +551,7 @@ var App = React.createClass({
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify(data),
 	    success: function(data) {
-		this.setState({username: data});
+		this.setState({username: data.username});
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.login_url, status, err.toString());
@@ -637,8 +616,6 @@ var App = React.createClass({
 			 <QDrawer
 			     open={this.state.open}
 			     onRequestChange={this.handleLeftIconButtonTouchTap}
-			     password={this.state.password}
-			     onPasswordChange={this.handlePasswordChange}
 			     classes={this.state.classes}
 			     onSelectQueue={this.handleSelectQueue}
 			     url={this.props.queues_url}
@@ -650,8 +627,9 @@ var App = React.createClass({
 			 {this.state.queueId == 0 ? null : 
 			  <Kids url={this.props.queue_url + this.state.queueId}
 				baseTitle={this.state.queueName}
-				password={this.state.password}
 				queueId={this.state.queueId}
+				instructor={this.state.queueInstructor}
+				username={this.state.username}
 			  />}
 			  
 		     </div>) : <LoggedOut />}
