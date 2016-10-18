@@ -121,8 +121,11 @@ var Kids = React.createClass({
 	});
     },
     handleKidDelete: function(kid) {
+	var url = this.props.instructor ?
+		  "/instructor" + this.props.url :
+		  this.props.url;
 	$.ajax({
-	    url: this.props.url,
+	    url: url,
 	    dataType: 'json',
 	    type: 'DELETE',
 	    data: {id: kid.id},
@@ -157,6 +160,7 @@ var Kids = React.createClass({
 			      onKidDelete={this.handleKidDelete}
 			      onKidAnswer={this.handleKidSubmit}
 			      username={this.props.username}
+			      instructor={this.props.instructor}
 		    />
 		<audio ref="notify">
 		<source src="/notify.wav" type="audio/wav"/>
@@ -299,6 +303,7 @@ var KidsList = React.createClass({
 		     onKidDelete={this.props.onKidDelete}
 		     onKidAnswer={this.props.onKidAnswer}
 		     username={this.props.username}
+		     instructor={this.props.instructor}
 		/>
 	    );
 	}.bind(this));
@@ -540,8 +545,22 @@ var App = React.createClass({
 	this.setState({open: !this.state.open});
     },
     handleSelectQueue: function(queueId, queueName) {
-	this.setState({queueId: queueId, queueName: queueName});
+	this.setState({queueId: queueId, queueName: queueName, queueInstructor: false});
 	this.setState({open: false});
+	this.isQueueInstructor(queueId);
+    },
+    isQueueInstructor: function(queueId) {
+	$.ajax({
+	    url: "/instructor" + this.props.queue_url + queueId,
+	    dataType: 'json',
+	    type: 'GET',
+	    success: function(data) {
+		this.setState({queueInstructor: true});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		this.setState({queueInstructor: false});
+	    }.bind(this)
+	});
     },
     handleLogin: function(data) {
 	$.ajax({
