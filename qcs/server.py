@@ -176,7 +176,9 @@ api.add_resource(Queue, "/queue/<int:queue_id>")
 api.add_resource(QueueInfo, "/queue/info/<int:queue_id>")
 api.add_resource(Classes, "/classes")
 api.add_resource(QClass, "/class/<int:class_id>")
-api.add_resource(Auth, "/auth")
+
+if (app.config["FAKEAUTH"]):
+    api.add_resource(Auth, "/auth")
 
 if __name__ == '__main__':
     app.run(debug=True, port=int(os.environ.get("PORT", 3001)), threaded=True)
