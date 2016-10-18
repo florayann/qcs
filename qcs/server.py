@@ -1,8 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, session
 from flask_restful import Resource, Api
 from flask_restful import reqparse
 from flask_restful.inputs import boolean
+from functools import wraps
 from qcs.database import QDataBase
+from qcs.schemas import *
 import json
 import time
 import os
@@ -12,6 +14,36 @@ app.config.from_object("qcs.default_settings")
 app.config.from_envvar("QCS_SETTINGS", silent=True)
 app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 api = Api(app)
+
+def login_required(function):
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        if "username" in session:
+            return function(*args, **kwargs)
+        return {"message": "Authorization required."}, 401
+    return wrapper
+
+
+class Auth(Resource):
+    @login_required
+    def get(self):
+        return session["username"]
+
+    def post(self):
+        json_data = request.get_json()
+
+        data, errors = AuthSchema().load(json_data)
+
+        if errors:
+            return errors, 400
+
+        session["username"] = data.username
+
+        return data
+
+    def delete(self):
+        session.pop("username", None)
+        return {"message": "Logged out."}
 
 
 class Queue(Resource):
@@ -144,6 +176,7 @@ api.add_resource(Queue, "/queue/<int:queue_id>")
 api.add_resource(QueueInfo, "/queue/info/<int:queue_id>")
 api.add_resource(Classes, "/classes")
 api.add_resource(QClass, "/class/<int:class_id>")
+api.add_resource(Auth, "/auth")
 
 if __name__ == '__main__':
     app.run(debug=True, port=int(os.environ.get("PORT", 3001)), threaded=True)
