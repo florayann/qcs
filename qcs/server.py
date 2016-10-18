@@ -27,13 +27,7 @@ def login_required(function):
 def instructor_required_queueop(function):
     @wraps(function)
     def wrapper(self, queue_id, *args, **kwargs):
-        if queue_id in session.get("instructing_queues", set()):
-            return function(self, queue_id, *args, **kwargs)
-        
         if self.qdb.is_queue_instructor(queue_id, session["username"]):
-            if not session.get("instructing_queues", None):
-                session["instructing_queues"] = set()
-            session["instructing_queues"].add(queue_id)
             return function(self, queue_id, *args, **kwargs)
 
         return {"message": "You're not an instructor for this queue."}, 403
@@ -131,6 +125,12 @@ class Queue(Resource):
 class InstructorQueue(Queue):
     def __init__(self):
         super().__init__()
+
+    @login_required
+    @instructor_required_queueop
+    @queue_required
+    def get(self, queue_id):
+        return {"message": "Instructor confirmed."}
 
     @login_required
     @instructor_required_queueop
