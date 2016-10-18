@@ -1,4 +1,5 @@
 import redis
+import time
 
 class QDataBase():
     def __init__(self, host):
