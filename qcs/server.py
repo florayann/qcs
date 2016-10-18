@@ -24,6 +24,20 @@ def login_required(function):
     return wrapper
 
 
+
+def queue_required(function):
+    @wraps(function)
+    def wrapper(self, queue_id, *args, **kwargs):
+        q_revision = self.qdb.get_queue_revision(queue_id)
+
+        if q_revision is None:
+            return {"message": "Queue not found"}, 410
+
+        return function(self, queue_id, *args, **kwargs)
+
+    return wrapper
+
+
 class Auth(Resource):
     @login_required
     def get(self):
@@ -79,15 +93,13 @@ class Queue(Resource):
                                        help='No password provided')
         
         super().__init__()
-        
+
+    @queue_required
     def get(self, queue_id):
         if self.get_reqparse.parse_args()["force"]:
             return self.qdb.get_queue(queue_id)
-        
-        q_revision = self.qdb.get_queue_revision(queue_id)
 
-        if q_revision is None:
-            return {"message": "Queue not found"}, 400
+        q_revision = self.qdb.get_queue_revision(queue_id)
         
         while q_revision == self.qdb.get_queue_revision(queue_id):
             time.sleep(1.0)
@@ -95,12 +107,8 @@ class Queue(Resource):
         return self.qdb.get_queue(queue_id)
 
     @login_required
+    @queue_required
     def post(self, queue_id):
-        q_revision = self.qdb.get_queue_revision(queue_id)
-
-        if q_revision is None:
-            return {"message": "Queue not found"}, 400
-        
         newkid = self.reqparse.parse_args()
         newkid["id"] = session["username"]
 
@@ -119,12 +127,8 @@ class Queue(Resource):
 
         return self.qdb.get_queue(queue_id)
 
+    @queue_required
     def delete(self, queue_id):
-        q_revision = self.qdb.get_queue_revision(queue_id)
-
-        if q_revision is None:
-            return {"message": "Queue not found"}, 400
-        
         kid = self.delete_reqparse.parse_args()
         
         if kid["password"] != self.password:
