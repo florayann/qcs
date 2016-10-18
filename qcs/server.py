@@ -79,7 +79,7 @@ class Auth(Resource):
 class Queue(Resource):
     def __init__(self):
         self.qdb = QDataBase(app.config["DBHOST"])
-        self.password = "password"
+
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('name', type=str, required=True,
             help='No name provided')
@@ -88,24 +88,13 @@ class Queue(Resource):
         self.reqparse.add_argument('question', type=str, required=True,
             help='No question provided')
         self.reqparse.add_argument('answer', type=boolean)
-        self.reqparse.add_argument('password', type=str)
-        
+
         self.delete_reqparse = reqparse.RequestParser()
         self.delete_reqparse.add_argument('id', type=str, required=True,
             help='No name provided')
 
         self.get_reqparse = reqparse.RequestParser()
         self.get_reqparse.add_argument('force', type=str)
-
-        self.put_reqparse = reqparse.RequestParser()
-        self.put_reqparse.add_argument('data',
-                                       type=str,
-                                       required=True,
-                                       help='No list provided')
-        self.put_reqparse.add_argument('password',
-                                       type=str,
-                                       required=True,
-                                       help='No password provided')
         
         super().__init__()
 
