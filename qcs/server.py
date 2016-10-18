@@ -138,18 +138,6 @@ class Queue(Resource):
         
         return self.qdb.get_queue(queue_id)
 
-    def put(self, queue_id):
-        args = self.put_reqparse.parse_args()
-        kids = json.loads(args["data"])
-        password = args["password"]
-        
-        if password != self.password:
-            return {"message": "Incorrect password: {}".format(password)}, 403
-
-        self.data = kids
-        
-        return self.data
-
 
 class InstructorQueue(Queue):
     def __init__(self):
