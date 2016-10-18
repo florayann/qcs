@@ -35,7 +35,7 @@ class QDataBase():
         
     def get_queue_info(self, queue_id):
         name = self.dr.get("queue:{}:name".format(queue_id))
-        class_id = int(self.r.get("queue:{}:class").format(queue_id))
+        class_id = int(self.r.get("queue:{}:class".format(queue_id)))
         return {"name": name,
                 "class_id": class_id,
                 }
