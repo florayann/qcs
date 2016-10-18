@@ -112,7 +112,9 @@ var Kids = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		setTimeout(this.handleKidSubmit, 2000, kid);
+		if (status == 404) {
+		    setTimeout(this.handleKidSubmit, 2000, kid);
+		}
 	    }.bind(this)
 	});
     },
@@ -333,7 +335,7 @@ var KidsList = React.createClass({
 
 var AddKid = React.createClass({
     getInitialState: function() {
-	return {name: '', room: '', question:'', id:'', expanded:false};
+	return {name: '', room: '', question:'', expanded:false};
     },
     handleNameChange: function(e) {
 	this.setState({name: e.target.value});
@@ -343,9 +345,6 @@ var AddKid = React.createClass({
     },
     handleQuestionChange: function(e) {
 	this.setState({question: e.target.value});
-    },
-    handleIdChange: function(e) {
-	this.setState({id: e.target.value});
     },
     handleExpandChange: function(expanded) {
 	this.setState({expanded: expanded});
@@ -358,9 +357,8 @@ var AddKid = React.createClass({
 	    name: this.state.name.trim(),
 	    room: this.state.room.trim(),
 	    question: this.state.question.trim(),
-	    id: this.state.id.trim()
 	});
-	this.setState({name: '', room: '', question:'', id:''});
+	this.setState({name: '', room: '', question:''});
 	this.reduce();
     },
     render: function() {
@@ -396,16 +394,9 @@ var AddKid = React.createClass({
 			onChange={this.handleQuestionChange}
 		    />
 		    <br/>
-		    <TextField
-			hintText="NetID"
-			errorText={this.state.id ? "" : "This field is required"}
-			value={this.state.id}
-			onChange={this.handleIdChange}
-		    />
-		    <br/>
 		    <CardActions>
 			<FlatButton
-			    label="Submit" disabled={!(this.state.name && this.state.room && this.state.question && this.state.id)}
+			    label="Submit" disabled={!(this.state.name && this.state.room && this.state.question)}
 			    onTouchTap={this.submitKid}
 			/>
 		    </CardActions>

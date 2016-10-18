@@ -57,11 +57,8 @@ class Queue(Resource):
             help='No room provided')
         self.reqparse.add_argument('question', type=str, required=True,
             help='No question provided')
-        self.reqparse.add_argument('id', type=str, required=True,
-            help='No id provided')
         self.reqparse.add_argument('answer', type=boolean)
         self.reqparse.add_argument('password', type=str)
-        
         self.delete_reqparse = reqparse.RequestParser()
         self.delete_reqparse.add_argument('id', type=str, required=True,
             help='No name provided')
@@ -96,7 +93,8 @@ class Queue(Resource):
             time.sleep(1.0)
 
         return self.qdb.get_queue(queue_id)
-        
+
+    @login_required
     def post(self, queue_id):
         q_revision = self.qdb.get_queue_revision(queue_id)
 
@@ -104,6 +102,7 @@ class Queue(Resource):
             return {"message": "Queue not found"}, 400
         
         newkid = self.reqparse.parse_args()
+        newkid["id"] = session["username"]
 
         if (newkid["answer"] is not None and
             newkid["answer"] != self.qdb.is_kid_answer(queue_id, newkid["id"])):
