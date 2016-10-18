@@ -24,6 +24,7 @@ import {List, ListItem} from 'material-ui/List';
 import Subheader from 'material-ui/Subheader';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import {white} from 'material-ui/styles/colors';
+import Dialog from 'material-ui/Dialog';
 
 
 injectTapEventPlugin();
@@ -485,12 +486,62 @@ const AddButton = () => (
     </FloatingActionButton>
 );
 
+
+var FakeAuthDialog = React.createClass({
+    getInitialState: function() {
+	return {username: "", open: true};
+    },
+    handleChange: function(e) {
+	this.setState({
+	    username: e.target.value,
+	});
+    },
+    handleLogin: function() {
+	this.props.onLogin(this.state.username);
+    },
+    handleKeyPress: function(target) {
+	if (target.charCode == 13) {
+            this.handleLogin();
+	}
+    },
+    render: function () {
+	const actions = [
+	    <FlatButton
+		label="Login"
+		primary={true}
+		onTouchTap={this.handleLogin}
+	    />,
+	];
+	
+	return (
+	    <Dialog
+		title="Fake Login"
+		actions={actions}
+		modal={true}
+		open={this.state.open}
+            >
+		<TextField
+		    hintText="NetID"
+		    errorText={this.state.username ? "" : "This field is required"}
+		    floatingLabelText="NetID"
+		    onChange={this.handleChange}
+		    onKeyPress={this.handleKeyPress}
+		    autoFocus={true}
+		    value={this.state.username}
+		/>
+            </Dialog>
+	);
+    }
+});
+
+
 var App = React.createClass({
     getInitialState: function() {
 	return {open:false,
 		queueName: "q.cs",
 		queueId: 0,
 		classes: {},
+		username: null,
 	};
     },
     handleLeftIconButtonTouchTap: function (e) {
@@ -502,6 +553,20 @@ var App = React.createClass({
     handleSelectQueue: function(queueId, queueName) {
 	this.setState({queueId: queueId, queueName: queueName});
 	this.setState({open: false});
+    },
+    handleLogin: function(username) {
+	$.ajax({
+	    url: this.props.login_url,
+	    dataType: 'json',
+	    type: 'POST',
+	    data: {username: username},
+	    success: function(data) {
+		this.setState({username: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.login_url, status, err.toString());
+	    }.bind(this)
+	});
     },
     loadClassesFromServer: function() {
 	$.ajax({
@@ -536,6 +601,8 @@ var App = React.createClass({
 			url={this.props.queues_url}
 		    />
 
+		    {__FAKEAUTH__ ? <FakeAuthDialog onLogin={this.handleLogin} /> : null}
+
 		    {this.state.queueId == 0 ? null : 
 		    <Kids url={this.props.queue_url + this.state.queueId}
 			  baseTitle={this.state.queueName}
@@ -549,6 +616,10 @@ var App = React.createClass({
 });
 
 ReactDOM.render(
-    <App class_url="/classes" queue_url="/queue/" queues_url="/class/"/>,
+    <App class_url="/classes"
+	 queue_url="/queue/"
+	 queues_url="/class/"
+	 login_url="/auth"
+    />,
     document.getElementById('app')
 );
