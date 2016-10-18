@@ -32,6 +32,7 @@ const config = {
     ], path.resolve(__dirname, 'frontend/src')),
     new webpack.DefinePlugin({
       __FAKEAUTH__: JSON.stringify(false),
+      __NOAUTH__: JSON.stringify(false),
       'process.env': {
         NODE_ENV: JSON.stringify('production'),
       }

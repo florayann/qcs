@@ -1,6 +1,6 @@
-from flask import Flask, request, session
+from flask import Flask, session
 from flask_restful import Resource, Api
-from flask_restful import reqparse
+from flask_restful import reqparse, request
 from flask_restful.inputs import boolean
 from functools import wraps
 from qcs.database import QDataBase
@@ -39,7 +39,7 @@ class Auth(Resource):
 
         session["username"] = data.username
 
-        return data
+        return AuthSchema().dump(session)
 
     def delete(self):
         session.pop("username", None)

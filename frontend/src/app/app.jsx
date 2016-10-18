@@ -462,7 +462,9 @@ var QAppBarMenu = React.createClass({
 		      targetOrigin={{horizontal: 'right', vertical: 'top'}}
 	    >
 		<MenuItem primaryText="Refresh" />
-		<MenuItem primaryText="Sign out" />
+		<MenuItem primaryText="Log out"
+			  onTouchTap={this.props.onLogout}
+		/>
 	    </IconMenu>
 	);
     }
@@ -474,7 +476,7 @@ var QAppBar = React.createClass({
 	    <AppBar
 		title={this.props.queueName}
 		onLeftIconButtonTouchTap={this.props.onLeftIconButtonTouchTap}
-		iconElementRight={<QAppBarMenu/>}
+		iconElementRight={<QAppBarMenu onLogout={this.props.onLogout}/>}
 	    />
 	);
     }
@@ -497,7 +499,7 @@ var FakeAuthDialog = React.createClass({
 	});
     },
     handleLogin: function() {
-	this.props.onLogin(this.state.username);
+	this.props.onLogin({username: this.state.username});
     },
     handleKeyPress: function(target) {
 	if (target.charCode == 13) {
@@ -534,6 +536,19 @@ var FakeAuthDialog = React.createClass({
     }
 });
 
+var LoggedOut = React.createClass({
+    render: function () {
+	return (
+	    <div style={styles.container}>
+		<Card>
+		    <CardHeader
+			title="Logged out!"
+		    />
+		</Card>
+	    </div>
+	);
+    }
+});
 
 var App = React.createClass({
     getInitialState: function() {
@@ -541,7 +556,7 @@ var App = React.createClass({
 		queueName: "q.cs",
 		queueId: 0,
 		classes: {},
-		username: null,
+		username: "",
 	};
     },
     handleLeftIconButtonTouchTap: function (e) {
@@ -554,14 +569,41 @@ var App = React.createClass({
 	this.setState({queueId: queueId, queueName: queueName});
 	this.setState({open: false});
     },
-    handleLogin: function(username) {
+    handleLogin: function(data) {
 	$.ajax({
 	    url: this.props.login_url,
 	    dataType: 'json',
 	    type: 'POST',
-	    data: {username: username},
+	    contentType: 'application/json; charset=UTF-8',
+	    data: JSON.stringify(data),
 	    success: function(data) {
 		this.setState({username: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.login_url, status, err.toString());
+	    }.bind(this)
+	});
+    },
+    checkLoggedIn: function() {
+	$.ajax({
+	    url: this.props.login_url,
+	    dataType: 'json',
+	    type: 'GET',
+	    success: function(data) {
+		this.setState({username: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.login_url, status, err.toString());
+	    }.bind(this)
+	});
+    },
+    handleLogout: function() {
+	$.ajax({
+	    url: this.props.login_url,
+	    dataType: 'json',
+	    type: 'DELETE',
+	    success: function(data) {
+		this.setState({username: null});
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.login_url, status, err.toString());
@@ -583,33 +625,39 @@ var App = React.createClass({
 	})
     },
     componentDidMount: function() {
+	this.checkLoggedIn();
 	this.loadClassesFromServer();
     },
     render: function() {
 	return(
 	    <MuiThemeProvider>
-		<div>
-		    <QAppBar queueName={this.state.queueName}
-			     onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}/>
-		    <QDrawer
-			open={this.state.open}
-			onRequestChange={this.handleLeftIconButtonTouchTap}
-			password={this.state.password}
-			onPasswordChange={this.handlePasswordChange}
-			classes={this.state.classes}
-			onSelectQueue={this.handleSelectQueue}
-			url={this.props.queues_url}
-		    />
+		{this.state.username != null ? (
+		     <div>
+			 <QAppBar queueName={this.state.queueName}
+				  onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}
+				  onLogout={this.handleLogout}
+			 />
+			 <QDrawer
+			     open={this.state.open}
+			     onRequestChange={this.handleLeftIconButtonTouchTap}
+			     password={this.state.password}
+			     onPasswordChange={this.handlePasswordChange}
+			     classes={this.state.classes}
+			     onSelectQueue={this.handleSelectQueue}
+			     url={this.props.queues_url}
+			 />
 
-		    {__FAKEAUTH__ ? <FakeAuthDialog onLogin={this.handleLogin} /> : null}
+			 {__FAKEAUTH__ && !this.state.username ?
+			  <FakeAuthDialog onLogin={this.handleLogin} /> : null}
 
-		    {this.state.queueId == 0 ? null : 
-		    <Kids url={this.props.queue_url + this.state.queueId}
-			  baseTitle={this.state.queueName}
-			  password={this.state.password}
-			  queueId={this.state.queueId}
-		    />}
-		</div>
+			 {this.state.queueId == 0 ? null : 
+			  <Kids url={this.props.queue_url + this.state.queueId}
+				baseTitle={this.state.queueName}
+				password={this.state.password}
+				queueId={this.state.queueId}
+			  />}
+			  
+		     </div>) : <LoggedOut />}
 	    </MuiThemeProvider>
 	);
     }
