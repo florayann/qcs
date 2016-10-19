@@ -80,6 +80,7 @@ var Kids = React.createClass({
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
+	var oldUrl = this.props.url;
 
 	$.ajax({
 	    url: this.props.url,
@@ -87,20 +88,42 @@ var Kids = React.createClass({
 	    cache: false,
 	    data: force ? {force: force} : {},
 	    success: function(data) {
-		this.setState({data: data});
-		if (this.props.instructor && len < this.state.data.length) {
-		    this.refs.notify.play();
+		if (oldUrl == this.props.url) {
+		    this.setState({data: data});
+		    if (this.props.instructor && len < this.state.data.length) {
+			this.refs.notify.play();
+		    }
+		    this.updateDocumentTitle();
 		}
-		this.updateDocumentTitle();
 		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		if (status == 404) {
-		    setTimeout(this.loadKidsFromServer, 2000, force);
-		}
+		setTimeout(this.loadKidsFromServer, 2000, force);
 	    }.bind(this)
 	});
+    },
+    refreshKidsFromServer: function(props) {
+	props = props || this.props;
+	
+	$.ajax({
+	    url: props.url,
+	    dataType: 'json',
+	    cache: false,
+	    data: {force: true},
+	    success: function(data) {
+		this.setState({data: data});
+		this.updateDocumentTitle();
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+	    }.bind(this)
+	});
+    },
+    componentWillReceiveProps: function(nextProps) {
+	if (nextProps.url != this.props.url) {
+	    this.refreshKidsFromServer(nextProps);
+	}
     },
     handleKidSubmit: function(kid) {
 	var url = this.props.instructor ?
