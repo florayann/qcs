@@ -103,11 +103,16 @@ var Kids = React.createClass({
 	});
     },
     handleKidSubmit: function(kid) {
+	var url = this.props.instructor ?
+		  "/instructor" + this.props.url :
+		  this.props.url;
+	
 	$.ajax({
-	    url: this.props.url,
+	    url: url,
 	    dataType: 'json',
 	    type: 'POST',
-	    data: kid,
+	    contentType: 'application/json; charset=UTF-8',
+	    data: JSON.stringify(kid),
 	    success: function(data) {
 		this.setState({data: data});
 		this.updateDocumentTitle();
