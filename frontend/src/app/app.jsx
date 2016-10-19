@@ -150,7 +150,7 @@ var Kids = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		if (status == 404) {
+		if (xhr.status == 404) {
 		    setTimeout(this.handleKidSubmit, 2000, kid);
 		}
 	    }.bind(this)
@@ -171,7 +171,7 @@ var Kids = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		if (status == 404) {
+		if (xhr.status == 404) {
 		    setTimeout(this.handleKidDelete, 2000, kid);
 		}
 	    }.bind(this)
@@ -769,7 +769,7 @@ var App = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		if (status == 404) {
+		if (xhr.status == 404) {
 		    setTimeout(this.loadClassesFromServer, 2000);
 		}
 	    }.bind(this)
