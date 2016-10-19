@@ -24,13 +24,17 @@ class KidModel():
 
 
 class KidSchema(Schema):
-    id = fields.String(validate=validate.Length(min=1,
-                                                max=255))
-    
-    name = fields.String(validate=validate.Length(min=1,
-                                                  max=255))
-    room = fields.String(validate=validate.Length(min=1,
-                                                  max=255))
-    question = fields.String(validate=validate.Length(min=1,
-                                                      max=255))
-    answer = fields.Boolean(truthy=[])
+    id = fields.String(validate=validate.Length(min=1,max=255),
+                       required=True)
+
+    name = fields.String(validate=validate.Length(min=1, max=255),
+                         required=True)
+
+    room = fields.String(validate=validate.Length(min=1, max=255),
+                         required=True)
+
+    question = fields.String(validate=validate.Length(min=1, max=255),
+                             required=True)
+
+    answer = fields.Boolean(truthy=[],
+                            required=True)
