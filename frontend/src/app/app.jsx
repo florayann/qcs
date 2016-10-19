@@ -254,6 +254,23 @@ var QClass = React.createClass({
 	    }.bind(this)
 	});
     },
+    handleDeleteQueue: function(queueId) {
+	$.ajax({
+	    url: this.props.url,
+	    dataType: 'json',
+	    type: 'DELETE',
+	    contentType: 'application/json; charset=UTF-8',
+	    data: JSON.stringify({id: queueId}),
+	    success: function(data) {
+		this.setState({queues: data});
+		this.handleClose();
+		this.props.onSelectQueue(0, "q.cs");
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+	    }.bind(this)
+	});
+    },
     loadQueuesFromServer: function() {
 	$.ajax({
 	    url: this.props.url,
@@ -280,7 +297,9 @@ var QClass = React.createClass({
 			  onTouchTap={function () {
 				  this.props.onSelectQueue(queueId, this.state.queues[queueId])
 			      }.bind(this)}
-			  rightIconButton={<IconButton tooltip="Delete queue"> <ActionDelete/> </IconButton>}
+			  rightIconButton={<IconButton tooltip="Delete queue">
+						<ActionDelete onTouchTap={function () {this.handleDeleteQueue(queueId)}.bind(this)}/>
+					  </IconButton>}
 		/>
 	    );
 	}.bind(this));
