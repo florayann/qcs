@@ -238,11 +238,6 @@ var QClass = React.createClass({
 		name: "",
 	};
     },
-    handleNestedListToggle: function(item) {
-	if (item.state.open) {
-	    this.loadQueuesFromServer();
-	}
-    },
     handleNameChange: function(e) {
 	this.setState({name: e.target.value});
     },
@@ -300,11 +295,20 @@ var QClass = React.createClass({
 	    cache: false,
 	    success: function(data) {
 		this.setState({queues: data});
+		if (this.props.drawerOpen) {
+		    setTimeout(this.loadQueuesFromServer, 10000);
+		}
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
 	    }.bind(this)
 	});
+    },
+    componentWillReceiveProps: function(nextProps) {
+	if ((nextProps.drawerOpen != this.props.drawerOpen) &&
+	    (nextProps.drawerOpen)) {
+	    this.loadQueuesFromServer();
+	}
     },
     componentDidMount: function() {
 	this.loadQueuesFromServer();
@@ -385,6 +389,7 @@ var ClassList = React.createClass({
 			name={this.props.classes[classId]}
 			onSelectQueue={this.props.onSelectQueue}
 			url={this.props.url + classId}
+			drawerOpen={this.props.drawerOpen}
 		/>
 	    );
 	}.bind(this));
@@ -411,6 +416,7 @@ var QDrawer = React.createClass({
 		    <ClassList classes={this.props.classes}
 			       onSelectQueue={this.props.onSelectQueue}
 			       url={this.props.url}
+			       drawerOpen={this.props.open}
 		    />
 		</Drawer>
 	    </div>
