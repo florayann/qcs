@@ -76,7 +76,7 @@ var styles = {
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: [], snackOpen: false};
+	return {data: [], snackOpen: false, queueDeleted: false};
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
@@ -94,18 +94,23 @@ var Kids = React.createClass({
 			this.refs.notify.play();
 		    }
 		    this.updateDocumentTitle();
+		    setTimeout(this.loadKidsFromServer, 2000);
 		}
-		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		setTimeout(this.loadKidsFromServer, 2000, force);
+		if (err != "GONE") {
+		    setTimeout(this.loadKidsFromServer, 2000, force);
+		}
+		else {
+		    this.setState({queueDeleted: true});
+		}
 	    }.bind(this)
 	});
     },
     refreshKidsFromServer: function(props) {
 	props = props || this.props;
-	
+
 	$.ajax({
 	    url: props.url,
 	    dataType: 'json',
@@ -114,11 +119,13 @@ var Kids = React.createClass({
 	    success: function(data) {
 		this.setState({data: data});
 		this.updateDocumentTitle();
+		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
 	    }.bind(this)
 	});
+
     },
     componentWillReceiveProps: function(nextProps) {
 	if ((nextProps.refresh != this.props.refresh) ||
@@ -173,6 +180,12 @@ var Kids = React.createClass({
     handleSnackRequestClose: function() {
 	this.setState({snackOpen: false});
     },
+    handleQueueDeletedSnackRequestClose: function() {
+	
+    },
+    handleOkayQueueDeleted: function(e) {
+	this.props.onSelectQueue();
+    },
     componentDidMount: function() {
 	this.loadKidsFromServer(true);
 	this.updateDocumentTitle();
@@ -194,6 +207,14 @@ var Kids = React.createClass({
 		<audio ref="notify">
 		<source src="/notify.wav" type="audio/wav"/>
 		</audio>
+
+		<Snackbar
+		    open={this.state.queueDeleted}
+		    message="Queue deleted"
+		    action="Okay"
+		    onActionTouchTap={this.handleOkayQueueDeleted}
+		    onRequestClose={this.handleQueueDeletedSnackRequestClose}
+		/>
 
 		<Snackbar
 		    open={false}
@@ -670,6 +691,13 @@ var App = React.createClass({
 	this.setState({open: !this.state.open});
     },
     handleSelectQueue: function(queueId, queueName) {
+	if (queueId === undefined) {
+	    queueId = 0;
+	}
+	if (queueName === undefined) {
+	    queueName = "q.cs"
+	}
+
 	this.setState({queueId: queueId, queueName: queueName, queueInstructor: false});
 	this.setState({open: false});
 	this.isQueueInstructor(queueId);
@@ -779,6 +807,7 @@ var App = React.createClass({
 				instructor={this.state.queueInstructor}
 				username={this.state.username}
 				refresh={this.state.refresh}
+				onSelectQueue={this.handleSelectQueue}
 			  />}
 			  
 		     </div>) : <LoggedOut />}
