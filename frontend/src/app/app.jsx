@@ -322,9 +322,10 @@ var QClass = React.createClass({
 			  onTouchTap={function () {
 				  this.props.onSelectQueue(queueId, this.state.queues[queueId])
 			      }.bind(this)}
-			  rightIconButton={<IconButton tooltip="Delete queue">
+			  rightIconButton={this.state.instructor ?
+					   <IconButton tooltip="Delete queue">
 						<ActionDelete onTouchTap={function () {this.handleDeleteQueue(queueId)}.bind(this)}/>
-					  </IconButton>}
+					  </IconButton> : null}
 		/>
 	    );
 	}.bind(this));
