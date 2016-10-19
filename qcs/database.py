@@ -1,5 +1,6 @@
 import redis
 import time
+from qcs.schemas import *
 
 class QDataBase():
     def __init__(self, host):
@@ -10,6 +11,8 @@ class QDataBase():
                                port=6379,
                                db=0,
                                decode_responses=True)
+
+        self.strict_kid_schema = KidSchema(strict=True)
 
     def get_classes(self):
         class_ids = [int(i) for i in self.r.smembers("class")]
@@ -49,10 +52,7 @@ class QDataBase():
 
         result = pipe.execute()
         
-        for question in result:
-            question["answer"] = question["answer"] in ["True", "true", "1"]
-
-        return result
+        return self.strict_kid_schema.load(result, many=True)
 
     def get_queues(self, class_id):
         queue_ids = [int(i) for i in self.r.smembers("class:{}:queues".format(class_id))]
