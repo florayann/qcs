@@ -192,6 +192,9 @@ class Classes(Resource):
 
 
 class QClass(Resource):
+    post_schema = QClassPostSchema(strict=True)
+    delete_schema = QClassDeleteSchema(strict=True)
+    
     def __init__(self):
         self.qdb = QDataBase(app.config["DBHOST"])
 
@@ -200,9 +203,26 @@ class QClass(Resource):
 
     @login_required
     @instructor_required_classop
+    @validation_required
     def post(self, class_id):
+        json_data = request.get_json()
+        name = self.post_schema.load(json_data).data["name"]
+
+        if name:
+            self.qdb.add_queue(class_id, name)
+
         return self.qdb.get_queues(class_id)
 
+    @login_required
+    @instructor_required_classop
+    @validation_required
+    def delete(self, class_id):
+        json_data = request.get_json()
+        queue_id = self.delete_schema.load(json_data).data["id"]
+
+        self.qdb.remove_queue(class_id, queue_id)
+
+        return self.qdb.get_queues(class_id)
 
 api.add_resource(Queue, "/queue/<int:queue_id>")
 api.add_resource(InstructorQueue, "/instructor/queue/<int:queue_id>")

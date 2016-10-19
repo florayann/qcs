@@ -38,3 +38,10 @@ class KidSchema(Schema):
 
     answer = fields.Boolean(truthy=[],
                             required=True)
+
+class QClassPostSchema(Schema):
+    name = fields.String(validate=validate.Length(min=0, max=255),
+                         required=True)
+
+class QClassDeleteSchema(Schema):
+    id = fields.Integer(required=True)
