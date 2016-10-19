@@ -210,12 +210,27 @@ var Kids = React.createClass({
 
 var QClass = React.createClass({
     getInitialState: function() {
-	return {queues: {}, open: false, instructor: false};
+	return {queues: {},
+		open: false,
+		instructor: false,
+		addingQueue: false,
+		name: "",
+	};
     },
     handleNestedListToggle: function(item) {
 	if (item.state.open) {
 	    this.loadQueuesFromServer();
 	}
+    },
+    handleNameChange: function(e) {
+	this.setState({name: e.target.value});
+    },
+    handleOpen: function() {
+	this.setState({addingQueue: true});
+    },
+    handleClose: function() {
+	this.setState({addingQueue: false});
+	this.setState({name: ""});
     },
     handleAddQueue: function(name) {
 	$.ajax({
@@ -227,6 +242,10 @@ var QClass = React.createClass({
 	    success: function(data) {
 		this.setState({instructor: true});
 		this.setState({queues: data});
+		this.handleClose();
+		var ids = Object.keys(data);
+		var queueId = ids[ids.length - 1]
+		this.props.onSelectQueue(queueId, data[queueId]);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		if (status = 403) {
@@ -265,21 +284,54 @@ var QClass = React.createClass({
 		/>
 	    );
 	}.bind(this));
-
+	
 	if (this.state.instructor) {
 	    queueNodes.push(<ListItem primaryText="New Queue"
 				      key="0"
+				      onTouchTap={this.handleOpen}
 				      leftIcon={<ContentAdd />}
 			    />);
 	}
+
+	const actions = [
+	    <FlatButton
+		label="Cancel"
+		primary={true}
+		onTouchTap={this.handleClose}
+	    />,
+	    <FlatButton
+		label="Save"
+		primary={true}
+		onTouchTap={function () {this.handleAddQueue(this.state.name);}.bind(this)}
+	    />,
+	];
 	
 	return (
+	    <div>
 	    <ListItem primaryText={this.props.name}
 		      key={this.props.classId}
 		      primaryTogglesNestedList={true}
 		      nestedItems={queueNodes}
 		      onNestedListToggle={this.handleNestedListToggle}
 	    />
+	    
+	    {(!this.state.addingQueue) ? null :
+		<Dialog
+		    title="Name"
+		    actions={actions}
+		    modal={false}
+		    open={this.state.addingQueue}
+		    onRequestClose={this.handleClose}
+		>
+		    <TextField
+			hintText="Queue name"
+			value={this.state.name}
+			onChange={this.handleNameChange}
+			autoFocus={true}
+		    />
+		</Dialog>
+	    }
+	    </div>
 	);
     }
 });
