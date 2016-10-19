@@ -14,6 +14,8 @@ import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
 import ActionDone from 'material-ui/svg-icons/action/done';
 import ActionDelete from 'material-ui/svg-icons/action/delete';
+import ActionClass from 'material-ui/svg-icons/action/class';
+import ActionToc from 'material-ui/svg-icons/action/toc';
 import IconButton from 'material-ui/IconButton';
 import IconMenu from 'material-ui/IconMenu';
 import seedrandom from 'seedrandom';
@@ -104,6 +106,7 @@ var Kids = React.createClass({
 		}
 		else {
 		    this.setState({queueDeleted: true});
+		    this.updateDocumentTitle();
 		}
 	    }.bind(this)
 	});
@@ -322,6 +325,7 @@ var QClass = React.createClass({
 			  onTouchTap={function () {
 				  this.props.onSelectQueue(queueId, this.state.queues[queueId])
 			      }.bind(this)}
+			  leftIcon={<ActionToc />}
 			  rightIconButton={this.state.instructor ?
 					   <IconButton tooltip="Delete queue">
 						<ActionDelete onTouchTap={function () {this.handleDeleteQueue(queueId)}.bind(this)}/>
@@ -358,6 +362,7 @@ var QClass = React.createClass({
 		      primaryTogglesNestedList={true}
 		      nestedItems={queueNodes}
 		      onNestedListToggle={this.handleNestedListToggle}
+		      leftIcon={<ActionClass />}
 	    />
 	    
 	    {(!this.state.addingQueue) ? null :
