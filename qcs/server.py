@@ -3,6 +3,7 @@ from flask_restful import Resource, Api
 from flask_restful import reqparse, request
 from flask_restful.inputs import boolean
 from functools import wraps
+from marshmallow import ValidationError
 from qcs.database import QDataBase
 from qcs.schemas import *
 import json
@@ -48,6 +49,17 @@ def queue_required(function):
     return wrapper
 
 
+def validation_required(function):
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except ValidationError as err:
+            return err.messages, 400
+
+    return wrapper
+
+
 class Auth(Resource):
     @login_required
     def get(self):
@@ -74,15 +86,6 @@ class Queue(Resource):
     def __init__(self):
         self.qdb = QDataBase(app.config["DBHOST"])
 
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('name', type=str, required=True,
-            help='No name provided')
-        self.reqparse.add_argument('room', type=str, required=True,
-            help='No room provided')
-        self.reqparse.add_argument('question', type=str, required=True,
-            help='No question provided')
-        self.reqparse.add_argument('answer', type=boolean)
-
         self.delete_reqparse = reqparse.RequestParser()
         self.delete_reqparse.add_argument('id', type=str, required=True,
             help='No name provided')
@@ -106,8 +109,10 @@ class Queue(Resource):
 
     @login_required
     @queue_required
+    @validation_required
     def post(self, queue_id):
-        newkid = self.reqparse.parse_args()
+        json_data = request.get_json()
+        newkid = KidSchema(strict=True).load(json_data, partial=("id", "answer")).data
         newkid["id"] = session["username"]
         newkid["answer"] = False
         self.qdb.add_question(queue_id, newkid, newkid["id"])
@@ -135,9 +140,15 @@ class InstructorQueue(Queue):
     @login_required
     @instructor_required_queueop
     @queue_required
+    @validation_required
     def post(self, queue_id):
-        newkid = self.reqparse.parse_args()
-        newkid["id"] = session["username"]
+        json_data = request.get_json()
+        newkid = KidSchema(strict=True).load(json_data,
+                                             partial=("id", "answer")).data
+
+        newkid["id"] = newkid.get("id", session["username"])
+        newkid["answer"] = newkid.get("answer", False)
+
         self.qdb.add_question(queue_id, newkid, newkid["id"])
 
         return self.qdb.get_queue(queue_id)
