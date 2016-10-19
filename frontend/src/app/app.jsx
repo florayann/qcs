@@ -121,7 +121,8 @@ var Kids = React.createClass({
 	});
     },
     componentWillReceiveProps: function(nextProps) {
-	if (nextProps.url != this.props.url) {
+	if ((nextProps.refresh != this.props.refresh) ||
+	    (nextProps.url != this.props.url)) {
 	    this.refreshKidsFromServer(nextProps);
 	}
     },
@@ -494,7 +495,7 @@ var QAppBarMenu = React.createClass({
 		      anchorOrigin={{horizontal: 'right', vertical: 'top'}}
 		      targetOrigin={{horizontal: 'right', vertical: 'top'}}
 	    >
-		<MenuItem primaryText="Refresh" />
+		<MenuItem primaryText="Refresh" onTouchTap={this.props.onRefresh}/>
 		<MenuItem primaryText="Log out"
 			  onTouchTap={this.props.onLogout}
 		/>
@@ -509,7 +510,7 @@ var QAppBar = React.createClass({
 	    <AppBar
 		title={this.props.queueName}
 		onLeftIconButtonTouchTap={this.props.onLeftIconButtonTouchTap}
-		iconElementRight={<QAppBarMenu onLogout={this.props.onLogout}/>}
+		iconElementRight={<QAppBarMenu onLogout={this.props.onLogout} onRefresh={this.props.onRefresh}/>}
 	    />
 	);
     }
@@ -591,6 +592,7 @@ var App = React.createClass({
 		queueInstructor: false,
 		classes: {},
 		username: "",
+		refresh: false,
 	};
     },
     handleLeftIconButtonTouchTap: function (e) {
@@ -655,6 +657,9 @@ var App = React.createClass({
 	    }.bind(this)
 	});
     },
+    handleRefresh: function() {
+	this.setState({refresh: !this.state.refresh});
+    },
     loadClassesFromServer: function() {
 	$.ajax({
 	    url: this.props.class_url,
@@ -683,6 +688,7 @@ var App = React.createClass({
 			 <QAppBar queueName={this.state.queueName}
 				  onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}
 				  onLogout={this.handleLogout}
+				  onRefresh={this.handleRefresh}
 			 />
 			 <QDrawer
 			     open={this.state.open}
@@ -701,6 +707,7 @@ var App = React.createClass({
 				queueId={this.state.queueId}
 				instructor={this.state.queueInstructor}
 				username={this.state.username}
+				refresh={this.state.refresh}
 			  />}
 			  
 		     </div>) : <LoggedOut />}
