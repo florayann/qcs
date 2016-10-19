@@ -36,6 +36,17 @@ def instructor_required_queueop(function):
     return wrapper
 
 
+def instructor_required_classop(function):
+    @wraps(function)
+    def wrapper(self, class_id, *args, **kwargs):
+        if self.qdb.is_class_instructor(class_id, session["username"]):
+            return function(self, class_id, *args, **kwargs)
+
+        return {"message": "You're not an instructor for this class."}, 403
+    
+    return wrapper
+
+
 def queue_required(function):
     @wraps(function)
     def wrapper(self, queue_id, *args, **kwargs):
@@ -187,12 +198,18 @@ class QClass(Resource):
     def get(self, class_id):
         return self.qdb.get_queues(class_id)
 
+    @login_required
+    @instructor_required_classop
+    def post(self, class_id):
+        return self.qdb.get_queues(class_id)
+
 
 api.add_resource(Queue, "/queue/<int:queue_id>")
 api.add_resource(InstructorQueue, "/instructor/queue/<int:queue_id>")
 api.add_resource(QueueInfo, "/queue/info/<int:queue_id>")
 api.add_resource(Classes, "/classes")
 api.add_resource(QClass, "/class/<int:class_id>")
+
 
 if (app.config["FAKEAUTH"]):
     api.add_resource(Auth, "/auth")

@@ -186,17 +186,36 @@ var Kids = React.createClass({
 
 var QClass = React.createClass({
     getInitialState: function() {
-	return {queues: {}, open: false};
+	return {queues: {}, open: false, instructor: false};
     },
     handleNestedListToggle: function(item) {
 	if (item.state.open) {
 	    this.loadQueuesFromServer();
 	}
     },
+    handleAddQueue: function(name) {
+	$.ajax({
+	    url: this.props.url,
+	    dataType: 'json',
+	    type: 'POST',
+	    contentType: 'application/json; charset=UTF-8',
+	    data: JSON.stringify({name: name}),
+	    success: function(data) {
+		this.setState({instructor: true});
+		this.setState({queues: data});
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		if (status = 403) {
+		    this.setState({instructor: false});
+		}
+	    }.bind(this)
+	});
+    },
     loadQueuesFromServer: function() {
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
+	    type: 'GET',
 	    cache: false,
 	    success: function(data) {
 		this.setState({queues: data});
@@ -205,6 +224,10 @@ var QClass = React.createClass({
 		console.error(this.props.url, status, err.toString());
 	    }.bind(this)
 	});
+    },
+    componentDidMount: function() {
+	this.loadQueuesFromServer();
+	this.handleAddQueue("");
     },
     render: function() {
 	var queueNodes = Object.keys(this.state.queues).map(function (queueId) {
@@ -219,10 +242,12 @@ var QClass = React.createClass({
 	    );
 	}.bind(this));
 
-	queueNodes.push(<ListItem primaryText="New Queue"
-				  key="0"
-				  leftIcon={<ContentAdd />}
-			/>);
+	if (this.state.instructor) {
+	    queueNodes.push(<ListItem primaryText="New Queue"
+				      key="0"
+				      leftIcon={<ContentAdd />}
+			    />);
+	}
 	
 	return (
 	    <ListItem primaryText={this.props.name}
@@ -271,7 +296,6 @@ var QDrawer = React.createClass({
 			       onSelectQueue={this.props.onSelectQueue}
 			       url={this.props.url}
 		    />
-		    {/* <MenuItem>Join as Instructor</MenuItem> */}
 		</Drawer>
 	    </div>
 	);
