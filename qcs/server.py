@@ -143,14 +143,14 @@ class InstructorQueue(Queue):
         super().__init__()
 
     @login_required
-    @instructor_required_queueop
     @queue_required
+    @instructor_required_queueop
     def get(self, queue_id):
         return {"message": "Instructor confirmed."}
 
     @login_required
-    @instructor_required_queueop
     @queue_required
+    @instructor_required_queueop
     @validation_required
     def post(self, queue_id):
         json_data = request.get_json()
@@ -165,8 +165,8 @@ class InstructorQueue(Queue):
         return self.qdb.get_queue(queue_id)
 
     @login_required
-    @instructor_required_queueop
     @queue_required
+    @instructor_required_queueop
     def delete(self, queue_id):
         kid = self.delete_reqparse.parse_args()
 
