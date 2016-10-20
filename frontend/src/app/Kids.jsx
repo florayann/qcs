@@ -11,6 +11,7 @@ import CircularProgress from 'material-ui/CircularProgress';
 
 import seedrandom from 'seedrandom';
 import FlipMove from 'react-flip-move';
+import ReactTimeout from 'react-timeout';
 import DocumentTitle from 'react-document-title';
 import _ from 'underscore';
 import $ from 'jquery';
@@ -208,7 +209,7 @@ var Kid = React.createClass({
     }
 });
 
-var Kids = React.createClass({
+var Kids = ReactTimeout(React.createClass({
     getInitialState: function() {
 	return {data: [],
 		snackOpen: false,
@@ -229,6 +230,13 @@ var Kids = React.createClass({
 	}
 	return data;
     },
+    clearAndSetTimeout: function(timerIdProperty, ...rest) {
+	this.props.clearTimeout(this.state.loadKidsTimerId);
+	
+	this.setState({
+	    [timerIdProperty]: this.props.setTimeout(...rest)
+	});
+    },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
 	var oldUrl = this.props.url;
@@ -245,13 +253,18 @@ var Kids = React.createClass({
 		    if (this.props.instructor && len < this.state.data.length) {
 			this.refs.notify.play();
 		    }
-		    setTimeout(this.loadKidsFromServer, 2000);
+		    this.clearAndSetTimeout("loadKidsTimerId",
+					    this.loadKidsFromServer,
+					    2000);
 		}
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		if (err != "GONE") {
-		    setTimeout(this.loadKidsFromServer, 2000, force);
+		if (xhr.status != 410) {
+		    this.clearAndSetTimeout("loadKidsTimerId",
+					    this.loadKidsFromServer,
+					    2000,
+					    force);
 		}
 		else {
 		    this.setState({queueDeleted: true});
@@ -270,7 +283,9 @@ var Kids = React.createClass({
 	    success: function(data) {
 		data = this.rejectDeletedKid(data);
 		this.setState({data: data});
-		setTimeout(this.loadKidsFromServer, 2000);
+		this.clearAndSetTimeout("loadKidsTimerId",
+					this.loadKidsFromServer,
+					2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -302,7 +317,10 @@ var Kids = React.createClass({
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
 		if (xhr.status == 404) {
-		    setTimeout(this.handleKidSubmit, 2000, kid);
+		    this.clearAndSetTimeout("submitKidTimerId",
+					    this.handleKidSubmit,
+					    2000,
+					    kid);
 		}
 	    }.bind(this)
 	});
@@ -322,7 +340,7 @@ var Kids = React.createClass({
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
 		if (xhr.status == 404) {
-		    setTimeout(this.handleKidDelete, 2000, kid);
+		    this.clearAndSetTimeout("deleteKidTimerId", this.handleKidDelete, 2000, kid);
 		}
 		else {
 		    this.setState({deletedKid: null});
@@ -361,7 +379,7 @@ var Kids = React.createClass({
     },
     tentativeKidDelete: function(kid) {
 	if (this.state.deletedKid) {
-	    setTimeout(this.tentativeKidDelete, 3000, kid);
+	    this.clearAndSetTimeout("tentativeKidDeleteTimerId", this.tentativeKidDelete, 3000, kid);
 	    return;
 	}
 
@@ -416,6 +434,6 @@ var Kids = React.createClass({
 	    </DocumentTitle>
 	);
     }
-});
+}));
 
 export default Kids;
