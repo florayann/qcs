@@ -361,7 +361,7 @@ var Kids = React.createClass({
     },
     tentativeKidDelete: function(kid) {
 	if (this.state.deletedKid) {
-	    setTimeout(this.tentativeKidDelete, 4000, kid);
+	    setTimeout(this.tentativeKidDelete, 3000, kid);
 	    return;
 	}
 
@@ -406,9 +406,9 @@ var Kids = React.createClass({
 
 		<Snackbar
 		    open={this.state.snackOpen}
-		    message="Kid removed from queue"
+		    message="Removed from queue"
 		    action="undo"
-		    autoHideDuration={4000}
+		    autoHideDuration={3000}
 		    onActionTouchTap={this.undoKidDelete}
 		    onRequestClose={this.handleSnackRequestClose}
 		/>
