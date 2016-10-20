@@ -9,6 +9,7 @@ from qcs.schemas import *
 import json
 import time
 import os
+import base64
 
 app = Flask(__name__, static_url_path='', static_folder='build')
 app.config.from_object("qcs.default_settings")
@@ -72,6 +73,9 @@ def validation_required(function):
 
 
 class Auth(Resource):
+    def __init__(self):
+        self.qdb = QDataBase(app.config["DBHOST"])
+        
     @login_required
     def get(self):
         return session["username"]
@@ -84,7 +88,11 @@ class Auth(Resource):
         if errors:
             return errors, 400
 
-        session["username"] = data.username
+        if any([self.qdb.is_class_instructor(c, data.username)
+                for c in self.qdb.get_classes()]):
+            session["username"] = data.username
+        else:
+            session["username"] = base64.b64encode(os.urandom(24)).decode("utf-8")
 
         return AuthSchema().dump(session)
 
