@@ -45,7 +45,7 @@ var FakeAuthDialog = React.createClass({
 	
 	return (
 	    <Dialog
-		title="Fake Login"
+		title="Login"
 		actions={actions}
 		modal={true}
 		open={this.state.open}
@@ -128,6 +128,7 @@ var App = React.createClass({
 	    data: JSON.stringify(data),
 	    success: function(data) {
 		this.setState({username: data.username});
+		this.setState({open: true});
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.login_url, status, err.toString());
