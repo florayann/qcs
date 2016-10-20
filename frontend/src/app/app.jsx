@@ -200,7 +200,9 @@ var App = React.createClass({
 			     classes={this.state.classes}
 			     onSelectQueue={this.handleSelectQueue}
 			     url={this.props.queues_url}
-			     queue_info_url={this.props.queue_url}
+			     queue_url={this.props.queue_url}
+			     queueId={this.state.queueId}
+			     instructor={this.state.queueInstructor}
 			 />
 
 			 {__FAKEAUTH__ && !this.state.username ?

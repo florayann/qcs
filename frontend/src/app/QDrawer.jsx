@@ -14,6 +14,8 @@ import {List, ListItem} from 'material-ui/List';
 import Subheader from 'material-ui/Subheader';
 import Dialog from 'material-ui/Dialog';
 
+import QControls from './QControls';
+
 var QClass = React.createClass({
     getInitialState: function() {
 	return {queues: {},
@@ -217,6 +219,11 @@ var QDrawer = React.createClass({
 			       url={this.props.url}
 			       drawerOpen={this.props.open}
 		    />
+		    {this.props.instructor ?
+		     <QControls url={this.props.queue_url + "info/" + this.props.queueId}
+		     />
+		     : null
+		    }
 		</Drawer>
 	    </div>
 	);
