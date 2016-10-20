@@ -641,7 +641,7 @@ const AddButton = () => (
 
 var FakeAuthDialog = React.createClass({
     getInitialState: function() {
-	return {username: "", open: true};
+	return {username: "", open: true, attemptedSubmit: false};
     },
     handleChange: function(e) {
 	this.setState({
@@ -650,6 +650,7 @@ var FakeAuthDialog = React.createClass({
     },
     handleLogin: function() {
 	this.props.onLogin({username: this.state.username});
+	this.setState({attemptedSubmit: true});
     },
     handleKeyPress: function(target) {
 	if (target.charCode == 13) {
@@ -674,7 +675,9 @@ var FakeAuthDialog = React.createClass({
             >
 		<TextField
 		    hintText="NetID"
-		    errorText={this.state.username ? "" : "This field is required"}
+		    errorText={(!this.state.attemptedSubmit || this.state.username) ?
+			       "" :
+			       "This field is required"}
 		    floatingLabelText="NetID"
 		    onChange={this.handleChange}
 		    onKeyPress={this.handleKeyPress}
