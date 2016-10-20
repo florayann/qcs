@@ -489,7 +489,12 @@ var KidsList = React.createClass({
 
 var AddKid = React.createClass({
     getInitialState: function() {
-	return {name: '', room: '', question:'', expanded:false};
+	return {name: '',
+		room: '',
+		question:'',
+		expanded:false,
+		attemptedSubmit: false
+	};
     },
     handleNameChange: function(e) {
 	this.setState({name: e.target.value});
@@ -512,8 +517,18 @@ var AddKid = React.createClass({
 	    room: this.state.room.trim(),
 	    question: this.state.question.trim(),
 	});
-	this.setState({name: '', room: '', question:''});
+	this.setState({name: '', room: '', question:'', attemptedSubmit: false});
 	this.reduce();
+    },
+    handleKeyPress: function(target) {
+	if (target.charCode == 13) {
+	    if (this.state.name && this.state.room && this.state.question) {
+		this.submitKid();
+	    }
+	    else {
+		this.setState({attemptedSubmit: true});
+	    }
+	}
     },
     render: function() {
 	return (
@@ -528,24 +543,36 @@ var AddKid = React.createClass({
 		<CardText expandable={true}>
 		    <TextField
 			hintText="Name"
-			errorText={this.state.name ? "" : "This field is required"}
+			floatingLabelText="Name"
+			errorText={!this.state.attemptedSubmit || this.state.name ?
+				   "" :
+				   "This field is required"}
 			value={this.state.name}
 			onChange={this.handleNameChange}
+			onKeyPress={this.handleKeyPress}
 			autoFocus={true}
 		    />
 		    <br/>
 		    <TextField
 			hintText="Room"
-			errorText={this.state.room ? "" : "This field is required"}
+			floatingLabelText="Room"
+			errorText={!this.state.attemptedSubmit || this.state.room ?
+				   "" :
+				   "This field is required"}
 			value={this.state.room}
 			onChange={this.handleRoomChange}
+			onKeyPress={this.handleKeyPress}
 		    />
 		    <br/>
 		    <TextField
 			hintText="Question"
-			errorText={this.state.question ? "" : "This field is required"}
+			floatingLabelText="Question"
+			errorText={!this.state.attemptedSubmit || this.state.question ?
+				   "" :
+				   "This field is required"}
 			value={this.state.question}
 			onChange={this.handleQuestionChange}
+			onKeyPress={this.handleKeyPress}
 		    />
 		    <br/>
 		    <CardActions>
@@ -641,7 +668,7 @@ const AddButton = () => (
 
 var FakeAuthDialog = React.createClass({
     getInitialState: function() {
-	return {username: "", open: true};
+	return {username: "", open: true, attemptedSubmit: false};
     },
     handleChange: function(e) {
 	this.setState({
@@ -650,6 +677,7 @@ var FakeAuthDialog = React.createClass({
     },
     handleLogin: function() {
 	this.props.onLogin({username: this.state.username});
+	this.setState({attemptedSubmit: true});
     },
     handleKeyPress: function(target) {
 	if (target.charCode == 13) {
@@ -674,7 +702,9 @@ var FakeAuthDialog = React.createClass({
             >
 		<TextField
 		    hintText="NetID"
-		    errorText={this.state.username ? "" : "This field is required"}
+		    errorText={(!this.state.attemptedSubmit || this.state.username) ?
+			       "" :
+			       "This field is required"}
 		    floatingLabelText="NetID"
 		    onChange={this.handleChange}
 		    onKeyPress={this.handleKeyPress}
