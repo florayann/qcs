@@ -323,6 +323,11 @@ var QClass = React.createClass({
     componentDidMount: function() {
 	this.loadQueuesFromServer();
     },
+    handleKeyPress: function(target) {
+	if (target.charCode == 13) {
+	    this.handleAddQueue(this.state.name);
+	}
+    },
     render: function() {
 	var queueNodes = Object.keys(this.state.queues).map(function (queueId) {
 	    return (
@@ -384,6 +389,7 @@ var QClass = React.createClass({
 			value={this.state.name}
 			onChange={this.handleNameChange}
 			autoFocus={true}
+			onKeyPress={this.handleKeyPress}
 		    />
 		</Dialog>
 	    }
