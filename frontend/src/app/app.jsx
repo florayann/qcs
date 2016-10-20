@@ -27,6 +27,7 @@ import Subheader from 'material-ui/Subheader';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import {white} from 'material-ui/styles/colors';
 import Dialog from 'material-ui/Dialog';
+import DocumentTitle from 'react-document-title';
 
 
 injectTapEventPlugin();
@@ -187,18 +188,33 @@ var Kids = React.createClass({
     componentDidMount: function() {
 	this.loadKidsFromServer(true);
     },
+    getDocumentTitle: function() {
+	if (this.props.queueId == 0) {
+	    return "q.cs";
+	}
+	
+	var len = this.state.data.length;
+	var lenstring = "";
+
+	if (len) {
+	    lenstring = "(" + len + ") ";
+	}
+
+	return lenstring + this.props.queueName;
+    },
     render: function() {
 	return (
-		<div className="Kids">
-		    <KidsList data={this.state.data}
-			      onKidSubmit={this.handleKidSubmit}
-			      onKidDelete={this.handleKidDelete}
-			      onKidAnswer={this.handleKidSubmit}
-			      username={this.props.username}
-			      instructor={this.props.instructor}
-		    />
+	    <DocumentTitle title={this.getDocumentTitle()}>
+	    <div className="Kids">
+		<KidsList data={this.state.data}
+			  onKidSubmit={this.handleKidSubmit}
+			  onKidDelete={this.handleKidDelete}
+			  onKidAnswer={this.handleKidSubmit}
+			  username={this.props.username}
+			  instructor={this.props.instructor}
+		/>
 		<audio ref="notify">
-		<source src="/notify.wav" type="audio/wav"/>
+		    <source src="/notify.wav" type="audio/wav"/>
 		</audio>
 
 		<Snackbar
@@ -218,6 +234,7 @@ var Kids = React.createClass({
 		    onRequestClose={this.handleSnackRequestClose}
 		/>
 	    </div>
+	    </DocumentTitle>
 	);
     }
 });
@@ -280,7 +297,6 @@ var QClass = React.createClass({
 	    success: function(data) {
 		this.setState({queues: data});
 		this.handleClose();
-		this.props.onSelectQueue(0, "q.cs");
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -847,6 +863,7 @@ var App = React.createClass({
 			 {this.state.queueId == 0 ? null : 
 			  <Kids url={this.props.queue_url + this.state.queueId}
 				queueId={this.state.queueId}
+				queueName={this.state.queueName}
 				instructor={this.state.queueInstructor}
 				username={this.state.username}
 				refresh={this.state.refresh}
@@ -860,10 +877,12 @@ var App = React.createClass({
 });
 
 ReactDOM.render(
-    <App class_url="/classes"
-	 queue_url="/queue/"
-	 queues_url="/class/"
-	 login_url="/auth"
-    />,
+    <DocumentTitle title="q.cs">
+	<App class_url="/classes"
+	     queue_url="/queue/"
+	     queues_url="/class/"
+	     login_url="/auth"
+	/>
+    </DocumentTitle>,
     document.getElementById('app')
 );
