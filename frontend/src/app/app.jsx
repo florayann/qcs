@@ -95,7 +95,6 @@ var Kids = React.createClass({
 		    if (this.props.instructor && len < this.state.data.length) {
 			this.refs.notify.play();
 		    }
-		    this.updateDocumentTitle();
 		    setTimeout(this.loadKidsFromServer, 2000);
 		}
 	    }.bind(this),
@@ -106,7 +105,6 @@ var Kids = React.createClass({
 		}
 		else {
 		    this.setState({queueDeleted: true});
-		    this.updateDocumentTitle();
 		}
 	    }.bind(this)
 	});
@@ -121,7 +119,6 @@ var Kids = React.createClass({
 	    data: {force: true},
 	    success: function(data) {
 		this.setState({data: data});
-		this.updateDocumentTitle();
 		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
@@ -149,7 +146,6 @@ var Kids = React.createClass({
 	    data: JSON.stringify(kid),
 	    success: function(data) {
 		this.setState({data: data});
-		this.updateDocumentTitle();
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -170,7 +166,6 @@ var Kids = React.createClass({
 	    data: {id: kid.id},
 	    success: function(data) {
 		this.setState({data: data});
-		this.updateDocumentTitle();
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -191,11 +186,6 @@ var Kids = React.createClass({
     },
     componentDidMount: function() {
 	this.loadKidsFromServer(true);
-	this.updateDocumentTitle();
-    },
-    updateDocumentTitle: function() {
-	var len = this.state.data.length;
-	document.title = len > 1 ? "".concat("(", len.toString(), ") ", this.props.baseTitle) : this.props.baseTitle;
     },
     render: function() {
 	return (
@@ -856,7 +846,6 @@ var App = React.createClass({
 
 			 {this.state.queueId == 0 ? null : 
 			  <Kids url={this.props.queue_url + this.state.queueId}
-				baseTitle={this.state.queueName}
 				queueId={this.state.queueId}
 				instructor={this.state.queueInstructor}
 				username={this.state.username}
