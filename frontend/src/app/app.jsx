@@ -28,7 +28,7 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import {white} from 'material-ui/styles/colors';
 import Dialog from 'material-ui/Dialog';
 import DocumentTitle from 'react-document-title';
-
+import _ from 'underscore';
 
 injectTapEventPlugin();
 
@@ -79,7 +79,24 @@ var styles = {
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: [], snackOpen: false, queueDeleted: false};
+	return {data: [],
+		snackOpen: false,
+		queueDeleted: false,
+		deletedKid: null,
+	};
+    },
+    hasSameId: function(kid, other) {
+	return kid.id == other.id;
+    },
+    rejectDeletedKid: function(data, deletedKid) {
+	deletedKid = deletedKid || this.state.deletedKid;
+
+	if (deletedKid) {
+	    return _.reject(data, function (kid) {
+		return this.hasSameId(kid, deletedKid);
+	    }.bind(this));
+	}
+	return data;
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
@@ -92,6 +109,7 @@ var Kids = React.createClass({
 	    data: force ? {force: force} : {},
 	    success: function(data) {
 		if (oldUrl == this.props.url) {
+		    data = this.rejectDeletedKid(data);
 		    this.setState({data: data});
 		    if (this.props.instructor && len < this.state.data.length) {
 			this.refs.notify.play();
@@ -119,6 +137,7 @@ var Kids = React.createClass({
 	    cache: false,
 	    data: {force: true},
 	    success: function(data) {
+		data = this.rejectDeletedKid(data);
 		this.setState({data: data});
 		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this),
@@ -146,6 +165,7 @@ var Kids = React.createClass({
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify(kid),
 	    success: function(data) {
+		data = this.rejectDeletedKid(data);
 		this.setState({data: data});
 	    }.bind(this),
 	    error: function(xhr, status, err) {
@@ -166,18 +186,24 @@ var Kids = React.createClass({
 	    type: 'DELETE',
 	    data: {id: kid.id},
 	    success: function(data) {
-		this.setState({data: data});
+		this.setState({data: data, deletedKid: null});
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
 		if (xhr.status == 404) {
 		    setTimeout(this.handleKidDelete, 2000, kid);
 		}
+		else {
+		    this.setState({deletedKid: null});
+		}
 	    }.bind(this)
 	});
     },
-    handleSnackRequestClose: function() {
-	this.setState({snackOpen: false});
+    handleSnackRequestClose: function(reason) {
+	if (reason == "timeout") {
+	    this.setState({snackOpen: false});
+	    this.handleKidDelete(this.state.deletedKid);
+	}
     },
     handleQueueDeletedSnackRequestClose: function() {
 	
@@ -202,13 +228,35 @@ var Kids = React.createClass({
 
 	return lenstring + this.props.queueName;
     },
+    tentativeKidDelete: function(kid) {
+	if (this.state.deletedKid) {
+	    setTimeout(this.tentativeKidDelete, 4000, kid);
+	    return;
+	}
+
+	var tempData = this.rejectDeletedKid(this.state.data, kid);
+	
+	this.setState({deletedKid: kid,
+		       snackOpen: true,
+		       data: tempData,
+	});
+    },
+    deleteKid: function() {
+	this.handleKidDelete(this.state.deletedKid);
+    },
+    undoKidDelete: function() {
+	this.setState({deletedKid: null,
+		       snackOpen: false,
+	});
+	this.refreshKidsFromServer();
+    },
     render: function() {
 	return (
 	    <DocumentTitle title={this.getDocumentTitle()}>
 	    <div className="Kids">
 		<KidsList data={this.state.data}
 			  onKidSubmit={this.handleKidSubmit}
-			  onKidDelete={this.handleKidDelete}
+			  onKidDelete={this.tentativeKidDelete}
 			  onKidAnswer={this.handleKidSubmit}
 			  username={this.props.username}
 			  instructor={this.props.instructor}
@@ -226,11 +274,11 @@ var Kids = React.createClass({
 		/>
 
 		<Snackbar
-		    open={false}
+		    open={this.state.snackOpen}
 		    message="Kid removed from queue"
 		    action="undo"
 		    autoHideDuration={4000}
-		    onActionTouchTap={null}
+		    onActionTouchTap={this.undoKidDelete}
 		    onRequestClose={this.handleSnackRequestClose}
 		/>
 	    </div>
