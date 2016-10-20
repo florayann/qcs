@@ -14,6 +14,8 @@ import Drawer from 'material-ui/Drawer';
 import MenuItem from 'material-ui/MenuItem';
 import ActionDone from 'material-ui/svg-icons/action/done';
 import ActionDelete from 'material-ui/svg-icons/action/delete';
+import ActionClass from 'material-ui/svg-icons/action/class';
+import ActionToc from 'material-ui/svg-icons/action/toc';
 import IconButton from 'material-ui/IconButton';
 import IconMenu from 'material-ui/IconMenu';
 import seedrandom from 'seedrandom';
@@ -76,10 +78,11 @@ var styles = {
 
 var Kids = React.createClass({
     getInitialState: function() {
-	return {data: [], snackOpen: false};
+	return {data: [], snackOpen: false, queueDeleted: false};
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
+	var oldUrl = this.props.url;
 
 	$.ajax({
 	    url: this.props.url,
@@ -87,20 +90,51 @@ var Kids = React.createClass({
 	    cache: false,
 	    data: force ? {force: force} : {},
 	    success: function(data) {
-		this.setState({data: data});
-		if (this.props.instructor && len < this.state.data.length) {
-		    this.refs.notify.play();
+		if (oldUrl == this.props.url) {
+		    this.setState({data: data});
+		    if (this.props.instructor && len < this.state.data.length) {
+			this.refs.notify.play();
+		    }
+		    this.updateDocumentTitle();
+		    setTimeout(this.loadKidsFromServer, 2000);
 		}
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+		if (err != "GONE") {
+		    setTimeout(this.loadKidsFromServer, 2000, force);
+		}
+		else {
+		    this.setState({queueDeleted: true});
+		    this.updateDocumentTitle();
+		}
+	    }.bind(this)
+	});
+    },
+    refreshKidsFromServer: function(props) {
+	props = props || this.props;
+
+	$.ajax({
+	    url: props.url,
+	    dataType: 'json',
+	    cache: false,
+	    data: {force: true},
+	    success: function(data) {
+		this.setState({data: data});
 		this.updateDocumentTitle();
 		setTimeout(this.loadKidsFromServer, 2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		if (status == 404) {
-		    setTimeout(this.loadKidsFromServer, 2000, force);
-		}
 	    }.bind(this)
 	});
+
+    },
+    componentWillReceiveProps: function(nextProps) {
+	if ((nextProps.refresh != this.props.refresh) ||
+	    (nextProps.url != this.props.url)) {
+	    this.refreshKidsFromServer(nextProps);
+	}
     },
     handleKidSubmit: function(kid) {
 	var url = this.props.instructor ?
@@ -119,7 +153,7 @@ var Kids = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		if (status == 404) {
+		if (xhr.status == 404) {
 		    setTimeout(this.handleKidSubmit, 2000, kid);
 		}
 	    }.bind(this)
@@ -140,7 +174,7 @@ var Kids = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		if (status == 404) {
+		if (xhr.status == 404) {
 		    setTimeout(this.handleKidDelete, 2000, kid);
 		}
 	    }.bind(this)
@@ -148,6 +182,12 @@ var Kids = React.createClass({
     },
     handleSnackRequestClose: function() {
 	this.setState({snackOpen: false});
+    },
+    handleQueueDeletedSnackRequestClose: function() {
+	
+    },
+    handleOkayQueueDeleted: function(e) {
+	this.props.onSelectQueue();
     },
     componentDidMount: function() {
 	this.loadKidsFromServer(true);
@@ -172,6 +212,14 @@ var Kids = React.createClass({
 		</audio>
 
 		<Snackbar
+		    open={this.state.queueDeleted}
+		    message="Queue deleted"
+		    action="Okay"
+		    onActionTouchTap={this.handleOkayQueueDeleted}
+		    onRequestClose={this.handleQueueDeletedSnackRequestClose}
+		/>
+
+		<Snackbar
 		    open={false}
 		    message="Kid removed from queue"
 		    action="undo"
@@ -186,25 +234,99 @@ var Kids = React.createClass({
 
 var QClass = React.createClass({
     getInitialState: function() {
-	return {queues: {}, open: false};
+	return {queues: {},
+		open: false,
+		instructor: false,
+		addingQueue: false,
+		name: "",
+	};
     },
     handleNestedListToggle: function(item) {
 	if (item.state.open) {
-	    this.loadQueuesFromServer();
+	    this.handleAddQueue("");
 	}
     },
-    loadQueuesFromServer: function() {
+    handleNameChange: function(e) {
+	this.setState({name: e.target.value});
+    },
+    handleOpen: function() {
+	this.setState({addingQueue: true});
+    },
+    handleClose: function() {
+	this.setState({addingQueue: false});
+	this.setState({name: ""});
+    },
+    handleAddQueue: function(name) {
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
-	    cache: false,
+	    type: 'POST',
+	    contentType: 'application/json; charset=UTF-8',
+	    data: JSON.stringify({name: name}),
+	    success: function(data) {
+		this.setState({instructor: true});
+		this.setState({queues: data});
+		this.handleClose();
+		if (name) {
+		    var ids = Object.keys(data);
+		    var queueId = ids[ids.length - 1];
+		    this.props.onSelectQueue(queueId, data[queueId]);
+		}
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		if (status = 403) {
+		    this.setState({instructor: false});
+		}
+	    }.bind(this)
+	});
+    },
+    handleDeleteQueue: function(queueId) {
+	$.ajax({
+	    url: this.props.url,
+	    dataType: 'json',
+	    type: 'DELETE',
+	    contentType: 'application/json; charset=UTF-8',
+	    data: JSON.stringify({id: queueId}),
 	    success: function(data) {
 		this.setState({queues: data});
+		this.handleClose();
+		this.props.onSelectQueue(0, "q.cs");
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
 	    }.bind(this)
 	});
+    },
+    loadQueuesFromServer: function() {
+	$.ajax({
+	    url: this.props.url,
+	    dataType: 'json',
+	    type: 'GET',
+	    cache: false,
+	    success: function(data) {
+		this.setState({queues: data});
+		if (this.props.drawerOpen) {
+		    setTimeout(this.loadQueuesFromServer, 10000);
+		}
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+	    }.bind(this)
+	});
+    },
+    componentWillReceiveProps: function(nextProps) {
+	if ((nextProps.drawerOpen != this.props.drawerOpen) &&
+	    (nextProps.drawerOpen)) {
+	    this.loadQueuesFromServer();
+	}
+    },
+    componentDidMount: function() {
+	this.loadQueuesFromServer();
+    },
+    handleKeyPress: function(target) {
+	if (target.charCode == 13) {
+	    this.handleAddQueue(this.state.name);
+	}
     },
     render: function() {
 	var queueNodes = Object.keys(this.state.queues).map(function (queueId) {
@@ -214,23 +336,64 @@ var QClass = React.createClass({
 			  onTouchTap={function () {
 				  this.props.onSelectQueue(queueId, this.state.queues[queueId])
 			      }.bind(this)}
-			  rightIconButton={<IconButton tooltip="Delete queue"> <ActionDelete/> </IconButton>}
+			  leftIcon={<ActionToc />}
+			  rightIconButton={this.state.instructor ?
+					   <IconButton tooltip="Delete queue">
+						<ActionDelete onTouchTap={function () {this.handleDeleteQueue(queueId)}.bind(this)}/>
+					  </IconButton> : null}
 		/>
 	    );
 	}.bind(this));
+	
+	if (this.state.instructor) {
+	    queueNodes.push(<ListItem primaryText="New Queue"
+				      key="0"
+				      onTouchTap={this.handleOpen}
+				      leftIcon={<ContentAdd />}
+			    />);
+	}
 
-	queueNodes.push(<ListItem primaryText="New Queue"
-				  key="0"
-				  leftIcon={<ContentAdd />}
-			/>);
+	const actions = [
+	    <FlatButton
+		label="Cancel"
+		primary={true}
+		onTouchTap={this.handleClose}
+	    />,
+	    <FlatButton
+		label="Save"
+		primary={true}
+		onTouchTap={function () {this.handleAddQueue(this.state.name);}.bind(this)}
+	    />,
+	];
 	
 	return (
+	    <div>
 	    <ListItem primaryText={this.props.name}
 		      key={this.props.classId}
 		      primaryTogglesNestedList={true}
 		      nestedItems={queueNodes}
 		      onNestedListToggle={this.handleNestedListToggle}
+		      leftIcon={<ActionClass />}
 	    />
+	    
+	    {(!this.state.addingQueue) ? null :
+		<Dialog
+		    title="Name"
+		    actions={actions}
+		    modal={false}
+		    open={this.state.addingQueue}
+		    onRequestClose={this.handleClose}
+		>
+		    <TextField
+			hintText="Queue name"
+			value={this.state.name}
+			onChange={this.handleNameChange}
+			autoFocus={true}
+			onKeyPress={this.handleKeyPress}
+		    />
+		</Dialog>
+	    }
+	    </div>
 	);
     }
 });
@@ -244,6 +407,7 @@ var ClassList = React.createClass({
 			name={this.props.classes[classId]}
 			onSelectQueue={this.props.onSelectQueue}
 			url={this.props.url + classId}
+			drawerOpen={this.props.drawerOpen}
 		/>
 	    );
 	}.bind(this));
@@ -270,8 +434,8 @@ var QDrawer = React.createClass({
 		    <ClassList classes={this.props.classes}
 			       onSelectQueue={this.props.onSelectQueue}
 			       url={this.props.url}
+			       drawerOpen={this.props.open}
 		    />
-		    {/* <MenuItem>Join as Instructor</MenuItem> */}
 		</Drawer>
 	    </div>
 	);
@@ -447,7 +611,7 @@ var QAppBarMenu = React.createClass({
 		      anchorOrigin={{horizontal: 'right', vertical: 'top'}}
 		      targetOrigin={{horizontal: 'right', vertical: 'top'}}
 	    >
-		<MenuItem primaryText="Refresh" />
+		<MenuItem primaryText="Refresh" onTouchTap={this.props.onRefresh}/>
 		<MenuItem primaryText="Log out"
 			  onTouchTap={this.props.onLogout}
 		/>
@@ -462,7 +626,7 @@ var QAppBar = React.createClass({
 	    <AppBar
 		title={this.props.queueName}
 		onLeftIconButtonTouchTap={this.props.onLeftIconButtonTouchTap}
-		iconElementRight={<QAppBarMenu onLogout={this.props.onLogout}/>}
+		iconElementRight={<QAppBarMenu onLogout={this.props.onLogout} onRefresh={this.props.onRefresh}/>}
 	    />
 	);
     }
@@ -544,12 +708,20 @@ var App = React.createClass({
 		queueInstructor: false,
 		classes: {},
 		username: "",
+		refresh: false,
 	};
     },
     handleLeftIconButtonTouchTap: function (e) {
 	this.setState({open: !this.state.open});
     },
     handleSelectQueue: function(queueId, queueName) {
+	if (queueId === undefined) {
+	    queueId = 0;
+	}
+	if (queueName === undefined) {
+	    queueName = "q.cs"
+	}
+
 	this.setState({queueId: queueId, queueName: queueName, queueInstructor: false});
 	this.setState({open: false});
 	this.isQueueInstructor(queueId);
@@ -608,6 +780,9 @@ var App = React.createClass({
 	    }.bind(this)
 	});
     },
+    handleRefresh: function() {
+	this.setState({refresh: !this.state.refresh});
+    },
     loadClassesFromServer: function() {
 	$.ajax({
 	    url: this.props.class_url,
@@ -618,7 +793,7 @@ var App = React.createClass({
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		if (status == 404) {
+		if (xhr.status == 404) {
 		    setTimeout(this.loadClassesFromServer, 2000);
 		}
 	    }.bind(this)
@@ -636,6 +811,7 @@ var App = React.createClass({
 			 <QAppBar queueName={this.state.queueName}
 				  onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}
 				  onLogout={this.handleLogout}
+				  onRefresh={this.handleRefresh}
 			 />
 			 <QDrawer
 			     open={this.state.open}
@@ -654,6 +830,8 @@ var App = React.createClass({
 				queueId={this.state.queueId}
 				instructor={this.state.queueInstructor}
 				username={this.state.username}
+				refresh={this.state.refresh}
+				onSelectQueue={this.handleSelectQueue}
 			  />}
 			  
 		     </div>) : <LoggedOut />}

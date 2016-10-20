@@ -36,6 +36,17 @@ def instructor_required_queueop(function):
     return wrapper
 
 
+def instructor_required_classop(function):
+    @wraps(function)
+    def wrapper(self, class_id, *args, **kwargs):
+        if self.qdb.is_class_instructor(class_id, session["username"]):
+            return function(self, class_id, *args, **kwargs)
+
+        return {"message": "You're not an instructor for this class."}, 403
+    
+    return wrapper
+
+
 def queue_required(function):
     @wraps(function)
     def wrapper(self, queue_id, *args, **kwargs):
@@ -132,14 +143,14 @@ class InstructorQueue(Queue):
         super().__init__()
 
     @login_required
-    @instructor_required_queueop
     @queue_required
+    @instructor_required_queueop
     def get(self, queue_id):
         return {"message": "Instructor confirmed."}
 
     @login_required
-    @instructor_required_queueop
     @queue_required
+    @instructor_required_queueop
     @validation_required
     def post(self, queue_id):
         json_data = request.get_json()
@@ -154,8 +165,8 @@ class InstructorQueue(Queue):
         return self.qdb.get_queue(queue_id)
 
     @login_required
-    @instructor_required_queueop
     @queue_required
+    @instructor_required_queueop
     def delete(self, queue_id):
         kid = self.delete_reqparse.parse_args()
 
@@ -181,18 +192,44 @@ class Classes(Resource):
 
 
 class QClass(Resource):
+    post_schema = QClassPostSchema(strict=True)
+    delete_schema = QClassDeleteSchema(strict=True)
+    
     def __init__(self):
         self.qdb = QDataBase(app.config["DBHOST"])
 
     def get(self, class_id):
         return self.qdb.get_queues(class_id)
 
+    @login_required
+    @instructor_required_classop
+    @validation_required
+    def post(self, class_id):
+        json_data = request.get_json()
+        name = self.post_schema.load(json_data).data["name"]
+
+        if name:
+            self.qdb.add_queue(class_id, name)
+
+        return self.qdb.get_queues(class_id)
+
+    @login_required
+    @instructor_required_classop
+    @validation_required
+    def delete(self, class_id):
+        json_data = request.get_json()
+        queue_id = self.delete_schema.load(json_data).data["id"]
+
+        self.qdb.remove_queue(class_id, queue_id)
+
+        return self.qdb.get_queues(class_id)
 
 api.add_resource(Queue, "/queue/<int:queue_id>")
 api.add_resource(InstructorQueue, "/instructor/queue/<int:queue_id>")
 api.add_resource(QueueInfo, "/queue/info/<int:queue_id>")
 api.add_resource(Classes, "/classes")
 api.add_resource(QClass, "/class/<int:class_id>")
+
 
 if (app.config["FAKEAUTH"]):
     api.add_resource(Auth, "/auth")
