@@ -32,6 +32,7 @@
     "react-tap-event-plugin": "^1.0.0",
     "json-loader": "^0.5.4",
     "seedrandom": "^2.4.2",
-    "react-flip-move": "^2.4.2"
+    "react-flip-move": "^2.4.2",
+    "react-document-title": "2.0.2"
   }
 }
