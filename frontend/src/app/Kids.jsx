@@ -331,7 +331,7 @@ var Kids = React.createClass({
 	});
     },
     handleSnackRequestClose: function(reason) {
-	if (reason == "timeout") {
+	if (reason) {
 	    this.setState({snackOpen: false});
 	    this.handleKidDelete(this.state.deletedKid);
 	}
