@@ -70,6 +70,7 @@ class QDataBase():
         self.r.sadd("class:{}:queues".format(class_id), queue_id)
         self.r.set("queue:{}:name".format(queue_id), queue_name)
         self.r.set("queue:{}:class".format(queue_id), class_id)
+        self.r.set("queue:{}:paused".format(queue_id), 0)
         self.r.incr("queue:{}:rev".format(queue_id))
 
     def remove_queue(self, class_id, queue_id):
@@ -78,7 +79,17 @@ class QDataBase():
         self.r.delete("queue:{}:class".format(queue_id))
         self.r.delete("queue:{}:rev".format(queue_id))
         self.r.delete("queue:{}:qs".format(queue_id))
+        self.r.delete("queue:{}:paused".format(queue_id))
         self.r.delete("queue:{}".format(queue_id))
+
+    def pause_queue(self, queue_id):
+        self.r.set("queue:{}:paused".format(queue_id), 1)
+
+    def resume_queue(self, queue_id):
+        self.r.set("queue:{}:paused".format(queue_id), 0)
+
+    def is_queue_paused(self, queue_id):
+        return int(self.r.get("queue:{}:paused".format(queue_id))) == 1
 
     def add_question(self, queue_id, question, question_id):
         self.r.incr("queue:{}:rev".format(queue_id))
