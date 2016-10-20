@@ -241,6 +241,11 @@ var QClass = React.createClass({
 		name: "",
 	};
     },
+    handleNestedListToggle: function(item) {
+	if (item.state.open) {
+	    this.handleAddQueue("");
+	}
+    },
     handleNameChange: function(e) {
 	this.setState({name: e.target.value});
     },
@@ -262,9 +267,11 @@ var QClass = React.createClass({
 		this.setState({instructor: true});
 		this.setState({queues: data});
 		this.handleClose();
-		var ids = Object.keys(data);
-		var queueId = ids[ids.length - 1]
-		this.props.onSelectQueue(queueId, data[queueId]);
+		if (name) {
+		    var ids = Object.keys(data);
+		    var queueId = ids[ids.length - 1];
+		    this.props.onSelectQueue(queueId, data[queueId]);
+		}
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		if (status = 403) {
@@ -315,7 +322,6 @@ var QClass = React.createClass({
     },
     componentDidMount: function() {
 	this.loadQueuesFromServer();
-	this.handleAddQueue("");
     },
     render: function() {
 	var queueNodes = Object.keys(this.state.queues).map(function (queueId) {
