@@ -295,9 +295,6 @@ var Kids = ReactTimeout(React.createClass({
 	    success: function(data) {
 		data = this.rejectDeletedKid(data);
 		this.setState({data: data});
-		this.clearAndSetTimeout("loadKidsTimerId",
-					this.loadKidsFromServer,
-					2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
