@@ -15,6 +15,7 @@ import tinycolor from 'tinycolor2';
 import FlipMove from 'react-flip-move';
 import ReactTimeout from 'react-timeout';
 import DocumentTitle from 'react-document-title';
+import Visibility from 'visibilityjs';
 import _ from 'underscore';
 import $ from 'jquery';
 
@@ -59,11 +60,15 @@ var KidsList = React.createClass({
 	return (
 	    <div className="kidsList" style={this.state.s}>
 		<List style={styles.list}>
-		    <FlipMove enterAnimation="accordianVertical" leaveAnimation="accordianVertical">
+		    <FlipMove enterAnimation={"elevator"}
+			      leaveAnimation={"elevator"}
+			      staggerDurationBy={10}
+			      staggerDelayBy={10}
+			      disableAllAnimations={Visibility.state() != "visible"}>
 			{kidsNodes}
+			<AddKid key={-42} onKidSubmit={this.props.onKidSubmit}/>
 		    </FlipMove>
 		</List>
-		<AddKid onKidSubmit={this.props.onKidSubmit}/>
 	    </div>
 	);
     }
