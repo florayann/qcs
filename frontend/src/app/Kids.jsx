@@ -263,7 +263,7 @@ var Kids = ReactTimeout(React.createClass({
 		    }
 		    this.clearAndSetTimeout("loadKidsTimerId",
 					    this.loadKidsFromServer,
-					    2000);
+					    0);
 		}
 	    }.bind(this),
 	    error: function(xhr, status, err) {
