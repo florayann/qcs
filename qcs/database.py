@@ -99,9 +99,9 @@ class QDataBase():
                         int(time.time() * 1000),
                         question_id)
         pipe = self.r.pipeline()
-        self.pipe.hmset("queue:{}:qs:{}".format(queue_id, question_id), question)
-        self.pipe.expire("queue:{}:qs:{}".format(queue_id, question_id), 86400)
-        self.pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.hmset("queue:{}:qs:{}".format(queue_id, question_id), question)
+        pipe.expire("queue:{}:qs:{}".format(queue_id, question_id), 86400)
+        pipe.incr("queue:{}:rev".format(queue_id))
         pipe.execute()
 
     def remove_question(self, queue_id, question_id):
