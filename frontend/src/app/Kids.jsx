@@ -404,7 +404,7 @@ var Kids = ReactTimeout(React.createClass({
     },
     tentativeKidDelete: function(kid) {
 	if (this.state.deletedKid) {
-	    this.clearAndSetTimeout("tentativeKidDeleteTimerId", this.tentativeKidDelete, 3000, kid);
+	    /* No op; just let the previous one delete. */
 	    return;
 	}
 
