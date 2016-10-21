@@ -10,6 +10,11 @@ var styles = {
 	right: 0,
 	position: 'absolute'
     },
+    progress: {
+	left: -1,
+	top: -1,
+	position: 'absolute',
+    },
     container: {
 	marginLeft: "25%",
 	marginRight: "25%",
