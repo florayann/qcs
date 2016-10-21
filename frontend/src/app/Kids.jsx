@@ -121,7 +121,7 @@ var AddKid = React.createClass({
 	return (
 	    <Card expanded={this.state.expanded} onExpandChange={this.handleExpandChange}>
 		<CardHeader
-		    title="New Question"
+		    title="New or Edit Question"
 		    subtitle="Expand to add!"
 		    actAsExpander={true}
 		    showExpandableButton={true}
