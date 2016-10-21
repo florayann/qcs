@@ -213,7 +213,6 @@ var Kids = ReactTimeout(React.createClass({
     getInitialState: function() {
 	return {data: [],
 		snackOpen: false,
-		queueDeleted: false,
 		deletedKid: null,
 		notificationOpen: false,
 		notificationMessage: "Notification",
@@ -269,7 +268,12 @@ var Kids = ReactTimeout(React.createClass({
 					    force);
 		}
 		else {
-		    this.setState({queueDeleted: true});
+		    this.displayNotification("Queue deleted",
+					     0,
+					     "Okay",
+					     this.handleOkayQueueDeleted,
+					     function () {},
+		    )
 		}
 	    }.bind(this)
 	});
@@ -378,9 +382,6 @@ var Kids = ReactTimeout(React.createClass({
 	    this.handleKidDelete(this.state.deletedKid);
 	}
     },
-    handleQueueDeletedSnackRequestClose: function() {
-	
-    },
     handleOkayQueueDeleted: function(e) {
 	this.props.onSelectQueue();
     },
@@ -437,14 +438,6 @@ var Kids = ReactTimeout(React.createClass({
 		<audio ref="notify">
 		    <source src="/notify.wav" type="audio/wav"/>
 		</audio>
-
-		<Snackbar
-		    open={this.state.queueDeleted}
-		    message="Queue deleted"
-		    action="Okay"
-		    onActionTouchTap={this.handleOkayQueueDeleted}
-		    onRequestClose={this.handleQueueDeletedSnackRequestClose}
-		/>
 
 		<Snackbar
 		    open={this.state.snackOpen}
