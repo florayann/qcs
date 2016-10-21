@@ -130,6 +130,8 @@ class Queue(Resource):
     @queue_required
     @validation_required
     def post(self, queue_id):
+        if self.qdb.is_queue_paused(queue_id):
+            return {"message": "Queue not accepting further questions."}, 409
         json_data = request.get_json()
         newkid = KidSchema(strict=True).load(json_data, partial=("id", "answer")).data
         newkid["id"] = session["username"]
@@ -188,6 +190,20 @@ class QueueInfo(Resource):
         self.qdb = QDataBase(app.config["DBHOST"])
 
     def get(self, queue_id):
+        return self.qdb.get_queue_info(queue_id)
+
+    @login_required
+    @queue_required
+    @instructor_required_queueop
+    def post(self, queue_id):
+        self.qdb.resume_queue(queue_id)
+        return self.qdb.get_queue_info(queue_id)
+
+    @login_required
+    @queue_required
+    @instructor_required_queueop
+    def delete(self, queue_id):
+        self.qdb.pause_queue(queue_id)
         return self.qdb.get_queue_info(queue_id)
 
 

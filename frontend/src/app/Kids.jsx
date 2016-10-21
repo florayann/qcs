@@ -213,8 +213,9 @@ var Kids = ReactTimeout(React.createClass({
     getInitialState: function() {
 	return {data: [],
 		snackOpen: false,
-		queueDeleted: false,
 		deletedKid: null,
+		notificationOpen: false,
+		notificationMessage: "Notification",
 	};
     },
     hasSameId: function(kid, other) {
@@ -267,7 +268,12 @@ var Kids = ReactTimeout(React.createClass({
 					    force);
 		}
 		else {
-		    this.setState({queueDeleted: true});
+		    this.displayNotification("Queue deleted",
+					     0,
+					     "Okay",
+					     this.handleOkayQueueDeleted,
+					     function () {},
+		    )
 		}
 	    }.bind(this)
 	});
@@ -299,6 +305,25 @@ var Kids = ReactTimeout(React.createClass({
 	    this.refreshKidsFromServer(nextProps);
 	}
     },
+    displayNotification: function(message,
+				  ms=2000,
+				  actionText="Okay",
+				  action=this.dismissNotification,
+				  onRequestClose=this.dismissNotification) {
+	this.setState({
+	    notificationOpen: true,
+	    notificationMessage: message,
+	    notificationActionText: actionText,
+	    notificationMs: ms,
+	    notificationAction: action,
+	    notificationOnRequestClose: onRequestClose,
+	});
+    },
+    dismissNotification: function() {
+	this.setState({
+	    notificationOpen: false,
+	});
+    },
     handleKidSubmit: function(kid) {
 	var url = this.props.instructor ?
 		  "/instructor" + this.props.url :
@@ -321,6 +346,9 @@ var Kids = ReactTimeout(React.createClass({
 					    this.handleKidSubmit,
 					    2000,
 					    kid);
+		}
+		else if (xhr.status == 409) {
+		    this.displayNotification("Adding has been disabled", 2000);
 		}
 	    }.bind(this)
 	});
@@ -354,9 +382,6 @@ var Kids = ReactTimeout(React.createClass({
 	    this.handleKidDelete(this.state.deletedKid);
 	}
     },
-    handleQueueDeletedSnackRequestClose: function() {
-	
-    },
     handleOkayQueueDeleted: function(e) {
 	this.props.onSelectQueue();
     },
@@ -379,7 +404,7 @@ var Kids = ReactTimeout(React.createClass({
     },
     tentativeKidDelete: function(kid) {
 	if (this.state.deletedKid) {
-	    this.clearAndSetTimeout("tentativeKidDeleteTimerId", this.tentativeKidDelete, 3000, kid);
+	    /* No op; just let the previous one delete. */
 	    return;
 	}
 
@@ -415,20 +440,21 @@ var Kids = ReactTimeout(React.createClass({
 		</audio>
 
 		<Snackbar
-		    open={this.state.queueDeleted}
-		    message="Queue deleted"
-		    action="Okay"
-		    onActionTouchTap={this.handleOkayQueueDeleted}
-		    onRequestClose={this.handleQueueDeletedSnackRequestClose}
-		/>
-
-		<Snackbar
 		    open={this.state.snackOpen}
 		    message="Removed from queue"
 		    action="undo"
 		    autoHideDuration={3000}
 		    onActionTouchTap={this.undoKidDelete}
 		    onRequestClose={this.handleSnackRequestClose}
+		/>
+
+		<Snackbar
+		    open={this.state.notificationOpen}
+		    message={this.state.notificationMessage}
+		    action={this.state.notificationActionText}
+		    autoHideDuration={this.state.notificationMs}
+		    onActionTouchTap={this.state.notificationAction}
+		    onRequestClose={this.state.notificationOnRequestClose}
 		/>
 	    </div>
 	    </DocumentTitle>
