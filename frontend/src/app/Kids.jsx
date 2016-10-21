@@ -8,8 +8,10 @@ import ActionDone from 'material-ui/svg-icons/action/done';
 import IconButton from 'material-ui/IconButton';
 import Snackbar from 'material-ui/Snackbar';
 import CircularProgress from 'material-ui/CircularProgress';
+import LinearProgress from 'material-ui/LinearProgress';
 
 import seedrandom from 'seedrandom';
+import tinycolor from 'tinycolor2';
 import FlipMove from 'react-flip-move';
 import ReactTimeout from 'react-timeout';
 import DocumentTitle from 'react-document-title';
@@ -56,9 +58,9 @@ var KidsList = React.createClass({
 	}.bind(this));
 	return (
 	    <div className="kidsList" style={this.state.s}>
-		<FlipMove enterAnimation="accordianVertical" leaveAnimation="accordianVertical">
-		    {kidsNodes}
-		</FlipMove>
+		    <FlipMove enterAnimation="accordianVertical" leaveAnimation="accordianVertical">
+			{kidsNodes}
+		    </FlipMove>
 		<AddKid onKidSubmit={this.props.onKidSubmit}/>
 	    </div>
 	);
@@ -166,6 +168,12 @@ var AddKid = React.createClass({
 });
 
 var Kid = React.createClass({
+    getInitialState: function() {
+	var color = this.generateColor();
+	return ({color: color,
+		       complement: tinycolor(color).complement().toHexString()
+	});
+    },
     handleButtonTouchTap: function(e) {
 	this.props.onKidDelete({id: this.props.id});
     },
@@ -189,21 +197,20 @@ var Kid = React.createClass({
     render: function() {
 	return (
 	    <Card>
-		<CardHeader
-		    title={this.props.name + " - " + this.props.room}
-		    subtitle={this.props.question}
-		    avatar={<Avatar backgroundColor={this.generateColor()} onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}>{this.props.name[0]} </Avatar>}
-		>
-		    {this.props.answer ? <CircularProgress size={0.5} style={styles.done}/> : null}
-		    {this.props.instructor || this.props.username == this.props.id ?
+		<ListItem
+		    primaryText={this.props.name + " - " + this.props.room}
+		    secondaryText={this.props.question}
+		    leftAvatar={<Avatar backgroundColor={this.state.color} >{this.props.name[0]} </Avatar>}
+		    onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}
+		    leftIcon={this.props.answer ? <CircularProgress color={this.state.complement} size={0.75} style={styles.progress}/> : null}
+		    rightIconButton={this.props.instructor || this.props.username == this.props.id ?
 		     (
 			 <IconButton
-			     style={styles.done}
 			     onTouchTap={this.handleButtonTouchTap}>
 			     <ActionDone/>
 			 </IconButton>
-		     ) : null}
-		</CardHeader>
+			) : null}
+		/>
 	    </Card>
 	);
     }
