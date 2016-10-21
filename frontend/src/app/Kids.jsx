@@ -215,6 +215,8 @@ var Kids = ReactTimeout(React.createClass({
 		snackOpen: false,
 		queueDeleted: false,
 		deletedKid: null,
+		notificationOpen: false,
+		notificationMessage: "Notification",
 	};
     },
     hasSameId: function(kid, other) {
@@ -299,6 +301,25 @@ var Kids = ReactTimeout(React.createClass({
 	    this.refreshKidsFromServer(nextProps);
 	}
     },
+    displayNotification: function(message,
+				  ms=2000,
+				  actionText="Okay",
+				  action=this.dismissNotification,
+				  onRequestClose=this.dismissNotification) {
+	this.setState({
+	    notificationOpen: true,
+	    notificationMessage: message,
+	    notificationActionText: actionText,
+	    notificationMs: ms,
+	    notificationAction: action,
+	    notificationOnRequestClose: onRequestClose,
+	});
+    },
+    dismissNotification: function() {
+	this.setState({
+	    notificationOpen: false,
+	});
+    },
     handleKidSubmit: function(kid) {
 	var url = this.props.instructor ?
 		  "/instructor" + this.props.url :
@@ -321,6 +342,9 @@ var Kids = ReactTimeout(React.createClass({
 					    this.handleKidSubmit,
 					    2000,
 					    kid);
+		}
+		else if (xhr.status == 409) {
+		    this.displayNotification("Adding has been disabled", 2000);
 		}
 	    }.bind(this)
 	});
@@ -429,6 +453,15 @@ var Kids = ReactTimeout(React.createClass({
 		    autoHideDuration={3000}
 		    onActionTouchTap={this.undoKidDelete}
 		    onRequestClose={this.handleSnackRequestClose}
+		/>
+
+		<Snackbar
+		    open={this.state.notificationOpen}
+		    message={this.state.notificationMessage}
+		    action={this.state.notificationActionText}
+		    autoHideDuration={this.state.notificationMs}
+		    onActionTouchTap={this.state.notificationAction}
+		    onRequestClose={this.state.notificationOnRequestClose}
 		/>
 	    </div>
 	    </DocumentTitle>
