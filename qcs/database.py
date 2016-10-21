@@ -105,9 +105,11 @@ class QDataBase():
         pipe.execute()
 
     def remove_question(self, queue_id, question_id):
-        self.r.incr("queue:{}:rev".format(queue_id))
-        self.r.zrem("queue:{}:qs".format(queue_id), question_id)
-        self.r.delete("queue:{}:qs:{}".format(queue_id, question_id))
+        pipe = self.r.pipeline()
+        pipe.zrem("queue:{}:qs".format(queue_id), question_id)
+        pipe.delete("queue:{}:qs:{}".format(queue_id, question_id))
+        pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.execute()
 
     def get_queue_revision(self, queue_id):
         rev = self.r.get("queue:{}:rev".format(queue_id))
