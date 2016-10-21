@@ -94,13 +94,15 @@ class QDataBase():
         return int(self.r.get("queue:{}:paused".format(queue_id))) == 1
 
     def add_question(self, queue_id, question, question_id):
-        self.r.incr("queue:{}:rev".format(queue_id))
         if self.r.zrank("queue:{}:qs".format(queue_id), question_id) is None:
             self.r.zadd("queue:{}:qs".format(queue_id),
                         int(time.time() * 1000),
                         question_id)
-        self.r.hmset("queue:{}:qs:{}".format(queue_id, question_id), question)
-        self.r.expire("queue:{}:qs:{}".format(queue_id, question_id), 86400)
+        pipe = self.r.pipeline()
+        self.pipe.hmset("queue:{}:qs:{}".format(queue_id, question_id), question)
+        self.pipe.expire("queue:{}:qs:{}".format(queue_id, question_id), 86400)
+        self.pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.execute()
 
     def remove_question(self, queue_id, question_id):
         self.r.incr("queue:{}:rev".format(queue_id))
