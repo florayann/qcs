@@ -228,8 +228,7 @@ var Kids = ReactTimeout(React.createClass({
     hasSameId: function(kid, other) {
 	return kid.id == other.id;
     },
-    rejectDeletedKid: function(data, deletedKid) {
-	deletedKid = deletedKid || this.state.deletedKid;
+    rejectDeletedKid: function(data, deletedKid=this.state.deletedKid) {
 
 	if (deletedKid) {
 	    return _.reject(data, function (kid) {
