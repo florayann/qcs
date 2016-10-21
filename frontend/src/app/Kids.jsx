@@ -238,7 +238,7 @@ var Kids = ReactTimeout(React.createClass({
 	return data;
     },
     clearAndSetTimeout: function(timerIdProperty, ...rest) {
-	this.props.clearTimeout(this.state.loadKidsTimerId);
+	this.props.clearTimeout(this.state[timerIdProperty]);
 	
 	this.setState({
 	    [timerIdProperty]: this.props.setTimeout(...rest)
