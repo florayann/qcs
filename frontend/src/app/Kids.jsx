@@ -58,9 +58,11 @@ var KidsList = React.createClass({
 	}.bind(this));
 	return (
 	    <div className="kidsList" style={this.state.s}>
+		<List style={styles.list}>
 		    <FlipMove enterAnimation="accordianVertical" leaveAnimation="accordianVertical">
 			{kidsNodes}
 		    </FlipMove>
+		</List>
 		<AddKid onKidSubmit={this.props.onKidSubmit}/>
 	    </div>
 	);

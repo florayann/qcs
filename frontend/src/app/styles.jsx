@@ -23,7 +23,11 @@ var styles = {
     },
     containerMobile: {
 	margin: 0
-    }   
+    },
+    list: {
+	paddingTop: 0,
+	paddingBottom: 0,
+    },
 }
 
 export default styles;
