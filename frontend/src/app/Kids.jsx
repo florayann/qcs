@@ -11,6 +11,7 @@ import CircularProgress from 'material-ui/CircularProgress';
 import LinearProgress from 'material-ui/LinearProgress';
 
 import seedrandom from 'seedrandom';
+import tinycolor from 'tinycolor2';
 import FlipMove from 'react-flip-move';
 import ReactTimeout from 'react-timeout';
 import DocumentTitle from 'react-document-title';
@@ -57,11 +58,9 @@ var KidsList = React.createClass({
 	}.bind(this));
 	return (
 	    <div className="kidsList" style={this.state.s}>
-		<List>
 		    <FlipMove enterAnimation="accordianVertical" leaveAnimation="accordianVertical">
 			{kidsNodes}
 		    </FlipMove>
-		</List>
 		<AddKid onKidSubmit={this.props.onKidSubmit}/>
 	    </div>
 	);
@@ -169,6 +168,12 @@ var AddKid = React.createClass({
 });
 
 var Kid = React.createClass({
+    getInitialState: function() {
+	var color = this.generateColor();
+	return ({color: color,
+		       complement: tinycolor(color).complement().toHexString()
+	});
+    },
     handleButtonTouchTap: function(e) {
 	this.props.onKidDelete({id: this.props.id});
     },
@@ -195,9 +200,9 @@ var Kid = React.createClass({
 		<ListItem
 		    primaryText={this.props.name + " - " + this.props.room}
 		    secondaryText={this.props.question}
-		    leftAvatar={<Avatar backgroundColor={this.generateColor()} >{this.props.name[0]} </Avatar>}
+		    leftAvatar={<Avatar backgroundColor={this.state.color} >{this.props.name[0]} </Avatar>}
 		    onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}
-		    leftIcon={this.props.answer ? <CircularProgress size={0.75} style={styles.progress}/> : null}
+		    leftIcon={this.props.answer ? <CircularProgress color={this.state.complement} size={0.75} style={styles.progress}/> : null}
 		    rightIconButton={this.props.instructor || this.props.username == this.props.id ?
 		     (
 			 <IconButton
