@@ -69,20 +69,24 @@ class QDataBase():
         
     def add_queue(self, class_id, queue_name):
         queue_id = int(self.r.incr("next_queue_id"))
-        self.r.sadd("class:{}:queues".format(class_id), queue_id)
-        self.r.set("queue:{}:name".format(queue_id), queue_name)
-        self.r.set("queue:{}:class".format(queue_id), class_id)
-        self.r.set("queue:{}:paused".format(queue_id), 0)
-        self.r.incr("queue:{}:rev".format(queue_id))
+        pipe = self.r.pipeline()
+        pipe.sadd("class:{}:queues".format(class_id), queue_id)
+        pipe.set("queue:{}:name".format(queue_id), queue_name)
+        pipe.set("queue:{}:class".format(queue_id), class_id)
+        pipe.set("queue:{}:paused".format(queue_id), 0)
+        pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.execute()
 
     def remove_queue(self, class_id, queue_id):
-        self.r.srem("class:{}:queues".format(class_id), queue_id)
-        self.r.delete("queue:{}:name".format(queue_id))
-        self.r.delete("queue:{}:class".format(queue_id))
-        self.r.delete("queue:{}:rev".format(queue_id))
-        self.r.delete("queue:{}:qs".format(queue_id))
-        self.r.delete("queue:{}:paused".format(queue_id))
-        self.r.delete("queue:{}".format(queue_id))
+        pipe = self.r.pipeline()
+        pipe.srem("class:{}:queues".format(class_id), queue_id)
+        pipe.delete("queue:{}:name".format(queue_id))
+        pipe.delete("queue:{}:class".format(queue_id))
+        pipe.delete("queue:{}:rev".format(queue_id))
+        pipe.delete("queue:{}:qs".format(queue_id))
+        pipe.delete("queue:{}:paused".format(queue_id))
+        pipe.delete("queue:{}".format(queue_id))
+        pipe.execute()
 
     def pause_queue(self, queue_id):
         self.r.set("queue:{}:paused".format(queue_id), 1)
@@ -94,18 +98,22 @@ class QDataBase():
         return int(self.r.get("queue:{}:paused".format(queue_id))) == 1
 
     def add_question(self, queue_id, question, question_id):
-        self.r.incr("queue:{}:rev".format(queue_id))
         if self.r.zrank("queue:{}:qs".format(queue_id), question_id) is None:
             self.r.zadd("queue:{}:qs".format(queue_id),
                         int(time.time() * 1000),
                         question_id)
-        self.r.hmset("queue:{}:qs:{}".format(queue_id, question_id), question)
-        self.r.expire("queue:{}:qs:{}".format(queue_id, question_id), 86400)
+        pipe = self.r.pipeline()
+        pipe.hmset("queue:{}:qs:{}".format(queue_id, question_id), question)
+        pipe.expire("queue:{}:qs:{}".format(queue_id, question_id), 86400)
+        pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.execute()
 
     def remove_question(self, queue_id, question_id):
-        self.r.incr("queue:{}:rev".format(queue_id))
-        self.r.zrem("queue:{}:qs".format(queue_id), question_id)
-        self.r.delete("queue:{}:qs:{}".format(queue_id, question_id))
+        pipe = self.r.pipeline()
+        pipe.zrem("queue:{}:qs".format(queue_id), question_id)
+        pipe.delete("queue:{}:qs:{}".format(queue_id, question_id))
+        pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.execute()
 
     def get_queue_revision(self, queue_id):
         rev = self.r.get("queue:{}:rev".format(queue_id))

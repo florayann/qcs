@@ -36,6 +36,7 @@
     "react-document-title": "2.0.2",
     "underscore": "1.8.3",
     "react-timeout": "1.0.0",
-    "tinycolor2": "1.4.1"
+    "tinycolor2": "1.4.1",
+    "visibilityjs": "1.2.4"
   }
 }

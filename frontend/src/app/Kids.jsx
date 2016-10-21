@@ -15,6 +15,7 @@ import tinycolor from 'tinycolor2';
 import FlipMove from 'react-flip-move';
 import ReactTimeout from 'react-timeout';
 import DocumentTitle from 'react-document-title';
+import Visibility from 'visibilityjs';
 import _ from 'underscore';
 import $ from 'jquery';
 
@@ -58,10 +59,16 @@ var KidsList = React.createClass({
 	}.bind(this));
 	return (
 	    <div className="kidsList" style={this.state.s}>
-		    <FlipMove enterAnimation="accordianVertical" leaveAnimation="accordianVertical">
+		<List style={styles.list}>
+		    <FlipMove enterAnimation={"elevator"}
+			      leaveAnimation={"elevator"}
+			      staggerDurationBy={10}
+			      staggerDelayBy={10}
+			      disableAllAnimations={Visibility.state() != "visible"}>
 			{kidsNodes}
+			<AddKid key={-42} onKidSubmit={this.props.onKidSubmit}/>
 		    </FlipMove>
-		<AddKid onKidSubmit={this.props.onKidSubmit}/>
+		</List>
 	    </div>
 	);
     }
@@ -228,8 +235,7 @@ var Kids = ReactTimeout(React.createClass({
     hasSameId: function(kid, other) {
 	return kid.id == other.id;
     },
-    rejectDeletedKid: function(data, deletedKid) {
-	deletedKid = deletedKid || this.state.deletedKid;
+    rejectDeletedKid: function(data, deletedKid=this.state.deletedKid) {
 
 	if (deletedKid) {
 	    return _.reject(data, function (kid) {
@@ -239,7 +245,7 @@ var Kids = ReactTimeout(React.createClass({
 	return data;
     },
     clearAndSetTimeout: function(timerIdProperty, ...rest) {
-	this.props.clearTimeout(this.state.loadKidsTimerId);
+	this.props.clearTimeout(this.state[timerIdProperty]);
 	
 	this.setState({
 	    [timerIdProperty]: this.props.setTimeout(...rest)
@@ -263,7 +269,7 @@ var Kids = ReactTimeout(React.createClass({
 		    }
 		    this.clearAndSetTimeout("loadKidsTimerId",
 					    this.loadKidsFromServer,
-					    2000);
+					    0);
 		}
 	    }.bind(this),
 	    error: function(xhr, status, err) {
@@ -296,9 +302,6 @@ var Kids = ReactTimeout(React.createClass({
 	    success: function(data) {
 		data = this.rejectDeletedKid(data);
 		this.setState({data: data});
-		this.clearAndSetTimeout("loadKidsTimerId",
-					this.loadKidsFromServer,
-					2000);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
