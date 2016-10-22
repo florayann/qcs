@@ -114,17 +114,23 @@ class Queue(Resource):
         
         super().__init__()
 
+    def get_queue(self, queue_id):
+        queue = self.qdb.get_queue(queue_id).data
+        message = self.qdb.get_announcement(queue_id)
+
+        return {"queue": queue, "announcement": message}
+
     @queue_required
     def get(self, queue_id):
         if self.get_reqparse.parse_args()["force"]:
-            return self.qdb.get_queue(queue_id)
+            return self.get_queue(queue_id)
 
         q_revision = self.qdb.get_queue_revision(queue_id)
         
         while q_revision == self.qdb.get_queue_revision(queue_id):
             time.sleep(1.0)
 
-        return self.qdb.get_queue(queue_id)
+        return self.get_queue(queue_id)
 
     @login_required
     @queue_required
@@ -138,14 +144,14 @@ class Queue(Resource):
         newkid["answer"] = False
         self.qdb.add_question(queue_id, newkid, newkid["id"])
 
-        return self.qdb.get_queue(queue_id)
+        return self.get_queue(queue_id)
 
     @login_required
     @queue_required
     def delete(self, queue_id):
         self.qdb.remove_question(queue_id, session["username"])
         
-        return self.qdb.get_queue(queue_id)
+        return self.get_queue(queue_id)
 
 
 class InstructorQueue(Queue):
@@ -172,7 +178,7 @@ class InstructorQueue(Queue):
 
         self.qdb.add_question(queue_id, newkid, newkid["id"])
 
-        return self.qdb.get_queue(queue_id)
+        return self.get_queue(queue_id)
 
     @login_required
     @queue_required
@@ -182,7 +188,23 @@ class InstructorQueue(Queue):
 
         self.qdb.remove_question(queue_id, kid["id"])
 
-        return self.qdb.get_queue(queue_id)
+        return self.get_queue(queue_id)
+    
+    @login_required
+    @queue_required
+    @instructor_required_queueop
+    @validation_required
+    def put(self, queue_id):
+        json_data = request.get_json()
+        
+        message = AnnouncementSchema(strict=True).load(json_data).data["message"]
+
+        if not message:
+            self.qdb.remove_announcement(queue_id)
+        else:
+            self.qdb.add_announcement(queue_id, message)
+
+        return self.get_queue(queue_id)
 
 
 class QueueInfo(Resource):

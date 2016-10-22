@@ -115,6 +115,21 @@ class QDataBase():
         pipe.incr("queue:{}:rev".format(queue_id))
         pipe.execute()
 
+    def add_announcement(self, queue_id, message):
+        pipe = self.r.pipeline()
+        pipe.set("queue:{}:announce".format(queue_id), message)
+        pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.execute()
+
+    def get_announcement(self, queue_id):
+        return self.dr.get("queue:{}:announce".format(queue_id))
+
+    def remove_announcement(self, queue_id):
+        pipe = self.r.pipeline()
+        pipe.delete("queue:{}:announce".format(queue_id))
+        pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.execute()
+
     def get_queue_revision(self, queue_id):
         rev = self.r.get("queue:{}:rev".format(queue_id))
         if rev is None:

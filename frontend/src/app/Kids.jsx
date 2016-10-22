@@ -5,6 +5,8 @@ import Avatar from 'material-ui/Avatar';
 import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField';
 import ActionDone from 'material-ui/svg-icons/action/done';
+import ActionDelete from 'material-ui/svg-icons/action/delete';
+import ActionAnnouncement from 'material-ui/svg-icons/action/announcement';
 import IconButton from 'material-ui/IconButton';
 import Snackbar from 'material-ui/Snackbar';
 import CircularProgress from 'material-ui/CircularProgress';
@@ -20,8 +22,26 @@ import _ from 'underscore';
 import $ from 'jquery';
 
 import styles from './styles';
+import muiThemeable from 'material-ui/styles/muiThemeable';
+import {grey400, darkBlack, lightBlack} from 'material-ui/styles/colors';
 
 var material_palette = require("!json!./material_palette.json");
+
+var Announcement = muiThemeable()(React.createClass({
+    render: function() {
+	return (
+	    <ListItem primaryText={<strong>Announcement</strong>}
+		      secondaryText={<p><span style={{color: darkBlack}}>{this.props.message}</span></p>}
+		      leftAvatar={<Avatar icon={<ActionAnnouncement />}
+					  backgroundColor={this.props.muiTheme.palette.accent1Color} />}
+		      disabled={true}
+		      rightIconButton={this.props.instructor ?
+				       <IconButton onTouchTap={this.props.onRemove}><ActionDelete /> </IconButton> :
+				      null}
+	    />
+	);
+    }
+}));
 
 var KidsList = React.createClass({
     checkMobile: function() {
@@ -60,6 +80,13 @@ var KidsList = React.createClass({
 	return (
 	    <div className="kidsList" style={this.state.s}>
 		<List style={styles.list}>
+		    {this.props.announcement ?
+		     <Announcement key={-41}
+				   message={this.props.announcement}
+				   onRemove={this.props.onRemoveAnnouncement}
+				   instructor={this.props.instructor}
+		     /> :
+		     null}
 		    <FlipMove enterAnimation={"elevator"}
 			      leaveAnimation={"elevator"}
 			      staggerDurationBy={10}
@@ -229,6 +256,7 @@ var Kid = React.createClass({
 var Kids = ReactTimeout(React.createClass({
     getInitialState: function() {
 	return {data: [],
+		announcement: null,
 		snackOpen: false,
 		deletedKid: null,
 		notificationOpen: false,
@@ -254,6 +282,12 @@ var Kids = ReactTimeout(React.createClass({
 	    [timerIdProperty]: this.props.setTimeout(...rest)
 	});
     },
+    updateQueue: function(data) {
+	var queue = this.rejectDeletedKid(data.queue);
+	this.setState({data: queue,
+		       announcement: data.announcement,
+	});
+    },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
 	var oldUrl = this.props.url;
@@ -265,8 +299,7 @@ var Kids = ReactTimeout(React.createClass({
 	    data: force ? {force: force} : {},
 	    success: function(data) {
 		if (oldUrl == this.props.url) {
-		    data = this.rejectDeletedKid(data);
-		    this.setState({data: data});
+		    this.updateQueue(data);
 		    if (this.props.instructor && len < this.state.data.length) {
 			this.refs.notify.play();
 		    }
@@ -303,8 +336,7 @@ var Kids = ReactTimeout(React.createClass({
 	    cache: false,
 	    data: {force: true},
 	    success: function(data) {
-		data = this.rejectDeletedKid(data);
-		this.setState({data: data});
+		this.updateQueue(data);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -349,8 +381,7 @@ var Kids = ReactTimeout(React.createClass({
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify(kid),
 	    success: function(data) {
-		data = this.rejectDeletedKid(data);
-		this.setState({data: data});
+		this.updateQueue(data);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -376,7 +407,8 @@ var Kids = ReactTimeout(React.createClass({
 	    type: 'DELETE',
 	    data: {id: kid.id},
 	    success: function(data) {
-		this.setState({data: data, deletedKid: null});
+		this.setState({deletedKid: null});
+		this.updateQueue(data);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -385,6 +417,27 @@ var Kids = ReactTimeout(React.createClass({
 		}
 		else {
 		    this.setState({deletedKid: null});
+		}
+	    }.bind(this)
+	});
+    },
+    handleRemoveAnnouncement: function() {
+	$.ajax({
+	    url: "/instructor" + this.props.url,
+	    dataType: 'json',
+	    type: 'PUT',
+	    contentType: 'application/json; charset=UTF-8',
+	    data: JSON.stringify({message: ""}),
+	    success: function(data) {
+		this.updateQueue(data);
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+		if (xhr.status == 404) {
+		    this.clearAndSetTimeout("removeAnnouncementTimerId",
+					    this.handleRemoveAnnouncement,
+					    2000,
+					    );
 		}
 	    }.bind(this)
 	});
@@ -448,9 +501,11 @@ var Kids = ReactTimeout(React.createClass({
 			  onKidSubmit={this.handleKidSubmit}
 			  onKidDelete={this.tentativeKidDelete}
 			  onKidAnswer={this.handleKidSubmit}
+			  onRemoveAnnouncement={this.handleRemoveAnnouncement}
 			  username={this.props.username}
 			  instructor={this.props.instructor}
 			  editing={this.isEditing()}
+			  announcement={this.state.announcement}
 		/>
 		<audio ref="notify">
 		    <source src="/notify.wav" type="audio/wav"/>
