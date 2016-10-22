@@ -107,7 +107,7 @@ var AddKid = React.createClass({
 	    room: this.state.room.trim(),
 	    question: this.state.question.trim(),
 	});
-	this.setState({name: '', room: '', question:'', attemptedSubmit: false});
+	this.setState({room: '', question:'', attemptedSubmit: false});
 	this.reduce();
     },
     handleKeyPress: function(target) {
