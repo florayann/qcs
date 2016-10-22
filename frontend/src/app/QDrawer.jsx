@@ -221,6 +221,7 @@ var QDrawer = React.createClass({
 		    />
 		    {this.props.instructor ?
 		     <QControls url={this.props.queue_url + "info/" + this.props.queueId}
+				queue_url={this.props.queue_url + this.props.queueId}
 		     />
 		     : null
 		    }

@@ -440,7 +440,7 @@ var Kids = ReactTimeout(React.createClass({
 					    );
 		}
 	    }.bind(this)
-	})
+	});
     },
     handleSnackRequestClose: function(reason) {
 	if (reason) {
