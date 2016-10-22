@@ -139,7 +139,7 @@ var QClass = React.createClass({
 	const actions = [
 	    <FlatButton
 		label="Cancel"
-		primary={true}
+		primary={false}
 		onTouchTap={this.handleClose}
 	    />,
 	    <FlatButton

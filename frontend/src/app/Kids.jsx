@@ -194,7 +194,9 @@ var AddKid = React.createClass({
 		    <br/>
 		    <CardActions>
 			<FlatButton
-			    label="Submit" disabled={!(this.state.name && this.state.room && this.state.question)}
+			    label="Submit"
+			    disabled={!(this.state.name && this.state.room && this.state.question)}
+			    primary={true}
 			    onTouchTap={this.submitKid}
 			/>
 		    </CardActions>
