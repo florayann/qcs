@@ -183,6 +183,22 @@ class InstructorQueue(Queue):
         self.qdb.remove_question(queue_id, kid["id"])
 
         return self.qdb.get_queue(queue_id)
+    
+    @login_required
+    @queue_required
+    @instructor_required_queueop
+    @validation_required
+    def put(self, queue_id):
+        json_data = request.get_json()
+        
+        message = AnnouncementSchema(strict=True).load(json_data).data["message"]
+
+        if not message:
+            self.qdb.remove_announcement(queue_id)
+        else:
+            self.qdb.add_announcement(queue_id, message)
+
+        return self.qdb.get_queue(queue_id)
 
 
 class QueueInfo(Resource):

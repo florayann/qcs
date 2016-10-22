@@ -48,5 +48,5 @@ class QClassDeleteSchema(Schema):
 
 
 class AnnouncementSchema(Schema):
-    message = fields.String(validate=validate.Length(min=1,max=255),
+    message = fields.String(validate=validate.Length(max=255),
                             required=True)
