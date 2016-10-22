@@ -78,6 +78,7 @@ class QDataBase():
         pipe.execute()
 
     def remove_queue(self, class_id, queue_id):
+        self.remove_all_questions(queue_id)
         pipe = self.r.pipeline()
         pipe.srem("class:{}:queues".format(class_id), queue_id)
         pipe.delete("queue:{}:name".format(queue_id))
@@ -85,6 +86,7 @@ class QDataBase():
         pipe.delete("queue:{}:rev".format(queue_id))
         pipe.delete("queue:{}:qs".format(queue_id))
         pipe.delete("queue:{}:paused".format(queue_id))
+        pipe.delete("queue:{}:announce".format(queue_id))
         pipe.delete("queue:{}".format(queue_id))
         pipe.execute()
 
@@ -108,7 +110,6 @@ class QDataBase():
         pipe.execute()
 
     def remove_question(self, queue_id, question_id):
-        self.remove_all_questions(queue_id)
         pipe = self.r.pipeline()
         pipe.zrem("queue:{}:qs".format(queue_id), question_id)
         pipe.delete("queue:{}:qs:{}".format(queue_id, question_id))
