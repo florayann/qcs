@@ -66,7 +66,7 @@ var KidsList = React.createClass({
 			      staggerDelayBy={10}
 			      disableAllAnimations={Visibility.state() != "visible"}>
 			{kidsNodes}
-			<AddKid key={-42} onKidSubmit={this.props.onKidSubmit}/>
+			<AddKid key={-42} onKidSubmit={this.props.onKidSubmit} editing={this.props.editing}/>
 		    </FlipMove>
 		</List>
 	    </div>
@@ -121,7 +121,7 @@ var AddKid = React.createClass({
 	return (
 	    <Card expanded={this.state.expanded} onExpandChange={this.handleExpandChange}>
 		<CardHeader
-		    title="New or Edit Question"
+		    title={this.props.editing ? "Edit Question" : "New Question"}
 		    subtitle="Expand to add!"
 		    actAsExpander={true}
 		    showExpandableButton={true}
@@ -434,6 +434,9 @@ var Kids = ReactTimeout(React.createClass({
 	});
 	this.refreshKidsFromServer();
     },
+    isEditing: function() {
+	_.contains(_.pluck(this.state.data, "id"), this.props.username);
+    },
     render: function() {
 	return (
 	    <DocumentTitle title={this.getDocumentTitle()}>
@@ -444,6 +447,7 @@ var Kids = ReactTimeout(React.createClass({
 			  onKidAnswer={this.handleKidSubmit}
 			  username={this.props.username}
 			  instructor={this.props.instructor}
+			  editing={this.isEditing()}
 		/>
 		<audio ref="notify">
 		    <source src="/notify.wav" type="audio/wav"/>
