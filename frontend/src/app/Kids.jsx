@@ -254,6 +254,10 @@ var Kids = ReactTimeout(React.createClass({
 	    [timerIdProperty]: this.props.setTimeout(...rest)
 	});
     },
+    updateQueue: function(data) {
+	var queue = this.rejectDeletedKid(data.queue);
+	this.setState({data: queue});
+    },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
 	var oldUrl = this.props.url;
@@ -265,8 +269,7 @@ var Kids = ReactTimeout(React.createClass({
 	    data: force ? {force: force} : {},
 	    success: function(data) {
 		if (oldUrl == this.props.url) {
-		    data = this.rejectDeletedKid(data);
-		    this.setState({data: data});
+		    this.updateQueue(data);
 		    if (this.props.instructor && len < this.state.data.length) {
 			this.refs.notify.play();
 		    }
@@ -303,8 +306,7 @@ var Kids = ReactTimeout(React.createClass({
 	    cache: false,
 	    data: {force: true},
 	    success: function(data) {
-		data = this.rejectDeletedKid(data);
-		this.setState({data: data});
+		this.updateQueue(data);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -349,8 +351,7 @@ var Kids = ReactTimeout(React.createClass({
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify(kid),
 	    success: function(data) {
-		data = this.rejectDeletedKid(data);
-		this.setState({data: data});
+		this.updateQueue(data);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -376,7 +377,8 @@ var Kids = ReactTimeout(React.createClass({
 	    type: 'DELETE',
 	    data: {id: kid.id},
 	    success: function(data) {
-		this.setState({data: data, deletedKid: null});
+		this.setState({deletedKid: null});
+		this.updateQueue(data);
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
