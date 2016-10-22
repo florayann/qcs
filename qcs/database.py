@@ -104,14 +104,25 @@ class QDataBase():
                         question_id)
         pipe = self.r.pipeline()
         pipe.hmset("queue:{}:qs:{}".format(queue_id, question_id), question)
-        pipe.expire("queue:{}:qs:{}".format(queue_id, question_id), 86400)
         pipe.incr("queue:{}:rev".format(queue_id))
         pipe.execute()
 
     def remove_question(self, queue_id, question_id):
+        self.remove_all_questions(queue_id)
         pipe = self.r.pipeline()
         pipe.zrem("queue:{}:qs".format(queue_id), question_id)
         pipe.delete("queue:{}:qs:{}".format(queue_id, question_id))
+        pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.execute()
+
+    def remove_all_questions(self, queue_id):
+        question_ids = self.dr.zrange("queue:{}:qs".format(queue_id), 0, -1)
+        pipe = self.r.pipeline()
+
+        for question_id in question_ids:
+            pipe.zrem("queue:{}:qs".format(queue_id), question_id)
+            pipe.delete("queue:{}:qs:{}".format(queue_id, question_id))
+
         pipe.incr("queue:{}:rev".format(queue_id))
         pipe.execute()
 
