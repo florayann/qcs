@@ -5,6 +5,8 @@ import Avatar from 'material-ui/Avatar';
 import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField';
 import ActionDone from 'material-ui/svg-icons/action/done';
+import ActionDelete from 'material-ui/svg-icons/action/delete';
+import ActionAnnouncement from 'material-ui/svg-icons/action/announcement';
 import IconButton from 'material-ui/IconButton';
 import Snackbar from 'material-ui/Snackbar';
 import CircularProgress from 'material-ui/CircularProgress';
@@ -20,8 +22,24 @@ import _ from 'underscore';
 import $ from 'jquery';
 
 import styles from './styles';
+import muiThemeable from 'material-ui/styles/muiThemeable';
+import {grey400, darkBlack, lightBlack} from 'material-ui/styles/colors';
 
 var material_palette = require("!json!./material_palette.json");
+
+var Announcement = muiThemeable()(React.createClass({
+    render: function() {
+	return (
+	    <ListItem primaryText={<strong>Announcement</strong>}
+		      secondaryText={<p><span style={{color: darkBlack}}>{this.props.message}</span></p>}
+		      leftAvatar={<Avatar icon={<ActionAnnouncement />}
+					  backgroundColor={this.props.muiTheme.palette.accent1Color} />}
+		      disabled={true}
+		      rightIconButton={<IconButton onTouchTap={this.props.onRemove}><ActionDelete /> </IconButton>}
+	    />
+	);
+    }
+}));
 
 var KidsList = React.createClass({
     checkMobile: function() {
@@ -54,12 +72,18 @@ var KidsList = React.createClass({
 		     onKidAnswer={this.props.onKidAnswer}
 		     username={this.props.username}
 		     instructor={this.props.instructor}
-		/>
+/>
 	    );
 	}.bind(this));
 	return (
 	    <div className="kidsList" style={this.state.s}>
 		<List style={styles.list}>
+		    {this.props.announcement ?
+		     <Announcement key={-41}
+				   message={this.props.announcement}
+				   onRemove={this.onRemoveAnnouncement}
+		     /> :
+		     null}
 		    <FlipMove enterAnimation={"elevator"}
 			      leaveAnimation={"elevator"}
 			      staggerDurationBy={10}
@@ -229,6 +253,7 @@ var Kid = React.createClass({
 var Kids = ReactTimeout(React.createClass({
     getInitialState: function() {
 	return {data: [],
+		announcement: null,
 		snackOpen: false,
 		deletedKid: null,
 		notificationOpen: false,
@@ -256,7 +281,9 @@ var Kids = ReactTimeout(React.createClass({
     },
     updateQueue: function(data) {
 	var queue = this.rejectDeletedKid(data.queue);
-	this.setState({data: queue});
+	this.setState({data: queue,
+		       announcement: data.announcement,
+	});
     },
     loadKidsFromServer: function(force) {
 	var len = this.state.data.length;
@@ -450,9 +477,11 @@ var Kids = ReactTimeout(React.createClass({
 			  onKidSubmit={this.handleKidSubmit}
 			  onKidDelete={this.tentativeKidDelete}
 			  onKidAnswer={this.handleKidSubmit}
+			  onRemoveAnnouncement={this.handleRemoveAnnouncement}
 			  username={this.props.username}
 			  instructor={this.props.instructor}
 			  editing={this.isEditing()}
+			  announcement={this.state.announcement}
 		/>
 		<audio ref="notify">
 		    <source src="/notify.wav" type="audio/wav"/>
