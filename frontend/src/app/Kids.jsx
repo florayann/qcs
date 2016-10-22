@@ -35,7 +35,9 @@ var Announcement = muiThemeable()(React.createClass({
 		      leftAvatar={<Avatar icon={<ActionAnnouncement />}
 					  backgroundColor={this.props.muiTheme.palette.accent1Color} />}
 		      disabled={true}
-		      rightIconButton={<IconButton onTouchTap={this.props.onRemove}><ActionDelete /> </IconButton>}
+		      rightIconButton={this.props.instructor ?
+				       <IconButton onTouchTap={this.props.onRemove}><ActionDelete /> </IconButton> :
+				      null}
 	    />
 	);
     }
@@ -72,7 +74,7 @@ var KidsList = React.createClass({
 		     onKidAnswer={this.props.onKidAnswer}
 		     username={this.props.username}
 		     instructor={this.props.instructor}
-/>
+		/>
 	    );
 	}.bind(this));
 	return (
@@ -81,7 +83,8 @@ var KidsList = React.createClass({
 		    {this.props.announcement ?
 		     <Announcement key={-41}
 				   message={this.props.announcement}
-				   onRemove={this.onRemoveAnnouncement}
+				   onRemove={this.props.onRemoveAnnouncement}
+				   instructor={this.props.instructor}
 		     /> :
 		     null}
 		    <FlipMove enterAnimation={"elevator"}
@@ -417,6 +420,27 @@ var Kids = ReactTimeout(React.createClass({
 		}
 	    }.bind(this)
 	});
+    },
+    handleRemoveAnnouncement: function() {
+	$.ajax({
+	    url: "/instructor" + this.props.url,
+	    dataType: 'json',
+	    type: 'PUT',
+	    contentType: 'application/json; charset=UTF-8',
+	    data: JSON.stringify({message: ""}),
+	    success: function(data) {
+		this.updateQueue(data);
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+		if (xhr.status == 404) {
+		    this.clearAndSetTimeout("removeAnnouncementTimerId",
+					    this.handleRemoveAnnouncement,
+					    2000,
+					    );
+		}
+	    }.bind(this)
+	})
     },
     handleSnackRequestClose: function(reason) {
 	if (reason) {
