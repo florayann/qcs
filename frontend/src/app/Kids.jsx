@@ -237,7 +237,7 @@ var Kid = React.createClass({
 	return (
 	    <Card>
 		<ListItem
-		    primaryText={this.props.name + " - " + this.props.room}
+		    primaryText={this.props.name + " – " + this.props.room}
 		    secondaryText={this.props.question}
 		    leftAvatar={<Avatar backgroundColor={this.state.color} >{this.props.name[0]} </Avatar>}
 		    onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}
