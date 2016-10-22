@@ -66,7 +66,10 @@ var KidsList = React.createClass({
 			      staggerDelayBy={10}
 			      disableAllAnimations={Visibility.state() != "visible"}>
 			{kidsNodes}
-			<AddKid key={-42} onKidSubmit={this.props.onKidSubmit} editing={this.props.editing}/>
+			<AddKid key={-42}
+				onKidSubmit={this.props.onKidSubmit}
+				editing={this.props.editing}
+			/>
 		    </FlipMove>
 		</List>
 	    </div>
@@ -435,7 +438,7 @@ var Kids = ReactTimeout(React.createClass({
 	this.refreshKidsFromServer();
     },
     isEditing: function() {
-	_.contains(_.pluck(this.state.data, "id"), this.props.username);
+	return _.contains(_.pluck(this.state.data, "id"), this.props.username);
     },
     render: function() {
 	return (
