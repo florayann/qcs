@@ -110,31 +110,31 @@ class Queue(Resource):
         self.delete_reqparse.add_argument('id', type=str, required=True,
             help='No name provided')
 
-        self.get_reqparse = reqparse.RequestParser()
-        self.get_reqparse.add_argument('force', type=str)
+        self.queue_get_schema = QueueGetSchema()
         
         super().__init__()
 
     def get_queue(self, queue_id):
-        queue, timestamps = self.qdb.get_queue(queue_id)
+        queue, timestamps, rev = self.qdb.get_queue(queue_id)
         message = self.qdb.get_announcement(queue_id)
 
         return {"queue": queue,
                 "timestamps": timestamps,
                 "announcement": message,
                 "paused": self.qdb.is_queue_paused(queue_id),
+                "rev": rev,
                 }
 
     @queue_required
+    @validation_required
     def get(self, queue_id):
-        if self.get_reqparse.parse_args()["force"]:
-            return self.get_queue(queue_id)
-
-        q_revision = self.qdb.get_queue_revision(queue_id)
+        args = self.queue_get_schema.load(request.args).data
+        
+        q_revision = args.get("rev", self.qdb.get_queue_revision(queue_id))
         
         while q_revision == self.qdb.get_queue_revision(queue_id):
             time.sleep(1.0)
-
+        
         return self.get_queue(queue_id)
 
     @login_required
