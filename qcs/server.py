@@ -17,6 +17,7 @@ app.config.from_envvar("QCS_SETTINGS", silent=True)
 app.add_url_rule('/', 'root', lambda: app.send_static_file('index.html'))
 api = Api(app)
 
+
 def login_required(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
@@ -115,10 +116,11 @@ class Queue(Resource):
         super().__init__()
 
     def get_queue(self, queue_id):
-        queue = self.qdb.get_queue(queue_id).data
+        queue, timestamps = self.qdb.get_queue(queue_id)
         message = self.qdb.get_announcement(queue_id)
 
         return {"queue": queue,
+                "timestamps": timestamps,
                 "announcement": message,
                 "paused": self.qdb.is_queue_paused(queue_id),
                 }

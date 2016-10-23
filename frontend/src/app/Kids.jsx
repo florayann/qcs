@@ -18,6 +18,7 @@ import FlipMove from 'react-flip-move';
 import ReactTimeout from 'react-timeout';
 import DocumentTitle from 'react-document-title';
 import Visibility from 'visibilityjs';
+import moment from 'moment';
 import _ from 'underscore';
 import $ from 'jquery';
 
@@ -69,6 +70,7 @@ var KidsList = React.createClass({
 		     question={kid.question}
 		     id={kid.id}
 		     answer={kid.answer}
+		     timestamp={kid.timestamp}
 		     key={kid.id}
 		     onKidDelete={this.props.onKidDelete}
 		     onKidAnswer={this.props.onKidAnswer}
@@ -213,8 +215,18 @@ var Kid = React.createClass({
     getInitialState: function() {
 	var color = this.generateColor();
 	return ({color: color,
-		       complement: tinycolor(color).complement().toHexString()
+		 complement: tinycolor(color).complement().toHexString(),
+		 timeDescription: "",
+		 timerId: null,
 	});
+    },
+    componentDidMount: function() {
+	this.setState({timeDescription: this.describeTime(this.props.timestamp),
+		       timerId: setTimeout(this.updateTime, 60000),
+	});
+    },
+    componentWillUnmount: function() {
+	clearTimeout(this.state.timerId);
     },
     handleButtonTouchTap: function(e) {
 	this.props.onKidDelete({id: this.props.id});
@@ -236,12 +248,24 @@ var Kid = React.createClass({
 	var color = material_palette[group][colors[coloridx]];
 	return color;
     },
+    describeTime: function(timestamp) {
+	return moment(timestamp).fromNow();
+    },
+    updateTime: function() {
+	/* var delta = 60000;
+	   if (moment.diff(this.state.timestamp, "hours") >= 1) {
+	   delta = 60000;
+	   }*/
+	this.setState({timerId: setTimeout(this.updateTime, 60000),
+		       timeDescription: this.describeTime(this.props.timestamp),
+	});
+    },
     render: function() {
 	return (
 	    <Card>
 		<ListItem
 		    primaryText={this.props.name + " – " + this.props.room}
-		    secondaryText={this.props.question}
+		    secondaryText={<span>{this.props.question} <span style={styles.timestamp}> {this.state.timeDescription}</span></span>}
 		    leftAvatar={<Avatar backgroundColor={this.state.color} >{this.props.name[0]} </Avatar>}
 		    onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}
 		    leftIcon={this.props.answer ? <CircularProgress color={this.state.complement} size={0.75} style={styles.progress}/> : null}
@@ -261,6 +285,7 @@ var Kid = React.createClass({
 var Kids = ReactTimeout(React.createClass({
     getInitialState: function() {
 	return {data: [],
+		timestamps: [],
 		announcement: null,
 		snackOpen: false,
 		deletedKid: null,
@@ -289,8 +314,13 @@ var Kids = ReactTimeout(React.createClass({
 	});
     },
     updateQueue: function(data) {
-	var queue = this.rejectDeletedKid(data.queue);
+	var queue = data.queue;
+	queue.map(function(kid, index) {
+	    _.extend(kid, {timestamp: data.timestamps[index]});
+	}.bind(this));
+	queue = this.rejectDeletedKid(data.queue);
 	this.setState({data: queue,
+		       timestamps: data.timestamps,
 		       announcement: data.announcement,
 		       paused: data.paused,
 	});
