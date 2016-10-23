@@ -46,15 +46,23 @@ class QDataBase():
                 }
     
     def get_queue(self, queue_id):
-        question_ids = self.dr.zrange("queue:{}:qs".format(queue_id), 0, -1)
+        question_data = self.dr.zrange("queue:{}:qs".format(queue_id),
+                                       0,
+                                       -1,
+                                       withscores=True)
+        if not question_data:
+            return [], []
+
+        question_ids, scores = zip(*question_data)
+
         pipe = self.dr.pipeline()
-        
+
         for question_id in question_ids:
             pipe.hgetall("queue:{}:qs:{}".format(queue_id, question_id))
 
         result = pipe.execute()
         
-        return self.strict_kid_schema.load(result, many=True)
+        return self.strict_kid_schema.load(result, many=True).data, scores
 
     def get_queues(self, class_id):
         queue_ids = [int(i) for i in self.r.smembers("class:{}:queues".format(class_id))]
