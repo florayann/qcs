@@ -18,6 +18,7 @@ import FlipMove from 'react-flip-move';
 import ReactTimeout from 'react-timeout';
 import DocumentTitle from 'react-document-title';
 import Visibility from 'visibilityjs';
+import moment from 'moment';
 import _ from 'underscore';
 import $ from 'jquery';
 
@@ -69,6 +70,7 @@ var KidsList = React.createClass({
 		     question={kid.question}
 		     id={kid.id}
 		     answer={kid.answer}
+		     timestamp={kid.timestamp}
 		     key={kid.id}
 		     onKidDelete={this.props.onKidDelete}
 		     onKidAnswer={this.props.onKidAnswer}
@@ -237,11 +239,13 @@ var Kid = React.createClass({
 	return color;
     },
     render: function() {
+	var timestamp = <span style={styles.timestamp}> {this.props.timestamp}</span>;
+	
 	return (
 	    <Card>
 		<ListItem
 		    primaryText={this.props.name + " – " + this.props.room}
-		    secondaryText={this.props.question}
+		    secondaryText={<span>{this.props.question} {timestamp} </span>}
 		    leftAvatar={<Avatar backgroundColor={this.state.color} >{this.props.name[0]} </Avatar>}
 		    onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}
 		    leftIcon={this.props.answer ? <CircularProgress color={this.state.complement} size={0.75} style={styles.progress}/> : null}
@@ -288,11 +292,14 @@ var Kids = ReactTimeout(React.createClass({
 	    [timerIdProperty]: this.props.setTimeout(...rest)
 	});
     },
+    describeTime(timestamp) {
+	return moment(timestamp).fromNow();
+    },
     updateQueue: function(data) {
 	var queue = data.queue;
 	queue.map(function(kid, index) {
-	    _.extend(kid, {timestamp: data.timestamps[index]});
-	});
+	    _.extend(kid, {timestamp: this.describeTime(data.timestamps[index])});
+	}.bind(this));
 	queue = this.rejectDeletedKid(data.queue);
 	this.setState({data: queue,
 		       announcement: data.announcement,

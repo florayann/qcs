@@ -37,6 +37,7 @@
     "underscore": "1.8.3",
     "react-timeout": "1.0.0",
     "tinycolor2": "1.4.1",
-    "visibilityjs": "1.2.4"
+    "visibilityjs": "1.2.4",
+    "moment": "^2.15.1"
   }
 }

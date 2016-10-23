@@ -1,3 +1,5 @@
+import {grey400} from 'material-ui/styles/colors';
+
 var styles = {
     addButton: {
 	marginRight: 20,
@@ -27,6 +29,10 @@ var styles = {
     list: {
 	paddingTop: 0,
 	paddingBottom: 0,
+    },
+    timestamp: {
+	color: grey400,
+	fontSize: 10,
     },
 }
 
