@@ -91,10 +91,16 @@ class QDataBase():
         pipe.execute()
 
     def pause_queue(self, queue_id):
-        self.r.set("queue:{}:paused".format(queue_id), 1)
+        pipe = self.r.pipeline()
+        pipe.set("queue:{}:paused".format(queue_id), 1)
+        pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.execute()
 
     def resume_queue(self, queue_id):
-        self.r.set("queue:{}:paused".format(queue_id), 0)
+        pipe = self.r.pipeline()
+        pipe.set("queue:{}:paused".format(queue_id), 0)
+        pipe.incr("queue:{}:rev".format(queue_id))
+        pipe.execute()
 
     def is_queue_paused(self, queue_id):
         return int(self.r.get("queue:{}:paused".format(queue_id))) == 1

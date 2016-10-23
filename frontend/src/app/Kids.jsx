@@ -96,6 +96,7 @@ var KidsList = React.createClass({
 			<AddKid key={-42}
 				onKidSubmit={this.props.onKidSubmit}
 				editing={this.props.editing}
+				paused={this.props.paused}
 			/>
 		    </FlipMove>
 		</List>
@@ -123,7 +124,7 @@ var AddKid = React.createClass({
 	this.setState({question: e.target.value});
     },
     handleExpandChange: function(expanded) {
-	this.setState({expanded: expanded});
+	this.setState({expanded: !this.props.paused && expanded});
     },
     reduce: function() {
 	this.setState({expanded: false});
@@ -152,7 +153,9 @@ var AddKid = React.createClass({
 	    <Card expanded={this.state.expanded} onExpandChange={this.handleExpandChange}>
 		<CardHeader
 		    title={this.props.editing ? "Edit Question" : "New Question"}
-		    subtitle="Expand to add!"
+		    subtitle={this.props.paused ?
+			      "Submission currently disabled!" :
+			      "Expand to add!"}
 		    actAsExpander={true}
 		    showExpandableButton={true}
 		    avatar={<Avatar>{this.state.expanded ? "-" : "+"}</Avatar>}
@@ -237,7 +240,7 @@ var Kid = React.createClass({
 	return (
 	    <Card>
 		<ListItem
-		    primaryText={this.props.name + " - " + this.props.room}
+		    primaryText={this.props.name + " – " + this.props.room}
 		    secondaryText={this.props.question}
 		    leftAvatar={<Avatar backgroundColor={this.state.color} >{this.props.name[0]} </Avatar>}
 		    onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}
@@ -261,6 +264,7 @@ var Kids = ReactTimeout(React.createClass({
 		announcement: null,
 		snackOpen: false,
 		deletedKid: null,
+		paused: false,
 		notificationOpen: false,
 		notificationMessage: "Notification",
 	};
@@ -288,6 +292,7 @@ var Kids = ReactTimeout(React.createClass({
 	var queue = this.rejectDeletedKid(data.queue);
 	this.setState({data: queue,
 		       announcement: data.announcement,
+		       paused: data.paused,
 	});
     },
     loadKidsFromServer: function(force) {
@@ -394,7 +399,7 @@ var Kids = ReactTimeout(React.createClass({
 					    kid);
 		}
 		else if (xhr.status == 409) {
-		    this.displayNotification("Adding has been disabled", 2000);
+		    this.displayNotification("Submission has been disabled", 2000);
 		}
 	    }.bind(this)
 	});
@@ -508,6 +513,7 @@ var Kids = ReactTimeout(React.createClass({
 			  instructor={this.props.instructor}
 			  editing={this.isEditing()}
 			  announcement={this.state.announcement}
+			  paused={this.state.paused}
 		/>
 		<audio ref="notify">
 		    <source src="/notify.wav" type="audio/wav"/>

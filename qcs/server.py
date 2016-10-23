@@ -118,7 +118,10 @@ class Queue(Resource):
         queue = self.qdb.get_queue(queue_id).data
         message = self.qdb.get_announcement(queue_id)
 
-        return {"queue": queue, "announcement": message}
+        return {"queue": queue,
+                "announcement": message,
+                "paused": self.qdb.is_queue_paused(queue_id),
+                }
 
     @queue_required
     def get(self, queue_id):
