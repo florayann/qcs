@@ -289,7 +289,11 @@ var Kids = ReactTimeout(React.createClass({
 	});
     },
     updateQueue: function(data) {
-	var queue = this.rejectDeletedKid(data.queue);
+	var queue = data.queue;
+	queue.map(function(kid, index) {
+	    _.extend(kid, {timestamp: data.timestamps[index]});
+	});
+	queue = this.rejectDeletedKid(data.queue);
 	this.setState({data: queue,
 		       announcement: data.announcement,
 		       paused: data.paused,
