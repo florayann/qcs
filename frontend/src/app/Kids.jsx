@@ -286,12 +286,14 @@ var Kids = ReactTimeout(React.createClass({
     getInitialState: function() {
 	return {data: [],
 		timestamps: [],
+		rev: 0,
 		announcement: null,
 		snackOpen: false,
 		deletedKid: null,
 		paused: false,
 		notificationOpen: false,
 		notificationMessage: "Notification",
+		loadKidsTimerId: 0,
 	};
     },
     hasSameId: function(kid, other) {
@@ -308,10 +310,14 @@ var Kids = ReactTimeout(React.createClass({
     },
     clearAndSetTimeout: function(timerIdProperty, ...rest) {
 	this.props.clearTimeout(this.state[timerIdProperty]);
+
+	var timerId = this.props.setTimeout(...rest);
 	
 	this.setState({
-	    [timerIdProperty]: this.props.setTimeout(...rest)
+	    [timerIdProperty]: timerId,
 	});
+
+	return timerId;
     },
     updateQueue: function(data) {
 	var queue = data.queue;
@@ -323,35 +329,40 @@ var Kids = ReactTimeout(React.createClass({
 		       timestamps: data.timestamps,
 		       announcement: data.announcement,
 		       paused: data.paused,
+		       rev: data.rev,
 	});
     },
-    loadKidsFromServer: function(force) {
+    loadKidsFromServer: function(rev=this.state.rev) {
 	var len = this.state.data.length;
 	var oldUrl = this.props.url;
+	var timerId = this.state.loadKidsTimerId;
 
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
 	    cache: false,
-	    data: force ? {force: force} : {},
+	    data: {rev: rev},
 	    success: function(data) {
 		if (oldUrl == this.props.url) {
 		    this.updateQueue(data);
 		    if (this.props.instructor && len < this.state.data.length) {
 			this.refs.notify.play();
 		    }
-		    this.clearAndSetTimeout("loadKidsTimerId",
-					    this.loadKidsFromServer,
-					    0);
+		    /* If nobody touched the timer before I get back, I will reset it */
+		    if (timerId == this.state.loadKidsTimerId) {
+			this.clearAndSetTimeout("loadKidsTimerId",
+						this.loadKidsFromServer,
+						0);
+		    }
 		}
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
-		if (xhr.status != 410) {
+		if (xhr.status != 410 && this.state.loadKidsTimerId == timerId) {
 		    this.clearAndSetTimeout("loadKidsTimerId",
 					    this.loadKidsFromServer,
 					    2000,
-					    force);
+					    rev);
 		}
 		else {
 		    this.displayNotification("Queue deleted",
@@ -364,27 +375,18 @@ var Kids = ReactTimeout(React.createClass({
 	    }.bind(this)
 	});
     },
-    refreshKidsFromServer: function(props) {
-	props = props || this.props;
-
-	$.ajax({
-	    url: props.url,
-	    dataType: 'json',
-	    cache: false,
-	    data: {force: true},
-	    success: function(data) {
-		this.updateQueue(data);
-	    }.bind(this),
-	    error: function(xhr, status, err) {
-		console.error(this.props.url, status, err.toString());
-	    }.bind(this)
-	});
-
+    refreshKidsFromServer: function(props=this.props) {
+	/* Touching the timer will prevent returning requests from setting another */
+	this.clearAndSetTimeout("loadKidsTimerId",
+				this.loadKidsFromServer,
+				0,
+				0,
+	)
     },
-    componentWillReceiveProps: function(nextProps) {
-	if ((nextProps.refresh != this.props.refresh) ||
-	    (nextProps.url != this.props.url)) {
-	    this.refreshKidsFromServer(nextProps);
+    componentDidUpdate: function(prevProps, prevState) {
+	if ((prevProps.refresh != this.props.refresh) ||
+	    (prevProps.url != this.props.url)) {
+	    this.refreshKidsFromServer();
 	}
     },
     displayNotification: function(message,
@@ -489,7 +491,7 @@ var Kids = ReactTimeout(React.createClass({
 	this.props.onSelectQueue();
     },
     componentDidMount: function() {
-	this.loadKidsFromServer(true);
+	this.loadKidsFromServer();
     },
     getDocumentTitle: function() {
 	if (this.props.queueId == 0) {

@@ -46,12 +46,17 @@ class QDataBase():
                 }
     
     def get_queue(self, queue_id):
+        revision = self.get_queue_revision(queue_id)
+
+        if not revision:
+            return [], [], 0
+
         question_data = self.dr.zrange("queue:{}:qs".format(queue_id),
                                        0,
                                        -1,
                                        withscores=True)
         if not question_data:
-            return [], []
+            return [], [], 0
 
         question_ids, scores = zip(*question_data)
 
@@ -61,8 +66,8 @@ class QDataBase():
             pipe.hgetall("queue:{}:qs:{}".format(queue_id, question_id))
 
         result = pipe.execute()
-        
-        return self.strict_kid_schema.load(result, many=True).data, scores
+
+        return self.strict_kid_schema.load(result, many=True).data, scores, revision
 
     def get_queues(self, class_id):
         queue_ids = [int(i) for i in self.r.smembers("class:{}:queues".format(class_id))]
