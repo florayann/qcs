@@ -56,7 +56,7 @@ class QDataBase():
                                        -1,
                                        withscores=True)
         if not question_data:
-            return [], [], 0
+            return [], [], revision
 
         question_ids, scores = zip(*question_data)
 
