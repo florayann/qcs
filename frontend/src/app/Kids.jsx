@@ -376,6 +376,18 @@ var Kids = ReactTimeout(React.createClass({
 	});
     },
     refreshKidsFromServer: function(props=this.props) {
+	$.ajax({
+	    url: this.props.url,
+	    dataType: 'json',
+	    cache: false,
+	    data: {rev: 0},
+	    success: function(data) {
+		this.updateQueue(data);
+	    }.bind(this),
+	    error: function(xhr, status, err) {
+		console.error(this.props.url, status, err.toString());
+	    }.bind(this)
+	});
 	/* Touching the timer will prevent returning requests from setting another */
 	this.clearAndSetTimeout("loadKidsTimerId",
 				this.loadKidsFromServer,
