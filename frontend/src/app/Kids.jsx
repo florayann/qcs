@@ -375,8 +375,13 @@ var Kids = ReactTimeout(React.createClass({
 	    }.bind(this)
 	});
     },
+    /**
+     * Force an immediately returning GET to the server and reset
+     * the get timer, in case it broke or we're on a new queue.
+     */
     refreshKidsFromServer: function(props=this.props) {
 	/* Touching the timer will prevent returning requests from setting another */
+	this.setState({rev: 0});
 	this.clearAndSetTimeout("loadKidsTimerId",
 				this.loadKidsFromServer,
 				0,
