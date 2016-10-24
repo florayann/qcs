@@ -294,6 +294,7 @@ var Kids = ReactTimeout(React.createClass({
 		notificationOpen: false,
 		notificationMessage: "Notification",
 		loadKidsTimerId: 0,
+		pendingXhr: null,
 	};
     },
     hasSameId: function(kid, other) {
@@ -337,12 +338,18 @@ var Kids = ReactTimeout(React.createClass({
 	var oldUrl = this.props.url;
 	var timerId = this.state.loadKidsTimerId;
 
+	if (this.state.pendingXhr) {
+	    this.state.pendingXhr.abort();
+	}
+
+	var xhr =
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
 	    cache: false,
 	    data: {rev: rev},
 	    success: function(data) {
+		this.setState({pendingXhr: null});
 		if (oldUrl == this.props.url) {
 		    this.updateQueue(data);
 		    if (this.props.instructor && len < this.state.data.length) {
@@ -357,12 +364,15 @@ var Kids = ReactTimeout(React.createClass({
 		}
 	    }.bind(this),
 	    error: function(xhr, status, err) {
+		this.setState({pendingXhr: null});
 		console.error(this.props.url, status, err.toString());
-		if (xhr.status != 410 && this.state.loadKidsTimerId == timerId) {
-		    this.clearAndSetTimeout("loadKidsTimerId",
-					    this.loadKidsFromServer,
-					    2000,
-					    rev);
+		if (xhr.status != 410) {
+		    if (this.state.loadKidsTimerId == timerId) {
+			this.clearAndSetTimeout("loadKidsTimerId",
+						this.loadKidsFromServer,
+						2000,
+						rev);
+		    }
 		}
 		else {
 		    this.displayNotification("Queue deleted",
@@ -374,6 +384,7 @@ var Kids = ReactTimeout(React.createClass({
 		}
 	    }.bind(this)
 	});
+	this.setState({pendingXhr: xhr});
     },
     refreshKidsFromServer: function(props=this.props) {
 	$.ajax({
