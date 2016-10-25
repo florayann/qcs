@@ -105,6 +105,7 @@ var QClass = React.createClass({
     },
     componentDidMount: function() {
 	this.loadQueuesFromServer();
+	this.handleAddQueue("");
     },
     handleKeyPress: function(target) {
 	if (target.charCode == 13) {
