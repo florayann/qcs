@@ -225,6 +225,11 @@ var Kid = React.createClass({
 		       timerId: setTimeout(this.updateTime, 60000),
 	});
     },
+    componentDidUpdate: function(prevProps, prevState) {
+	if (prevProps.timestamp != this.props.timestamp) {
+	    this.setState({timeDescription: this.describeTime(this.props.timestamp)});
+	}
+    },
     componentWillUnmount: function() {
 	clearTimeout(this.state.timerId);
     },
