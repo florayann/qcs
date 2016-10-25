@@ -34,6 +34,11 @@ var styles = {
 	color: grey400,
 	fontSize: 10,
     },
+    addButton: {
+	position: 'fixed',
+	right: 20,
+	bottom: 20,
+    },
 }
 
 export default styles;

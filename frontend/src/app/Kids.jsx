@@ -7,10 +7,12 @@ import TextField from 'material-ui/TextField';
 import ActionDone from 'material-ui/svg-icons/action/done';
 import ActionDelete from 'material-ui/svg-icons/action/delete';
 import ActionAnnouncement from 'material-ui/svg-icons/action/announcement';
+import ContentAdd from 'material-ui/svg-icons/content/add';
 import IconButton from 'material-ui/IconButton';
 import Snackbar from 'material-ui/Snackbar';
 import CircularProgress from 'material-ui/CircularProgress';
 import LinearProgress from 'material-ui/LinearProgress';
+import FloatingActionButton from 'material-ui/FloatingActionButton';
 
 import seedrandom from 'seedrandom';
 import tinycolor from 'tinycolor2';
@@ -99,6 +101,9 @@ var KidsList = React.createClass({
 				onKidSubmit={this.props.onKidSubmit}
 				editing={this.props.editing}
 				paused={this.props.paused}
+				adding={this.props.adding}
+				onAddExpandChange={this.props.onAddExpandChange}
+				onAddReduceChange={this.props.onAddReduceChange}
 			/>
 		    </FlipMove>
 		</List>
@@ -112,7 +117,6 @@ var AddKid = React.createClass({
 	return {name: '',
 		room: '',
 		question:'',
-		expanded:false,
 		attemptedSubmit: false
 	};
     },
@@ -125,12 +129,6 @@ var AddKid = React.createClass({
     handleQuestionChange: function(e) {
 	this.setState({question: e.target.value});
     },
-    handleExpandChange: function(expanded) {
-	this.setState({expanded: !this.props.paused && expanded});
-    },
-    reduce: function() {
-	this.setState({expanded: false});
-    },
     submitKid: function(e) {
 	this.props.onKidSubmit({
 	    name: this.state.name.trim(),
@@ -138,7 +136,7 @@ var AddKid = React.createClass({
 	    question: this.state.question.trim(),
 	});
 	this.setState({room: '', question:'', attemptedSubmit: false});
-	this.reduce();
+	this.props.onAddReduceChange();
     },
     handleKeyPress: function(target) {
 	if (target.charCode == 13) {
@@ -152,7 +150,7 @@ var AddKid = React.createClass({
     },
     render: function() {
 	return (
-	    <Card expanded={this.state.expanded} onExpandChange={this.handleExpandChange}>
+	    <Card expanded={this.props.adding} onExpandChange={this.props.onAddExpandChange}>
 		<CardHeader
 		    title={this.props.editing ? "Edit Question" : "New Question"}
 		    subtitle={this.props.paused ?
@@ -160,7 +158,7 @@ var AddKid = React.createClass({
 			      "Expand to add!"}
 		    actAsExpander={true}
 		    showExpandableButton={true}
-		    avatar={<Avatar>{this.state.expanded ? "-" : "+"}</Avatar>}
+		    avatar={<Avatar>{this.props.adding ? "-" : "+"}</Avatar>}
 		/>
 		<CardText expandable={true}>
 		    <TextField
@@ -300,6 +298,7 @@ var Kids = ReactTimeout(React.createClass({
 		notificationMessage: "Notification",
 		loadKidsTimerId: 0,
 		pendingXhr: null,
+		adding: false,
 	};
     },
     hasSameId: function(kid, other) {
@@ -560,6 +559,15 @@ var Kids = ReactTimeout(React.createClass({
     isEditing: function() {
 	return _.contains(_.pluck(this.state.data, "id"), this.props.username);
     },
+    handleAddExpandChange: function(expanded) {
+	this.setState({adding: !this.state.paused && expanded});
+    },
+    handleAddOpen: function() {
+	this.setState({adding: true});
+    },
+    handleAddReduceChange: function() {
+	this.setState({adding: false});
+    },
     render: function() {
 	return (
 	    <DocumentTitle title={this.getDocumentTitle()}>
@@ -574,6 +582,9 @@ var Kids = ReactTimeout(React.createClass({
 			  editing={this.isEditing()}
 			  announcement={this.state.announcement}
 			  paused={this.state.paused}
+			  adding={this.state.adding}
+			  onAddExpandChange={this.handleAddExpandChange}
+			  onAddReduceChange={this.handleAddReduceChange}
 		/>
 		<audio ref="notify">
 		    <source src="/notify.wav" type="audio/wav"/>
@@ -596,6 +607,15 @@ var Kids = ReactTimeout(React.createClass({
 		    onActionTouchTap={this.state.notificationAction}
 		    onRequestClose={this.state.notificationOnRequestClose}
 		/>
+
+		<FloatingActionButton
+		    secondary={true}
+		    style={styles.addButton}
+		    onTouchTap={this.handleAddOpen}
+		    disabled={this.state.paused}
+		>
+		    <ContentAdd />
+		</FloatingActionButton>
 	    </div>
 	    </DocumentTitle>
 	);
