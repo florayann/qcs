@@ -122,7 +122,7 @@ var QClass = React.createClass({
 			      }.bind(this)}
 			  leftIcon={<ActionToc />}
 			  rightIconButton={this.state.instructor ?
-					   <IconButton tooltip="Delete queue" onTouchTap={function () {this.handleDeleteQueue(queueId)}.bind(this)} > 
+					   <IconButton onTouchTap={function () {this.handleDeleteQueue(queueId)}.bind(this)} > 
 						<ActionDelete />
 					  </IconButton> : null}
 		/>
