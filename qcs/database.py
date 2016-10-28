@@ -116,7 +116,10 @@ class QDataBase():
         pipe.execute()
 
     def is_queue_paused(self, queue_id):
-        return int(self.r.get("queue:{}:paused".format(queue_id))) == 1
+        try:
+            return int(self.r.get("queue:{}:paused".format(queue_id))) == 1
+        except TypeError:
+            return False
 
     def add_question(self, queue_id, question, question_id):
         if self.r.zrank("queue:{}:qs".format(queue_id), question_id) is None:
