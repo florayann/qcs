@@ -16,12 +16,41 @@ import Dialog from 'material-ui/Dialog';
 
 import QControls from './QControls';
 
+var DeleteQueue = React.createClass({
+    render: function() {
+	const actions = [
+	    <FlatButton
+		label="Cancel"
+		primary={false}
+		onTouchTap={this.props.onClose}
+	    />,
+	    <FlatButton
+		label="Confirm"
+		primary={true}
+		onTouchTap={this.props.onConfirmDelete}
+	    />,
+	];
+
+	return (
+	    <Dialog
+		title={`Delete ${this.props.name}?`}
+		actions={actions}
+		modal={false}
+		open={this.props.deletingQueue}
+		onRequestClose={this.props.onClose}
+	    >
+	    </Dialog>
+	);
+    }
+});
+
 var QClass = React.createClass({
     getInitialState: function() {
 	return {queues: {},
 		open: false,
 		instructor: false,
 		addingQueue: false,
+		deletingQueue: false,
 		name: "",
 	};
     },
@@ -64,16 +93,16 @@ var QClass = React.createClass({
 	    }.bind(this)
 	});
     },
-    handleDeleteQueue: function(queueId) {
+    handleDeleteQueue: function() {
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'DELETE',
 	    contentType: 'application/json; charset=UTF-8',
-	    data: JSON.stringify({id: queueId}),
+	    data: JSON.stringify({id: this.state.deletedQueue}),
 	    success: function(data) {
 		this.setState({queues: data});
-		this.handleClose();
+		this.closeDelete();
 	    }.bind(this),
 	    error: function(xhr, status, err) {
 		console.error(this.props.url, status, err.toString());
@@ -112,6 +141,16 @@ var QClass = React.createClass({
 	    this.handleAddQueue(this.state.name);
 	}
     },
+    confirmDelete: function(queueId) {
+	this.setState({deletingQueue: true,
+		       deletedQueue: queueId,
+	});
+    },
+    closeDelete: function() {
+	this.setState({deletingQueue: false,
+		       deletedQueue: null,
+	});
+    },
     render: function() {
 	var queueNodes = Object.keys(this.state.queues).map(function (queueId) {
 	    return (
@@ -122,7 +161,7 @@ var QClass = React.createClass({
 			      }.bind(this)}
 			  leftIcon={<ActionToc />}
 			  rightIconButton={this.state.instructor ?
-					   <IconButton onTouchTap={function () {this.handleDeleteQueue(queueId)}.bind(this)} > 
+					   <IconButton onTouchTap={function () {this.confirmDelete(queueId)}.bind(this)} > 
 						<ActionDelete />
 					  </IconButton> : null}
 		/>
@@ -152,31 +191,35 @@ var QClass = React.createClass({
 	
 	return (
 	    <div>
-	    <ListItem primaryText={this.props.name}
-		      key={this.props.classId}
-		      primaryTogglesNestedList={true}
-		      nestedItems={queueNodes}
-		      onNestedListToggle={this.handleNestedListToggle}
-		      leftIcon={<ActionClass />}
-	    />
-	    
-	    {(!this.state.addingQueue) ? null :
-		<Dialog
-		    title="Name"
-		    actions={actions}
-		    modal={false}
-		    open={this.state.addingQueue}
-		    onRequestClose={this.handleClose}
-		>
-		    <TextField
-			hintText="Queue name"
-			value={this.state.name}
-			onChange={this.handleNameChange}
-			autoFocus={true}
-			onKeyPress={this.handleKeyPress}
-		    />
-		</Dialog>
-	    }
+		<ListItem primaryText={this.props.name}
+			  key={this.props.classId}
+			  primaryTogglesNestedList={true}
+			  nestedItems={queueNodes}
+			  onNestedListToggle={this.handleNestedListToggle}
+			  leftIcon={<ActionClass />}
+		/>
+
+		<DeleteQueue deletingQueue={this.state.deletingQueue}
+			     onConfirmDelete={this.handleDeleteQueue}
+			     name={this.state.queues[this.state.deletedQueue]}
+			     onClose={this.closeDelete}
+		/>
+
+		 <Dialog
+		     title="Name"
+		     actions={actions}
+		     modal={false}
+		     open={this.state.addingQueue}
+		     onRequestClose={this.handleClose}
+		 >
+		     <TextField
+			 hintText="Queue name"
+			 value={this.state.name}
+			 onChange={this.handleNameChange}
+			 autoFocus={true}
+			 onKeyPress={this.handleKeyPress}
+		     />
+		 </Dialog>
 	    </div>
 	);
     }
