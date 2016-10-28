@@ -517,8 +517,19 @@ var Kids = ReactTimeout(React.createClass({
     handleOkayQueueDeleted: function(e) {
 	this.props.onSelectQueue();
     },
+    handleWindowClose: function(e) {
+	if (this.state.deletedKid) {
+	    this.deleteKid();
+	}
+    },
     componentDidMount: function() {
 	this.loadKidsFromServer();
+	window.addEventListener("beforeunload",
+				this.handleWindowClose
+	);
+    },
+    componentWillUnmount: function() {
+	window.removeEventListener("beforeunload", this.handleWindowClose);
     },
     getDocumentTitle: function() {
 	if (this.props.queueId == 0) {
