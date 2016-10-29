@@ -87,39 +87,55 @@ class AddQueueDialog extends React.Component {
 }
 
 
-var QClass = React.createClass({
-    getInitialState: function() {
-	return {queues: {},
-		open: false,
-		instructor: false,
-		addingQueue: false,
-		deletingQueue: false,
-		name: "",
-	};
-    },
-    handleNestedListToggle: function(item) {
+class QClass extends React.Component {
+    state = {queues: {},
+	     open: false,
+	     instructor: false,
+	     addingQueue: false,
+	     deletingQueue: false,
+	     name: "",
+    };
+    
+    constructor(props) {
+	super(props);
+	this.loadQueuesFromServer();
+	this.handleAddQueue("");
+    }
+
+    componentDidUpdate(prevProps) {
+	if ((prevProps.drawerOpen != this.props.drawerOpen) &&
+	    (prevProps.drawerOpen)) {
+	    this.loadQueuesFromServer();
+	}
+    }
+    
+    handleNestedListToggle = (item) => {
 	if (item.state.open) {
 	    this.handleAddQueue("");
 	}
-    },
-    handleNameChange: function(e) {
+    }
+
+    handleNameChange = (e) => {
 	this.setState({name: e.target.value});
-    },
-    handleOpen: function() {
+    }
+
+    handleOpen = () => {
 	this.setState({addingQueue: true});
-    },
-    handleAddClose: function() {
+    }
+
+    handleAddClose = () => {
 	this.setState({addingQueue: false});
 	this.setState({name: ""});
-    },
-    handleAddQueue: function(name) {
+    }
+
+    handleAddQueue = (name) => {
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'POST',
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify({name: name}),
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({instructor: true});
 		this.setState({queues: data});
 		this.handleAddClose();
@@ -128,73 +144,69 @@ var QClass = React.createClass({
 		    var queueId = ids[ids.length - 1];
 		    this.props.onSelectQueue(queueId, data[queueId]);
 		}
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		if (status = 403) {
 		    this.setState({instructor: false});
 		}
-	    }.bind(this)
+	    }
 	});
-    },
-    handleDeleteQueue: function() {
+    }
+
+    handleDeleteQueue = () => {
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'DELETE',
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify({id: this.state.deletedQueue}),
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({queues: data});
 		this.closeDelete();
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-	    }.bind(this)
+	    }
 	});
-    },
-    loadQueuesFromServer: function() {
+    }
+
+    loadQueuesFromServer = () => {
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'GET',
 	    cache: false,
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({queues: data});
 		if (this.props.drawerOpen) {
 		    setTimeout(this.loadQueuesFromServer, 10000);
 		}
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-	    }.bind(this)
+	    }
 	});
-    },
-    componentWillReceiveProps: function(nextProps) {
-	if ((nextProps.drawerOpen != this.props.drawerOpen) &&
-	    (nextProps.drawerOpen)) {
-	    this.loadQueuesFromServer();
-	}
-    },
-    componentDidMount: function() {
-	this.loadQueuesFromServer();
-	this.handleAddQueue("");
-    },
-    handleKeyPress: function(target) {
+    }
+    
+    handleKeyPress = (target) => {
 	if (target.charCode == 13) {
 	    this.handleAddQueue(this.state.name);
 	}
-    },
-    confirmDelete: function(queueId) {
+    }
+
+    confirmDelete = (queueId) => {
 	this.setState({deletingQueue: true,
 		       deletedQueue: queueId,
 	});
-    },
-    closeDelete: function() {
+    }
+
+    closeDelete = () => {
 	this.setState({deletingQueue: false,
 		       deletedQueue: null,
 	});
-    },
-    render: function() {
+    }
+
+    render() {
 	var queueNodes = Object.keys(this.state.queues).map((queueId) => {
 	    return (
 		<ListItem primaryText={this.state.queues[queueId]}
@@ -251,6 +263,7 @@ var QClass = React.createClass({
 	    </div>
 	);
     }
-});
+}
+
 
 export default QClass;
