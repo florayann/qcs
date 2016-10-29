@@ -24,7 +24,7 @@ import moment from 'moment';
 import _ from 'underscore';
 import $ from 'jquery';
 
-import styles from './styles';
+import styles from '../styles';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import {grey400, darkBlack, lightBlack} from 'material-ui/styles/colors';
 
