@@ -195,7 +195,7 @@ var QClass = React.createClass({
 	});
     },
     render: function() {
-	var queueNodes = Object.keys(this.state.queues).map(function (queueId) {
+	var queueNodes = Object.keys(this.state.queues).map((queueId) => {
 	    return (
 		<ListItem primaryText={this.state.queues[queueId]}
 			  key={queueId}
@@ -204,16 +204,18 @@ var QClass = React.createClass({
 							   this.state.queues[queueId])
 			      }}
 			  leftIcon={<ActionToc />}
-			  rightIconButton={this.state.instructor ?
-					   <IconButton onTouchTap={() => {
-						   this.confirmDelete(queueId);
-					       }}
->
-					       <ActionDelete />
-					   </IconButton> : null}
+			  rightIconButton=
+			  {this.state.instructor ?
+			   <IconButton onTouchTap={() => {
+				   this.confirmDelete(queueId);
+			       }}
+			   >
+			       <ActionDelete />
+			   </IconButton> :
+			   null}
 		/>
 	    );
-	}.bind(this));
+	});
 	
 	if (this.state.instructor) {
 	    queueNodes.push(<ListItem primaryText="New Queue"
