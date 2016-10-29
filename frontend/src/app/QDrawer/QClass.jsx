@@ -12,7 +12,7 @@ import Subheader from 'material-ui/Subheader';
 import Dialog from 'material-ui/Dialog';
 
 class DeleteQueue extends React.Component {
-    render = () => {
+    render() {
 	const actions = [
 	    <FlatButton
 		label="Cancel"
@@ -39,6 +39,53 @@ class DeleteQueue extends React.Component {
     }
 }
 
+
+class AddQueueDialog extends React.Component {
+    static propTypes = {
+	onClose: React.PropTypes.func.isRequired,
+	onSubmit: React.PropTypes.func.isRequired,
+	onNameChange: React.PropTypes.func.isRequired,
+	onKeyPress: React.PropTypes.func.isRequired,
+	addingQueue: React.PropTypes.bool.isRequired,
+	name: React.PropTypes.string.isRequired,
+    }
+
+    render() {
+	const actions = [
+	    <FlatButton
+		label="Cancel"
+		primary={false}
+		onTouchTap={this.props.onClose}
+	    />,
+	    <FlatButton
+		label="Save"
+		primary={true}
+		onTouchTap={() => {this.props.onSubmit(this.props.name);}}
+	    />,
+	];
+	
+	return (
+	    <Dialog
+		title="Name"
+		actions={actions}
+		modal={false}
+		open={this.props.addingQueue}
+		onRequestClose={this.props.onClose}
+	    >
+		<TextField
+		    hintText="Queue name"
+		    value={this.props.name}
+		    onChange={this.props.onNameChange}
+		    autoFocus={true}
+		    onKeyPress={this.props.onKeyPress}
+		/>
+	    </Dialog>
+	)
+    }
+    
+}
+
+
 var QClass = React.createClass({
     getInitialState: function() {
 	return {queues: {},
@@ -60,7 +107,7 @@ var QClass = React.createClass({
     handleOpen: function() {
 	this.setState({addingQueue: true});
     },
-    handleClose: function() {
+    handleAddClose: function() {
 	this.setState({addingQueue: false});
 	this.setState({name: ""});
     },
@@ -74,7 +121,7 @@ var QClass = React.createClass({
 	    success: function(data) {
 		this.setState({instructor: true});
 		this.setState({queues: data});
-		this.handleClose();
+		this.handleAddClose();
 		if (name) {
 		    var ids = Object.keys(data);
 		    var queueId = ids[ids.length - 1];
@@ -174,19 +221,6 @@ var QClass = React.createClass({
 				      leftIcon={<ContentAdd />}
 			    />);
 	}
-
-	const actions = [
-	    <FlatButton
-		label="Cancel"
-		primary={false}
-		onTouchTap={this.handleClose}
-	    />,
-	    <FlatButton
-		label="Save"
-		primary={true}
-		onTouchTap={function () {this.handleAddQueue(this.state.name);}.bind(this)}
-	    />,
-	];
 	
 	return (
 	    <div>
@@ -204,21 +238,13 @@ var QClass = React.createClass({
 			     onClose={this.closeDelete}
 		/>
 
-		<Dialog
-		    title="Name"
-		    actions={actions}
-		    modal={false}
-		    open={this.state.addingQueue}
-		    onRequestClose={this.handleClose}
-		>
-		    <TextField
-			hintText="Queue name"
-			value={this.state.name}
-			onChange={this.handleNameChange}
-			autoFocus={true}
-			onKeyPress={this.handleKeyPress}
-		    />
-		</Dialog>
+		<AddQueueDialog addingQueue={this.state.addingQueue}
+				onSubmit={this.handleAddQueue}
+				onClose={this.handleAddClose}
+				onNameChange={this.handleNameChange}
+				onKeyPress={this.handleKeyPress}
+				name={this.state.name}
+		/>
 	    </div>
 	);
     }
