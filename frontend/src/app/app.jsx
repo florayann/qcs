@@ -10,7 +10,7 @@ import Dialog from 'material-ui/Dialog';
 import DocumentTitle from 'react-document-title';
 
 import QAppBar from './QAppBar';
-import QDrawer from './QDrawer';
+import QDrawer from './QDrawer/QDrawer';
 import Kids from './Kids';
 import styles from './styles';
 
