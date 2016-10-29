@@ -16,8 +16,8 @@ import Dialog from 'material-ui/Dialog';
 
 import QControls from './QControls';
 
-var DeleteQueue = React.createClass({
-    render: function() {
+class DeleteQueue extends React.Component {
+    render = () => {
 	const actions = [
 	    <FlatButton
 		label="Cancel"
@@ -42,7 +42,7 @@ var DeleteQueue = React.createClass({
 	    </Dialog>
 	);
     }
-});
+}
 
 var QClass = React.createClass({
     getInitialState: function() {
