@@ -156,12 +156,16 @@ var QClass = React.createClass({
 	    return (
 		<ListItem primaryText={this.state.queues[queueId]}
 			  key={queueId}
-			  onTouchTap={function () {
-				  this.props.onSelectQueue(queueId, this.state.queues[queueId])
-			      }.bind(this)}
+			  onTouchTap={() => {
+				  this.props.onSelectQueue(queueId,
+							   this.state.queues[queueId])
+			      }}
 			  leftIcon={<ActionToc />}
 			  rightIconButton={this.state.instructor ?
-					   <IconButton onTouchTap={function () {this.confirmDelete(queueId)}.bind(this)} > 
+					   <IconButton onTouchTap={() => {
+						   this.confirmDelete(queueId);
+					       }}
+					   >
 						<ActionDelete />
 					  </IconButton> : null}
 		/>
