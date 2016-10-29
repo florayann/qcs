@@ -77,22 +77,43 @@ class Kid extends React.Component {
     }
     
     render() {
+	var answeringCircle = null;
+	var doneButton = null;
+
+	if (this.props.answer) {
+	    answeringCircle = (
+		<CircularProgress color={this.state.complement}
+				  size={0.75}
+				  style={styles.progress}
+		/>
+	    );
+	}
+
+	if (this.props.instructor || this.props.username == this.props.id) {
+	    doneButton = (
+		<IconButton onTouchTap={this.handleButtonTouchTap}>
+		    <ActionDone/>
+		</IconButton>
+	    );
+	}
+
 	return (
 	    <Card>
 		<ListItem
 		    primaryText={this.props.name + " – " + this.props.room}
-		    secondaryText={<span>{this.props.question} <span style={styles.timestamp}> {this.state.timeDescription}</span></span>}
+		    secondaryText={
+			<span>{this.props.question}
+			    <span style={styles.timestamp}>
+					&nbsp;{this.state.timeDescription}
+			    </span>
+			</span>}
 		    leftAvatar={
-			<Avatar backgroundColor={this.state.color}>{this.props.name[0]} </Avatar>}
+			<Avatar backgroundColor={this.state.color}>
+						{this.props.name[0]}
+			</Avatar>}
 		    onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}
-		    leftIcon={this.props.answer ? <CircularProgress color={this.state.complement} size={0.75} style={styles.progress}/> : null}
-		    rightIconButton={this.props.instructor || this.props.username == this.props.id ?
-				     (
-					 <IconButton
-			     onTouchTap={this.handleButtonTouchTap}>
-					     <ActionDone/>
-					 </IconButton>
-				     ) : null}
+		    leftIcon={answeringCircle}
+		    rightIconButton={doneButton}
 		/>
 	    </Card>
 	);
