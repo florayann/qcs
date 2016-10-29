@@ -29,7 +29,7 @@ class KidsList extends React.Component {
         window.removeEventListener("resize", this.checkMobile);
     }
 
-    checkMobile() {
+    checkMobile = () => {
 	if (window.matchMedia("only screen and (max-width: 760px)").matches) {
             this.setState({s: styles.containerMobile});
 	}
