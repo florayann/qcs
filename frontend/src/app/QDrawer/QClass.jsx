@@ -163,7 +163,7 @@ var QClass = React.createClass({
 >
 					       <ActionDelete />
 					   </IconButton> : null}
-/>
+		/>
 	    );
 	}.bind(this));
 	
@@ -196,13 +196,13 @@ var QClass = React.createClass({
 			  nestedItems={queueNodes}
 			  onNestedListToggle={this.handleNestedListToggle}
 			  leftIcon={<ActionClass />}
-/>
+		/>
 
 		<DeleteQueue deletingQueue={this.state.deletingQueue}
 			     onConfirmDelete={this.handleDeleteQueue}
 			     name={this.state.queues[this.state.deletedQueue]}
 			     onClose={this.closeDelete}
-/>
+		/>
 
 		<Dialog
 		    title="Name"
