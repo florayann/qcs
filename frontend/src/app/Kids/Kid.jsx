@@ -16,40 +16,47 @@ import styles from '../styles';
 var material_palette = require("!json!./material_palette.json");
 
 
-var Kid = React.createClass({
-    getInitialState: function() {
+class Kid extends React.Component {
+    constructor(props) {
+	super(props);
 	var color = this.generateColor();
-	return ({color: color,
-		 complement: tinycolor(color).complement().toHexString(),
-		 timeDescription: "",
-		 timerId: null,
-	});
-    },
-    componentDidMount: function() {
+	this.state = {color: color,
+		      complement: tinycolor(color).complement().toHexString(),
+		      timeDescription: "",
+		      timerId: null,
+	};
+    }
+    
+    componentDidMount() {
 	this.setState({timeDescription: this.describeTime(this.props.timestamp),
 		       timerId: setTimeout(this.updateTime, 60000),
 	});
-    },
-    componentDidUpdate: function(prevProps, prevState) {
+    }
+    
+    componentDidUpdate(prevProps, prevState) {
 	if (prevProps.timestamp != this.props.timestamp) {
 	    this.setState({timeDescription: this.describeTime(this.props.timestamp)});
 	}
-    },
-    componentWillUnmount: function() {
+    }
+    
+    componentWillUnmount() {
 	clearTimeout(this.state.timerId);
-    },
-    handleButtonTouchTap: function(e) {
+    }
+    
+    handleButtonTouchTap = (e) => {
 	this.props.onKidDelete({id: this.props.id});
-    },
-    handleTouchTap: function(e) {
+    }
+    
+    handleTouchTap = (e) => {
 	this.props.onKidAnswer({id: this.props.id,
 				name: this.props.name,
 				room: this.props.room,
 				question: this.props.question,
 				answer: !this.props.answer,
 	});
-    },
-    generateColor: function() {
+    }
+    
+    generateColor = () => {
 	var n = Math.seedrandom(this.props.id);
 	var groups = Object.keys(material_palette);
 	var group = groups[Math.floor(groups.length * Math.random())];
@@ -57,22 +64,26 @@ var Kid = React.createClass({
 	var coloridx = Math.floor(colors.length * Math.random());
 	var color = material_palette[group][colors[coloridx]];
 	return color;
-    },
-    describeTime: function(timestamp) {
+    }
+    
+    describeTime(timestamp) {
 	return moment(timestamp).fromNow();
-    },
-    updateTime: function() {
+    }
+    
+    updateTime = () => {
 	this.setState({timerId: setTimeout(this.updateTime, 60000),
 		       timeDescription: this.describeTime(this.props.timestamp),
 	});
-    },
-    render: function() {
+    }
+    
+    render() {
 	return (
 	    <Card>
 		<ListItem
 		    primaryText={this.props.name + " – " + this.props.room}
 		    secondaryText={<span>{this.props.question} <span style={styles.timestamp}> {this.state.timeDescription}</span></span>}
-		    leftAvatar={<Avatar backgroundColor={this.state.color} >{this.props.name[0]} </Avatar>}
+		    leftAvatar={
+			<Avatar backgroundColor={this.state.color}>{this.props.name[0]} </Avatar>}
 		    onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}
 		    leftIcon={this.props.answer ? <CircularProgress color={this.state.complement} size={0.75} style={styles.progress}/> : null}
 		    rightIconButton={this.props.instructor || this.props.username == this.props.id ?
@@ -82,11 +93,11 @@ var Kid = React.createClass({
 					     <ActionDone/>
 					 </IconButton>
 				     ) : null}
-/>
+		/>
 	    </Card>
 	);
     }
-});
+}
 
 
 export default Kid;
