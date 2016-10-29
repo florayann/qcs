@@ -10,26 +10,36 @@ import Kid from './Kid';
 import AddKid from './AddKid';
 import Announcement from './Announcement';
 
-var KidsList = React.createClass({
-    checkMobile: function() {
+
+class KidsList extends React.Component {
+    state = {
+	s: styles.container,
+    }
+    
+    constructor(props) {
+	super(props);
+	window.addEventListener("resize", this.checkMobile);
+    }
+
+    componentDidMount() {
+	this.checkMobile();
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.checkMobile);
+    }
+
+    checkMobile() {
 	if (window.matchMedia("only screen and (max-width: 760px)").matches) {
             this.setState({s: styles.containerMobile});
 	}
 	else {
 	    this.setState({s: styles.container});
 	}
-    },
-    componentWillMount: function() {
-        this.checkMobile();
-    },
-    componentDidMount: function() {
-        window.addEventListener("resize", this.checkMobile);
-    },
-    componentWillUnmount: function() {
-        window.removeEventListener("resize", this.checkMobile);
-    },
-    render: function() {
-	var kidsNodes = this.props.data.map(function(kid) {
+    }
+
+    render() {
+	var kidsNodes = this.props.data.map((kid) => {
 	    return (
 		<Kid name={kid.name}
 		     room={kid.room}
@@ -44,7 +54,7 @@ var KidsList = React.createClass({
 		     instructor={this.props.instructor}
 		/>
 	    );
-	}.bind(this));
+	});
 	return (
 	    <div className="kidsList" style={this.state.s}>
 		<List style={styles.list}>
@@ -59,7 +69,8 @@ var KidsList = React.createClass({
 			  leaveAnimation={"elevator"}
 			  staggerDurationBy={10}
 			  staggerDelayBy={10}
-			  disableAllAnimations={Visibility.state() != "visible"}>
+			  disableAllAnimations={Visibility.state() != "visible"}
+		>
 		    {kidsNodes}
 		    <AddKid key={-42}
 			    onKidSubmit={this.props.onKidSubmit}
@@ -74,7 +85,7 @@ var KidsList = React.createClass({
 	    </div>
 	);
     }
-});
+}
 
 
 export default KidsList;
