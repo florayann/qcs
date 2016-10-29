@@ -11,7 +11,8 @@ import {List, ListItem} from 'material-ui/List';
 import Subheader from 'material-ui/Subheader';
 import Dialog from 'material-ui/Dialog';
 
-class DeleteQueue extends React.Component {
+
+class DeleteQueueDialog extends React.Component {
     render() {
 	const actions = [
 	    <FlatButton
@@ -232,10 +233,10 @@ var QClass = React.createClass({
 			  leftIcon={<ActionClass />}
 		/>
 
-		<DeleteQueue deletingQueue={this.state.deletingQueue}
-			     onConfirmDelete={this.handleDeleteQueue}
-			     name={this.state.queues[this.state.deletedQueue]}
-			     onClose={this.closeDelete}
+		<DeleteQueueDialog deletingQueue={this.state.deletingQueue}
+				   onConfirmDelete={this.handleDeleteQueue}
+				   name={this.state.queues[this.state.deletedQueue]}
+				   onClose={this.closeDelete}
 		/>
 
 		<AddQueueDialog addingQueue={this.state.addingQueue}
