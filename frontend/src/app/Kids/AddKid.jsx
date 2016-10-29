@@ -7,24 +7,27 @@ import TextField from 'material-ui/TextField';
 import _ from 'underscore';
 
 
-var AddKid = React.createClass({
-    getInitialState: function() {
-	return {name: '',
-		room: '',
-		question:'',
-		attemptedSubmit: false
-	};
-    },
-    handleNameChange: function(e) {
+class AddKid extends React.Component {
+    state = {
+	name: "",
+	room: "",
+	question:"",
+	attemptedSubmit: false
+    }
+
+    handleNameChange = (e) => {
 	this.setState({name: e.target.value});
-    },
-    handleRoomChange: function(e) {
+    }
+
+    handleRoomChange = (e) => {
 	this.setState({room: e.target.value});
-    },
-    handleQuestionChange: function(e) {
+    }
+
+    handleQuestionChange = (e) => {
 	this.setState({question: e.target.value});
-    },
-    submitKid: function(e) {
+    }
+    
+    submitKid = (e) => {
 	this.props.onKidSubmit({
 	    name: this.state.name.trim(),
 	    room: this.state.room.trim(),
@@ -32,8 +35,9 @@ var AddKid = React.createClass({
 	});
 	this.setState({room: '', question:'', attemptedSubmit: false});
 	this.props.onAddReduceChange();
-    },
-    handleKeyPress: function(target) {
+    }
+    
+    handleKeyPress = (target) => {
 	if (target.charCode == 13) {
 	    if (this.state.name && this.state.room && this.state.question) {
 		this.submitKid();
@@ -42,10 +46,13 @@ var AddKid = React.createClass({
 		this.setState({attemptedSubmit: true});
 	    }
 	}
-    },
-    render: function() {
+    }
+    
+    render() {
 	return (
-	    <Card expanded={this.props.adding} onExpandChange={this.props.onAddExpandChange}>
+	    <Card expanded={this.props.adding}
+		  onExpandChange={this.props.onAddExpandChange}
+	    >
 		<CardHeader
 		    title={this.props.editing ? "Edit Question" : "New Question"}
 		    subtitle={this.props.paused ?
@@ -93,7 +100,9 @@ var AddKid = React.createClass({
 		    <CardActions>
 			<FlatButton
 			    label="Submit"
-			    disabled={!(this.state.name && this.state.room && this.state.question)}
+			    disabled={!(this.state.name &&
+					this.state.room &&
+					this.state.question)}
 			    primary={true}
 			    onTouchTap={this.submitKid}
 			/>
@@ -102,7 +111,7 @@ var AddKid = React.createClass({
 	    </Card>
 	);
     }
-});
+}
 
 
 export default AddKid;
