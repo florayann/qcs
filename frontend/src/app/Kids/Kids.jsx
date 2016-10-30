@@ -22,10 +22,13 @@ class Kids extends React.Component {
 	paused: false,
 	notificationOpen: false,
 	notificationMessage: "Notification",
-	loadKidsTimerId: 0,
 	pendingXhr: null,
 	adding: false,
 
+    }
+
+    timerIds = {
+	loadKidsTimerId: 0,
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -62,11 +65,9 @@ class Kids extends React.Component {
     clearAndSetTimeout = (timerIdProperty, ...rest) => {
 	this.props.clearTimeout(this.state[timerIdProperty]);
 
-	var timerId = this.props.setTimeout(...rest);
+	let timerId = this.props.setTimeout(...rest);
 
-	this.setState({
-	    [timerIdProperty]: timerId,
-	});
+	this.timerIds[timerIdProperty] = timerId;
 
 	return timerId;
     }
@@ -88,7 +89,7 @@ class Kids extends React.Component {
     loadKidsFromServer = (rev=this.state.rev) => {
 	var len = this.state.data.length;
 	var oldUrl = this.props.url;
-	var timerId = this.state.loadKidsTimerId;
+	var timerId = this.timerIds.loadKidsTimerId;
 
 	if (this.state.pendingXhr) {
 	    this.state.pendingXhr.abort();
@@ -108,7 +109,7 @@ class Kids extends React.Component {
 			this.refs.notify.play();
 		    }
 		    /* If nobody touched the timer before I get back, I will reset it */
-		    if (timerId === this.state.loadKidsTimerId) {
+		    if (timerId === this.timerIds.loadKidsTimerId) {
 			this.clearAndSetTimeout("loadKidsTimerId",
 						this.loadKidsFromServer,
 						0);
@@ -119,7 +120,7 @@ class Kids extends React.Component {
 		this.setState({pendingXhr: null});
 		console.error(this.props.url, status, err.toString());
 		if (xhr.status !== 410) {
-		    if (this.state.loadKidsTimerId === timerId) {
+		    if (this.timerIds.loadKidsTimerId === timerId) {
 			this.clearAndSetTimeout("loadKidsTimerId",
 						this.loadKidsFromServer,
 						2000,
