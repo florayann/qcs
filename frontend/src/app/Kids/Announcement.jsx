@@ -10,6 +10,13 @@ import {darkBlack} from 'material-ui/styles/colors';
 
 
 class Announcement extends React.Component {
+    static propTypes = {
+	instructor: React.PropTypes.bool.isRequired,
+	message: React.PropTypes.string.isRequired,
+	muiTheme: React.PropTypes.object.isRequired,
+	onRemove: React.PropTypes.func.isRequired,
+    }
+
     render() {
 	var announcementAvatar = (
 	    <Avatar icon={<ActionAnnouncement />}
