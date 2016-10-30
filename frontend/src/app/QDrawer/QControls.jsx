@@ -10,8 +10,13 @@ import FlatButton from 'material-ui/FlatButton';
 import Dialog from 'material-ui/Dialog';
 import TextField from 'material-ui/TextField';
 
-var PlayPauseButton = React.createClass({
-    render: function() {
+class PlayPauseButton extends React.Component {
+    static propTypes = {
+	paused: React.PropTypes.bool.isRequired,
+	onPauseToggle: React.PropTypes.func.isRequired,
+    }
+
+    render() {
 	return (
 	    <ListItem primaryText={this.props.paused ? "Resume" : "Pause"}
 		      onTouchTap={this.props.onPauseToggle}
@@ -19,44 +24,53 @@ var PlayPauseButton = React.createClass({
 	    />
 	);
     }
-});
+}
 
-var AnnounceButton = React.createClass({
-    getInitialState: function() {
-	return {announcing: false,
-		message: "",
-	};
-    },
-    handleOpen: function() {
+class AnnounceButton extends React.Component {
+    static propTypes = {
+	url: React.PropTypes.string.isRequired,
+    }
+
+    state = {
+	announcing: false,
+	message: "",
+    }
+
+    handleOpen = () => {
 	this.setState({announcing: true});
-    },
-    handleClose: function() {
+    }
+
+    handleClose = () => {
 	this.setState({announcing: false, message: ""});
-    },
-    handleMessageChange: function(e) {
+    }
+
+    handleMessageChange = (e) => {
 	this.setState({message: e.target.value});
-    },
-    handleKeyPress: function(target) {
-	if (target.charCode == 13) {
+    }
+
+    handleKeyPress = (target) => {
+	if (target.charCode === 13) {
             this.handleAddAnnouncement();
 	}
-    },
-    handleAddAnnouncement: function() {
+    }
+
+    handleAddAnnouncement = () => {
 	$.ajax({
 	    url: "/instructor" + this.props.url,
 	    dataType: 'json',
 	    type: 'PUT',
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify({message: this.state.message}),
-	    success: function(data) {
+	    success: (data) => {
 		this.handleClose();
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-	    }.bind(this)
+	    },
 	});
-    },
-    render: function() {
+    }
+
+    render() {
 	const actions = [
 	    <FlatButton
 		label="Cancel"
@@ -93,47 +107,54 @@ var AnnounceButton = React.createClass({
 	    </div>
 	);
     }
-});
+}
 
-var QControls = React.createClass({
-    getInitialState: function() {
-	return {
-	    paused: false,
-	};
-    },
-    handlePauseToggle: function() {
+class QControls extends React.Component {
+    static propTypes = {
+	url: React.PropTypes.string.isRequired,
+	queue_url: React.PropTypes.string.isRequired,
+    }
+
+    state = {
+	paused: false,
+    }
+
+    componentDidMount() {
+	this.loadQueueInfo();
+    }
+
+    handlePauseToggle = () => {
 	var requestType = this.state.paused ? 'POST' : 'DELETE';
 
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: requestType,
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({paused: data.paused});
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-	    }.bind(this)
+	    },
 	});
-    },
-    loadQueueInfo: function() {
+    }
+
+    loadQueueInfo = () => {
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
 	    type: 'GET',
 	    cache: false,
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({paused: data.paused});
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-	    }.bind(this)
+	    },
 	});
-    },
-    componentDidMount: function() {
-	this.loadQueueInfo();
-    },
-    render: function() {
+    }
+
+    render() {
 	return (
 	    <div>
 		<Divider />
@@ -147,6 +168,6 @@ var QControls = React.createClass({
 	    </div>
 	);
     }
-});
+}
 
 export default QControls;

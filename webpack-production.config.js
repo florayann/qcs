@@ -22,6 +22,7 @@ const config = {
       compress: {
         // supresses warnings, usually from module minification
         warnings: false,
+        drop_console: true,
       },
     }),
     // Allows error warnings but does not stop compiling.
