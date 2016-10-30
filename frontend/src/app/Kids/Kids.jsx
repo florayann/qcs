@@ -47,7 +47,7 @@ class Kids extends React.Component {
     }
 
     hasSameId = (kid, other) => {
-	return kid.id == other.id;
+	return kid.id === other.id;
     }
 
     rejectDeletedKid = (data, deletedKid=this.state.deletedKid) => {
@@ -94,7 +94,7 @@ class Kids extends React.Component {
 	    this.state.pendingXhr.abort();
 	}
 
-	var xhr =
+	let pendingXhr =
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
@@ -118,8 +118,8 @@ class Kids extends React.Component {
 	    error: (xhr, status, err) => {
 		this.setState({pendingXhr: null});
 		console.error(this.props.url, status, err.toString());
-		if (xhr.status != 410) {
-		    if (this.state.loadKidsTimerId == timerId) {
+		if (xhr.status !== 410) {
+		    if (this.state.loadKidsTimerId === timerId) {
 			this.clearAndSetTimeout("loadKidsTimerId",
 						this.loadKidsFromServer,
 						2000,
@@ -136,7 +136,7 @@ class Kids extends React.Component {
 		}
 	    }
 	});
-	this.setState({pendingXhr: xhr});
+	this.setState({pendingXhr: pendingXhr});
     }
 
     refreshKidsFromServer = (props=this.props) => {
@@ -197,13 +197,13 @@ class Kids extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-		if (xhr.status == 404) {
+		if (xhr.status === 404) {
 		    this.clearAndSetTimeout("submitKidTimerId",
 					    this.handleKidSubmit,
 					    2000,
 					    kid);
 		}
-		else if (xhr.status == 409) {
+		else if (xhr.status === 409) {
 		    this.displayNotification("Submission has been disabled", 2000);
 		}
 	    }
@@ -225,7 +225,7 @@ class Kids extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-		if (xhr.status == 404) {
+		if (xhr.status === 404) {
 		    this.clearAndSetTimeout("deleteKidTimerId", this.handleKidDelete, 2000, kid);
 		}
 		else {
@@ -247,7 +247,7 @@ class Kids extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-		if (xhr.status == 404) {
+		if (xhr.status === 404) {
 		    this.clearAndSetTimeout("removeAnnouncementTimerId",
 					    this.handleRemoveAnnouncement,
 					    2000,
@@ -275,7 +275,7 @@ class Kids extends React.Component {
     }
 
     getDocumentTitle = () => {
-	if (this.props.queueId == 0) {
+	if (this.props.queueId === 0) {
 	    return "q.cs";
 	}
 

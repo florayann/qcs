@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import {Card, CardHeader} from 'material-ui/Card';
 import $ from 'jquery';
 import DocumentTitle from 'react-document-title';
 
@@ -28,7 +28,7 @@ function LoggedOut(props) {
 
 
 class App extends React.Component {
-    state = {open:false,
+    state = {open: false,
 	     queueName: "q.cs",
 	     queueId: 0,
 	     queueInstructor: false,
@@ -46,14 +46,7 @@ class App extends React.Component {
 	this.setState({open: !this.state.open});
     }
 
-    handleSelectQueue = (queueId, queueName) => {
-	if (queueId === undefined) {
-	    queueId = 0;
-	}
-	if (queueName === undefined) {
-	    queueName = "q.cs"
-	}
-
+    handleSelectQueue = (queueId=0, queueName="q.cs") => {
 	this.setState({queueId: queueId, queueName: queueName, queueInstructor: false});
 	this.setState({open: false});
 	this.isQueueInstructor(queueId);
@@ -136,7 +129,7 @@ class App extends React.Component {
 		    setTimeout(this.loadClassesFromServer, 2000);
 		}
 	    }
-	})
+	});
     }
 
     render() {
@@ -163,7 +156,7 @@ class App extends React.Component {
 			 {__FAKEAUTH__ && !this.state.username ?
 			  <FakeAuthDialog onLogin={this.handleLogin} /> : null}
 
-			 {this.state.queueId == 0 ? null : 
+			 {this.state.queueId == 0 ? null :
 			  <Kids url={this.props.queue_url + this.state.queueId}
 				queueId={this.state.queueId}
 				queueName={this.state.queueName}
@@ -172,7 +165,7 @@ class App extends React.Component {
 				refresh={this.state.refresh}
 				onSelectQueue={this.handleSelectQueue}
 			  />}
-			  
+
 		     </div>) : <LoggedOut />}
 	    </MuiThemeProvider>
 	);

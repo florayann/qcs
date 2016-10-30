@@ -1,5 +1,5 @@
 import React from 'react';
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import {Card, CardActions, CardHeader, CardText} from 'material-ui/Card';
 import Avatar from 'material-ui/Avatar';
 import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField';
@@ -11,8 +11,8 @@ class AddKid extends React.Component {
     state = {
 	name: "",
 	room: "",
-	question:"",
-	attemptedSubmit: false
+	question: "",
+	attemptedSubmit: false,
     }
 
     handleNameChange = (e) => {
@@ -26,19 +26,19 @@ class AddKid extends React.Component {
     handleQuestionChange = (e) => {
 	this.setState({question: e.target.value});
     }
-    
+
     submitKid = (e) => {
 	this.props.onKidSubmit({
 	    name: this.state.name.trim(),
 	    room: this.state.room.trim(),
 	    question: this.state.question.trim(),
 	});
-	this.setState({room: '', question:'', attemptedSubmit: false});
+	this.setState({room: '', question: '', attemptedSubmit: false});
 	this.props.onAddReduceChange();
     }
-    
+
     handleKeyPress = (target) => {
-	if (target.charCode == 13) {
+	if (target.charCode === 13) {
 	    if (this.state.name && this.state.room && this.state.question) {
 		this.submitKid();
 	    }
@@ -47,7 +47,7 @@ class AddKid extends React.Component {
 	    }
 	}
     }
-    
+
     render() {
 	return (
 	    <Card expanded={this.props.adding}
