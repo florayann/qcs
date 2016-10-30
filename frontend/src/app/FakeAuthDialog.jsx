@@ -22,7 +22,9 @@ class FakeAuthDialog extends React.Component {
     }
 
     handleLogin = () => {
-	this.props.onLogin({username: this.state.username});
+	if (this.state.username) {
+	    this.props.onLogin({username: this.state.username});
+	}
 	this.setState({attemptedSubmit: true});
     }
 
