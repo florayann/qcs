@@ -27,21 +27,26 @@ function LoggedOut(props) {
 }
 
 
-var App = React.createClass({
-    getInitialState: function() {
-	return {open:false,
-		queueName: "q.cs",
-		queueId: 0,
-		queueInstructor: false,
-		classes: {},
-		username: "",
-		refresh: false,
-	};
-    },
-    handleLeftIconButtonTouchTap: function (e) {
+class App extends React.Component {
+    state = {open:false,
+	     queueName: "q.cs",
+	     queueId: 0,
+	     queueInstructor: false,
+	     classes: {},
+	     username: "",
+	     refresh: false,
+    }
+
+    componentDidMount() {
+	this.checkLoggedIn();
+	this.loadClassesFromServer();
+    }
+
+    handleLeftIconButtonTouchTap = (e) => {
 	this.setState({open: !this.state.open});
-    },
-    handleSelectQueue: function(queueId, queueName) {
+    }
+
+    handleSelectQueue = (queueId, queueName) => {
 	if (queueId === undefined) {
 	    queueId = 0;
 	}
@@ -52,86 +57,89 @@ var App = React.createClass({
 	this.setState({queueId: queueId, queueName: queueName, queueInstructor: false});
 	this.setState({open: false});
 	this.isQueueInstructor(queueId);
-    },
-    isQueueInstructor: function(queueId) {
+    }
+
+    isQueueInstructor = (queueId) => {
 	$.ajax({
 	    url: "/instructor" + this.props.queue_url + queueId,
 	    dataType: 'json',
 	    type: 'GET',
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({queueInstructor: true});
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		this.setState({queueInstructor: false});
-	    }.bind(this)
+	    }
 	});
-    },
-    handleLogin: function(data) {
+    }
+
+    handleLogin = (data) => {
 	$.ajax({
 	    url: this.props.login_url,
 	    dataType: 'json',
 	    type: 'POST',
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify(data),
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({username: data.username});
 		this.setState({open: true});
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.login_url, status, err.toString());
-	    }.bind(this)
+	    }
 	});
-    },
-    checkLoggedIn: function() {
+    }
+
+    checkLoggedIn = () => {
 	$.ajax({
 	    url: this.props.login_url,
 	    dataType: 'json',
 	    type: 'GET',
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({username: data});
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.login_url, status, err.toString());
-	    }.bind(this)
+	    }
 	});
-    },
-    handleLogout: function() {
+    }
+
+    handleLogout = () => {
 	$.ajax({
 	    url: this.props.login_url,
 	    dataType: 'json',
 	    type: 'DELETE',
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({username: null});
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.login_url, status, err.toString());
-	    }.bind(this)
+	    }
 	});
-    },
-    handleRefresh: function() {
+    }
+
+    handleRefresh = () => {
 	this.setState({refresh: !this.state.refresh});
-    },
-    loadClassesFromServer: function() {
+    }
+
+    loadClassesFromServer = () => {
 	$.ajax({
 	    url: this.props.class_url,
 	    dataType: 'json',
 	    cache: false,
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({classes: data});
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
 		if (xhr.status == 404) {
 		    setTimeout(this.loadClassesFromServer, 2000);
 		}
-	    }.bind(this)
+	    }
 	})
-    },
-    componentDidMount: function() {
-	this.checkLoggedIn();
-	this.loadClassesFromServer();
-    },
-    render: function() {
+    }
+
+    render() {
 	return(
 	    <MuiThemeProvider>
 		{this.state.username != null ? (
@@ -169,7 +177,7 @@ var App = React.createClass({
 	    </MuiThemeProvider>
 	);
     }
-});
+}
 
 ReactDOM.render(
     <DocumentTitle title="q.cs">
