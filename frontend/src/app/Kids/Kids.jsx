@@ -22,7 +22,6 @@ class Kids extends React.Component {
 	paused: false,
 	notificationOpen: false,
 	notificationMessage: "Notification",
-	pendingXhr: null,
 	adding: false,
 
     }
@@ -30,6 +29,8 @@ class Kids extends React.Component {
     timerIds = {
 	loadKidsTimerId: 0,
     }
+
+    pendingXhr = null;
 
     componentDidUpdate(prevProps, prevState) {
 	if ((prevProps.refresh !== this.props.refresh) ||
@@ -91,8 +92,8 @@ class Kids extends React.Component {
 	var oldUrl = this.props.url;
 	var timerId = this.timerIds.loadKidsTimerId;
 
-	if (this.state.pendingXhr) {
-	    this.state.pendingXhr.abort();
+	if (this.pendingXhr) {
+	    this.pendingXhr.abort();
 	}
 
 	let pendingXhr =
@@ -102,7 +103,7 @@ class Kids extends React.Component {
 	    cache: false,
 	    data: {rev: rev},
 	    success: (data) => {
-		this.setState({pendingXhr: null});
+		this.pendingXhr = null;
 		if (oldUrl === this.props.url) {
 		    this.updateQueue(data);
 		    if (this.props.instructor && len < this.state.data.length) {
@@ -117,7 +118,7 @@ class Kids extends React.Component {
 		}
 	    },
 	    error: (xhr, status, err) => {
-		this.setState({pendingXhr: null});
+		this.pendingXhr = null;
 		console.error(this.props.url, status, err.toString());
 		if (xhr.status !== 410) {
 		    if (this.timerIds.loadKidsTimerId === timerId) {
@@ -137,7 +138,7 @@ class Kids extends React.Component {
 		}
 	    }
 	});
-	this.setState({pendingXhr: pendingXhr});
+	this.pendingXhr = pendingXhr;
     }
 
     refreshKidsFromServer = (props=this.props) => {
