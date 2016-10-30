@@ -9,11 +9,10 @@ import CircularProgress from 'material-ui/CircularProgress';
 import seedrandom from 'seedrandom';
 import tinycolor from 'tinycolor2';
 import moment from 'moment';
-import _ from 'underscore';
 
 import styles from '../styles';
 
-var material_palette = require("!json!./material_palette.json");
+var materialPalette = require("!json!./material_palette.json");
 
 
 class Kid extends React.Component {
@@ -57,12 +56,12 @@ class Kid extends React.Component {
     }
 
     generateColor = () => {
-	var n = Math.seedrandom(this.props.id);
-	var groups = Object.keys(material_palette);
-	var group = groups[Math.floor(groups.length * Math.random())];
-	var colors = Object.keys(material_palette[group]);
-	var coloridx = Math.floor(colors.length * Math.random());
-	var color = material_palette[group][colors[coloridx]];
+	Math.seedrandom(this.props.id);
+	let groups = Object.keys(materialPalette);
+	let group = groups[Math.floor(groups.length * Math.random())];
+	let colors = Object.keys(materialPalette[group]);
+	let coloridx = Math.floor(colors.length * Math.random());
+	let color = materialPalette[group][colors[coloridx]];
 	return color;
     }
 
