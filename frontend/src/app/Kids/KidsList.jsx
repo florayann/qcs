@@ -3,7 +3,6 @@ import {List} from 'material-ui/List';
 
 import FlipMove from 'react-flip-move';
 import Visibility from 'visibilityjs';
-import _ from 'underscore';
 
 import styles from '../styles';
 import Kid from './Kid';
@@ -12,6 +11,22 @@ import Announcement from './Announcement';
 
 
 class KidsList extends React.Component {
+    static propTypes = {
+	adding: React.PropTypes.bool.isRequired,
+	announcement: React.PropTypes.string,
+	data: React.PropTypes.array.isRequired,
+	editing: React.PropTypes.bool.isRequired,
+	instructor: React.PropTypes.bool.isRequired,
+	onAddExpandChange: React.PropTypes.func.isRequired,
+	onAddReduceChange: React.PropTypes.func.isRequired,
+	onKidAnswer: React.PropTypes.func.isRequired,
+	onKidDelete: React.PropTypes.func.isRequired,
+	onKidSubmit: React.PropTypes.func.isRequired,
+	onRemoveAnnouncement: React.PropTypes.func.isRequired,
+	paused: React.PropTypes.bool.isRequired,
+	username: React.PropTypes.string.isRequired,
+    }
+
     state = {
 	s: styles.container,
     }
