@@ -4,81 +4,28 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import $ from 'jquery';
-import FlatButton from 'material-ui/FlatButton';
-import TextField from 'material-ui/TextField';
-import Dialog from 'material-ui/Dialog';
 import DocumentTitle from 'react-document-title';
 
 import QAppBar from './QAppBar';
 import QDrawer from './QDrawer/QDrawer';
+import FakeAuthDialog from './FakeAuthDialog';
 import Kids from './Kids/Kids';
 import styles from './styles';
 
 injectTapEventPlugin();
 
-var FakeAuthDialog = React.createClass({
-    getInitialState: function() {
-	return {username: "", open: true, attemptedSubmit: false};
-    },
-    handleChange: function(e) {
-	this.setState({
-	    username: e.target.value,
-	});
-    },
-    handleLogin: function() {
-	this.props.onLogin({username: this.state.username});
-	this.setState({attemptedSubmit: true});
-    },
-    handleKeyPress: function(target) {
-	if (target.charCode == 13) {
-            this.handleLogin();
-	}
-    },
-    render: function () {
-	const actions = [
-	    <FlatButton
-		label="Login"
-		primary={true}
-		onTouchTap={this.handleLogin}
-	    />,
-	];
-	
-	return (
-	    <Dialog
-		title="Login"
-		actions={actions}
-		modal={true}
-		open={this.state.open}
-            >
-		<TextField
-		    hintText="NetID"
-		    errorText={(!this.state.attemptedSubmit || this.state.username) ?
-			       "" :
-			       "This field is required"}
-		    floatingLabelText="NetID"
-		    onChange={this.handleChange}
-		    onKeyPress={this.handleKeyPress}
-		    autoFocus={true}
-		    value={this.state.username}
+function LoggedOut(props) {
+    return (
+	<div style={styles.container}>
+	    <Card>
+		<CardHeader
+		    title="Logged out!"
 		/>
-            </Dialog>
-	);
-    }
-});
+	    </Card>
+	</div>
+    );
+}
 
-var LoggedOut = React.createClass({
-    render: function () {
-	return (
-	    <div style={styles.container}>
-		<Card>
-		    <CardHeader
-			title="Logged out!"
-		    />
-		</Card>
-	    </div>
-	);
-    }
-});
 
 var App = React.createClass({
     getInitialState: function() {
