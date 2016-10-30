@@ -119,7 +119,7 @@ class QClass extends React.Component {
 
     componentDidUpdate(prevProps) {
 	if ((prevProps.drawerOpen !== this.props.drawerOpen) &&
-	    (prevProps.drawerOpen)) {
+	    (this.props.drawerOpen)) {
 	    this.loadQueuesFromServer();
 	}
     }
