@@ -8,6 +8,11 @@ import MenuItem from 'material-ui/MenuItem';
 
 
 class QAppBarMenu extends React.Component {
+    static propTypes = {
+	onRefresh: React.PropTypes.func.required,
+	onLogout: React.PropTypes.func.required,
+    }
+
     render() {
 	return (
 	    <IconMenu anchorOrigin={{horizontal: 'right', vertical: 'top'}}
@@ -28,6 +33,13 @@ class QAppBarMenu extends React.Component {
 
 
 class QAppBar extends React.Component {
+    static propTypes = {
+	queueName: React.PropTypes.string.required,
+	onRefresh: React.PropTypes.func.required,
+	onLogout: React.PropTypes.func.required,
+	onLeftIconButtonTouchTap: React.PropTypes.func.required,
+    }
+
     render() {
 	return (
 	    <AppBar title={this.props.queueName}
