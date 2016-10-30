@@ -1,5 +1,5 @@
 import React from 'react';
-import {List, ListItem} from 'material-ui/List';
+import {List} from 'material-ui/List';
 
 import FlipMove from 'react-flip-move';
 import Visibility from 'visibilityjs';
@@ -15,7 +15,7 @@ class KidsList extends React.Component {
     state = {
 	s: styles.container,
     }
-    
+
     constructor(props) {
 	super(props);
 	window.addEventListener("resize", this.checkMobile);
@@ -69,7 +69,7 @@ class KidsList extends React.Component {
 			  leaveAnimation={"elevator"}
 			  staggerDurationBy={10}
 			  staggerDelayBy={10}
-			  disableAllAnimations={Visibility.state() != "visible"}
+			  disableAllAnimations={Visibility.state() !== "visible"}
 		>
 		    {kidsNodes}
 		    <AddKid key={-42}
