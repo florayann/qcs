@@ -1,6 +1,6 @@
 import React from 'react';
-import {List, ListItem} from 'material-ui/List';
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import {ListItem} from 'material-ui/List';
+import {Card} from 'material-ui/Card';
 import Avatar from 'material-ui/Avatar';
 import ActionDone from 'material-ui/svg-icons/action/done';
 import IconButton from 'material-ui/IconButton';
@@ -26,23 +26,23 @@ class Kid extends React.Component {
 		      timerId: null,
 	};
     }
-    
+
     componentDidMount() {
 	this.setState({timeDescription: this.describeTime(this.props.timestamp),
 		       timerId: setTimeout(this.updateTime, 60000),
 	});
     }
-    
+
     componentDidUpdate(prevProps, prevState) {
 	if (prevProps.timestamp != this.props.timestamp) {
 	    this.setState({timeDescription: this.describeTime(this.props.timestamp)});
 	}
     }
-    
+
     componentWillUnmount() {
 	clearTimeout(this.state.timerId);
     }
-    
+
     handleButtonTouchTap = (e) => {
 	this.props.onKidDelete({id: this.props.id});
     }
@@ -55,7 +55,7 @@ class Kid extends React.Component {
 				answer: !this.props.answer,
 	});
     }
-    
+
     generateColor = () => {
 	var n = Math.seedrandom(this.props.id);
 	var groups = Object.keys(material_palette);
@@ -65,17 +65,17 @@ class Kid extends React.Component {
 	var color = material_palette[group][colors[coloridx]];
 	return color;
     }
-    
+
     describeTime(timestamp) {
 	return moment(timestamp).fromNow();
     }
-    
+
     updateTime = () => {
 	this.setState({timerId: setTimeout(this.updateTime, 60000),
 		       timeDescription: this.describeTime(this.props.timestamp),
 	});
     }
-    
+
     render() {
 	var answeringCircle = null;
 	var doneButton = null;
