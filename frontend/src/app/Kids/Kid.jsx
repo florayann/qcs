@@ -29,30 +29,31 @@ class Kid extends React.Component {
 	username: React.PropTypes.string.isRequired,
     }
 
+    timerId = null;
+
     constructor(props) {
 	super(props);
 	let color = this.generateColor();
 	this.state = {color: color,
 		      complement: tinycolor(color).complement().toHexString(),
-		      timeDescription: "",
-		      timerId: null,
+		      timeDescription: this.describeTime(props.timestamp),
 	};
     }
 
     componentDidMount() {
-	this.setState({timeDescription: this.describeTime(this.props.timestamp),
-		       timerId: setTimeout(this.updateTime, 60000),
-	});
+	this.timerId = setTimeout(this.updateTime, 60000);
     }
 
-    componentDidUpdate(prevProps, prevState) {
-	if (prevProps.timestamp != this.props.timestamp) {
-	    this.setState({timeDescription: this.describeTime(this.props.timestamp)});
+    componentWillReceiveProps(nextProps) {
+	if (nextProps.timestamp !== this.props.timestamp) {
+	    this.setState({
+		timeDescription: this.describeTime(nextProps.timestamp),
+	    });
 	}
     }
 
     componentWillUnmount() {
-	clearTimeout(this.state.timerId);
+	clearTimeout(this.timerId);
     }
 
     handleButtonTouchTap = (e) => {
@@ -83,8 +84,9 @@ class Kid extends React.Component {
     }
 
     updateTime = () => {
-	this.setState({timerId: setTimeout(this.updateTime, 60000),
-		       timeDescription: this.describeTime(this.props.timestamp),
+	this.timerId = setTimeout(this.updateTime, 60000);
+	this.setState({
+	    timeDescription: this.describeTime(this.props.timestamp),
 	});
     }
 
