@@ -11,35 +11,56 @@ import $ from 'jquery';
 import styles from '../styles';
 import KidsList from './KidsList';
 
-var Kids = ReactTimeout(React.createClass({
-    getInitialState: function() {
-	return {data: [],
-		timestamps: [],
-		rev: 0,
-		announcement: null,
-		snackOpen: false,
-		deletedKid: null,
-		paused: false,
-		notificationOpen: false,
-		notificationMessage: "Notification",
-		loadKidsTimerId: 0,
-		pendingXhr: null,
-		adding: false,
-	};
-    },
-    hasSameId: function(kid, other) {
+class Kids extends React.Component {
+    state = {
+	data: [],
+	timestamps: [],
+	rev: 0,
+	announcement: null,
+	snackOpen: false,
+	deletedKid: null,
+	paused: false,
+	notificationOpen: false,
+	notificationMessage: "Notification",
+	loadKidsTimerId: 0,
+	pendingXhr: null,
+	adding: false,
+
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+	if ((prevProps.refresh != this.props.refresh) ||
+	    (prevProps.url != this.props.url)) {
+	    this.refreshKidsFromServer();
+	}
+    }
+
+    componentDidMount() {
+	this.loadKidsFromServer();
+	window.addEventListener("beforeunload",
+				this.handleWindowClose
+	);
+    }
+    
+    componentWillUnmount() {
+	window.removeEventListener("beforeunload", this.handleWindowClose);
+    }
+    
+    hasSameId = (kid, other) => {
 	return kid.id == other.id;
-    },
-    rejectDeletedKid: function(data, deletedKid=this.state.deletedKid) {
+    }
+    
+    rejectDeletedKid = (data, deletedKid=this.state.deletedKid) => {
 
 	if (deletedKid) {
-	    return _.reject(data, function (kid) {
+	    return _.reject(data, (kid) => {
 		return this.hasSameId(kid, deletedKid);
-	    }.bind(this));
+	    });
 	}
 	return data;
-    },
-    clearAndSetTimeout: function(timerIdProperty, ...rest) {
+    }
+    
+    clearAndSetTimeout = (timerIdProperty, ...rest) => {
 	this.props.clearTimeout(this.state[timerIdProperty]);
 
 	var timerId = this.props.setTimeout(...rest);
@@ -49,12 +70,13 @@ var Kids = ReactTimeout(React.createClass({
 	});
 
 	return timerId;
-    },
-    updateQueue: function(data) {
+    }
+    
+    updateQueue = (data) => {
 	var queue = data.queue;
-	queue.map(function(kid, index) {
+	queue.map((kid, index) => {
 	    _.extend(kid, {timestamp: data.timestamps[index]});
-	}.bind(this));
+	});
 	queue = this.rejectDeletedKid(data.queue);
 	this.setState({data: queue,
 		       timestamps: data.timestamps,
@@ -62,8 +84,9 @@ var Kids = ReactTimeout(React.createClass({
 		       paused: data.paused,
 		       rev: data.rev,
 	});
-    },
-    loadKidsFromServer: function(rev=this.state.rev) {
+    }
+    
+    loadKidsFromServer = (rev=this.state.rev) => {
 	var len = this.state.data.length;
 	var oldUrl = this.props.url;
 	var timerId = this.state.loadKidsTimerId;
@@ -78,7 +101,7 @@ var Kids = ReactTimeout(React.createClass({
 	    dataType: 'json',
 	    cache: false,
 	    data: {rev: rev},
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({pendingXhr: null});
 		if (oldUrl == this.props.url) {
 		    this.updateQueue(data);
@@ -92,8 +115,8 @@ var Kids = ReactTimeout(React.createClass({
 						0);
 		    }
 		}
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		this.setState({pendingXhr: null});
 		console.error(this.props.url, status, err.toString());
 		if (xhr.status != 410) {
@@ -112,22 +135,23 @@ var Kids = ReactTimeout(React.createClass({
 					     function () {},
 		    )
 		}
-	    }.bind(this)
+	    }
 	});
 	this.setState({pendingXhr: xhr});
-    },
-    refreshKidsFromServer: function(props=this.props) {
+    }
+    
+    refreshKidsFromServer = (props=this.props) => {
 	$.ajax({
 	    url: this.props.url,
 	    dataType: 'json',
 	    cache: false,
 	    data: {rev: 0},
-	    success: function(data) {
+	    success: (data) => {
 		this.updateQueue(data);
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-	    }.bind(this)
+	    }
 	});
 	/* Touching the timer will prevent returning requests from setting another */
 	this.clearAndSetTimeout("loadKidsTimerId",
@@ -135,18 +159,13 @@ var Kids = ReactTimeout(React.createClass({
 				0,
 				0,
 	)
-    },
-    componentDidUpdate: function(prevProps, prevState) {
-	if ((prevProps.refresh != this.props.refresh) ||
-	    (prevProps.url != this.props.url)) {
-	    this.refreshKidsFromServer();
-	}
-    },
-    displayNotification: function(message,
-				  ms=2000,
-				  actionText="Okay",
-				  action=this.dismissNotification,
-				  onRequestClose=this.dismissNotification) {
+    }
+    
+    displayNotification = (message,
+			   ms=2000,
+			   actionText="Okay",
+			   action=this.dismissNotification,
+			   onRequestClose=this.dismissNotification) => {
 	this.setState({
 	    notificationOpen: true,
 	    notificationMessage: message,
@@ -155,13 +174,15 @@ var Kids = ReactTimeout(React.createClass({
 	    notificationAction: action,
 	    notificationOnRequestClose: onRequestClose,
 	});
-    },
-    dismissNotification: function() {
+    }
+    
+    dismissNotification = () => {
 	this.setState({
 	    notificationOpen: false,
 	});
-    },
-    handleKidSubmit: function(kid) {
+    }
+    
+    handleKidSubmit = (kid) => {
 	var url = this.props.instructor ?
 		  "/instructor" + this.props.url :
 		  this.props.url;
@@ -172,10 +193,10 @@ var Kids = ReactTimeout(React.createClass({
 	    type: 'POST',
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify(kid),
-	    success: function(data) {
+	    success: (data) => {
 		this.updateQueue(data);
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
 		if (xhr.status == 404) {
 		    this.clearAndSetTimeout("submitKidTimerId",
@@ -186,10 +207,11 @@ var Kids = ReactTimeout(React.createClass({
 		else if (xhr.status == 409) {
 		    this.displayNotification("Submission has been disabled", 2000);
 		}
-	    }.bind(this)
+	    }
 	});
-    },
-    handleKidDelete: function(kid) {
+    }
+    
+    handleKidDelete = (kid) => {
 	var url = this.props.instructor ?
 		  "/instructor" + this.props.url :
 		  this.props.url;
@@ -198,11 +220,11 @@ var Kids = ReactTimeout(React.createClass({
 	    dataType: 'json',
 	    type: 'DELETE',
 	    data: {id: kid.id},
-	    success: function(data) {
+	    success: (data) => {
 		this.setState({deletedKid: null});
 		this.updateQueue(data);
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
 		if (xhr.status == 404) {
 		    this.clearAndSetTimeout("deleteKidTimerId", this.handleKidDelete, 2000, kid);
@@ -210,20 +232,21 @@ var Kids = ReactTimeout(React.createClass({
 		else {
 		    this.setState({deletedKid: null});
 		}
-	    }.bind(this)
+	    }
 	});
-    },
-    handleRemoveAnnouncement: function() {
+    }
+    
+    handleRemoveAnnouncement = () => {
 	$.ajax({
 	    url: "/instructor" + this.props.url,
 	    dataType: 'json',
 	    type: 'PUT',
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify({message: ""}),
-	    success: function(data) {
+	    success: (data) => {
 		this.updateQueue(data);
-	    }.bind(this),
-	    error: function(xhr, status, err) {
+	    },
+	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
 		if (xhr.status == 404) {
 		    this.clearAndSetTimeout("removeAnnouncementTimerId",
@@ -231,33 +254,28 @@ var Kids = ReactTimeout(React.createClass({
 					    2000,
 					    );
 		}
-	    }.bind(this)
+	    }
 	});
-    },
-    handleSnackRequestClose: function(reason) {
+    }
+    
+    handleSnackRequestClose = (reason) => {
 	if (reason) {
 	    this.setState({snackOpen: false});
 	    this.handleKidDelete(this.state.deletedKid);
 	}
-    },
-    handleOkayQueueDeleted: function(e) {
+    }
+    
+    handleOkayQueueDeleted = (e) => {
 	this.props.onSelectQueue();
-    },
-    handleWindowClose: function(e) {
+    }
+    
+    handleWindowClose = (e) => {
 	if (this.state.deletedKid) {
 	    this.deleteKid();
 	}
-    },
-    componentDidMount: function() {
-	this.loadKidsFromServer();
-	window.addEventListener("beforeunload",
-				this.handleWindowClose
-	);
-    },
-    componentWillUnmount: function() {
-	window.removeEventListener("beforeunload", this.handleWindowClose);
-    },
-    getDocumentTitle: function() {
+    }
+    
+    getDocumentTitle = () => {
 	if (this.props.queueId == 0) {
 	    return "q.cs";
 	}
@@ -270,8 +288,9 @@ var Kids = ReactTimeout(React.createClass({
 	}
 
 	return lenstring + this.props.queueName;
-    },
-    tentativeKidDelete: function(kid) {
+    }
+    
+    tentativeKidDelete = (kid) => {
 	if (this.state.deletedKid) {
 	    /* No op; just let the previous one delete. */
 	    return;
@@ -283,29 +302,36 @@ var Kids = ReactTimeout(React.createClass({
 		       snackOpen: true,
 		       data: tempData,
 	});
-    },
-    deleteKid: function() {
+    }
+    
+    deleteKid = () => {
 	this.handleKidDelete(this.state.deletedKid);
-    },
-    undoKidDelete: function() {
+    }
+    
+    undoKidDelete = () => {
 	this.setState({deletedKid: null,
 		       snackOpen: false,
 	});
 	this.refreshKidsFromServer();
-    },
-    isEditing: function() {
+    }
+    
+    isEditing = () => {
 	return _.contains(_.pluck(this.state.data, "id"), this.props.username);
-    },
-    handleAddExpandChange: function(expanded) {
+    }
+    
+    handleAddExpandChange = (expanded) => {
 	this.setState({adding: !this.state.paused && expanded});
-    },
-    handleAddOpen: function() {
+    }
+    
+    handleAddOpen = () => {
 	this.setState({adding: true});
-    },
-    handleAddReduceChange: function() {
+    }
+    
+    handleAddReduceChange = () => {
 	this.setState({adding: false});
-    },
-    render: function() {
+    }
+    
+    render() {
 	return (
 	    <DocumentTitle title={this.getDocumentTitle()}>
 	    <div className="Kids">
@@ -357,6 +383,6 @@ var Kids = ReactTimeout(React.createClass({
 	    </DocumentTitle>
 	);
     }
-}));
+}
 
-export default Kids;
+export default ReactTimeout(Kids);
