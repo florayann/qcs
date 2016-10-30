@@ -62,7 +62,7 @@ class App extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		this.setState({queueInstructor: false});
-	    }
+	    },
 	});
     }
 
@@ -79,7 +79,7 @@ class App extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		console.error(this.props.login_url, status, err.toString());
-	    }
+	    },
 	});
     }
 
@@ -93,7 +93,7 @@ class App extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		console.error(this.props.login_url, status, err.toString());
-	    }
+	    },
 	});
     }
 
@@ -107,7 +107,7 @@ class App extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		console.error(this.props.login_url, status, err.toString());
-	    }
+	    },
 	});
     }
 
@@ -125,17 +125,17 @@ class App extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-		if (xhr.status == 404) {
+		if (xhr.status === 404) {
 		    setTimeout(this.loadClassesFromServer, 2000);
 		}
-	    }
+	    },
 	});
     }
 
     render() {
-	return(
+	return (
 	    <MuiThemeProvider>
-		{this.state.username != null ? (
+		{this.state.username !== null ? (
 		     <div>
 			 <QAppBar queueName={this.state.queueName}
 				  onLeftIconButtonTouchTap={this.handleLeftIconButtonTouchTap}
