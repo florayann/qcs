@@ -29,8 +29,8 @@ class Kids extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-	if ((prevProps.refresh != this.props.refresh) ||
-	    (prevProps.url != this.props.url)) {
+	if ((prevProps.refresh !== this.props.refresh) ||
+	    (prevProps.url !== this.props.url)) {
 	    this.refreshKidsFromServer();
 	}
     }
@@ -41,17 +41,16 @@ class Kids extends React.Component {
 				this.handleWindowClose
 	);
     }
-    
+
     componentWillUnmount() {
 	window.removeEventListener("beforeunload", this.handleWindowClose);
     }
-    
+
     hasSameId = (kid, other) => {
 	return kid.id == other.id;
     }
-    
-    rejectDeletedKid = (data, deletedKid=this.state.deletedKid) => {
 
+    rejectDeletedKid = (data, deletedKid=this.state.deletedKid) => {
 	if (deletedKid) {
 	    return _.reject(data, (kid) => {
 		return this.hasSameId(kid, deletedKid);
@@ -59,19 +58,19 @@ class Kids extends React.Component {
 	}
 	return data;
     }
-    
+
     clearAndSetTimeout = (timerIdProperty, ...rest) => {
 	this.props.clearTimeout(this.state[timerIdProperty]);
 
 	var timerId = this.props.setTimeout(...rest);
-	
+
 	this.setState({
 	    [timerIdProperty]: timerId,
 	});
 
 	return timerId;
     }
-    
+
     updateQueue = (data) => {
 	var queue = data.queue;
 	queue.map((kid, index) => {
@@ -85,7 +84,7 @@ class Kids extends React.Component {
 		       rev: data.rev,
 	});
     }
-    
+
     loadKidsFromServer = (rev=this.state.rev) => {
 	var len = this.state.data.length;
 	var oldUrl = this.props.url;
@@ -103,13 +102,13 @@ class Kids extends React.Component {
 	    data: {rev: rev},
 	    success: (data) => {
 		this.setState({pendingXhr: null});
-		if (oldUrl == this.props.url) {
+		if (oldUrl === this.props.url) {
 		    this.updateQueue(data);
 		    if (this.props.instructor && len < this.state.data.length) {
 			this.refs.notify.play();
 		    }
 		    /* If nobody touched the timer before I get back, I will reset it */
-		    if (timerId == this.state.loadKidsTimerId) {
+		    if (timerId === this.state.loadKidsTimerId) {
 			this.clearAndSetTimeout("loadKidsTimerId",
 						this.loadKidsFromServer,
 						0);
@@ -133,13 +132,13 @@ class Kids extends React.Component {
 					     "Okay",
 					     this.handleOkayQueueDeleted,
 					     function () {},
-		    )
+		    );
 		}
 	    }
 	});
 	this.setState({pendingXhr: xhr});
     }
-    
+
     refreshKidsFromServer = (props=this.props) => {
 	$.ajax({
 	    url: this.props.url,
@@ -158,9 +157,9 @@ class Kids extends React.Component {
 				this.loadKidsFromServer,
 				0,
 				0,
-	)
+	);
     }
-    
+
     displayNotification = (message,
 			   ms=2000,
 			   actionText="Okay",
@@ -175,18 +174,18 @@ class Kids extends React.Component {
 	    notificationOnRequestClose: onRequestClose,
 	});
     }
-    
+
     dismissNotification = () => {
 	this.setState({
 	    notificationOpen: false,
 	});
     }
-    
+
     handleKidSubmit = (kid) => {
 	var url = this.props.instructor ?
 		  "/instructor" + this.props.url :
 		  this.props.url;
-	
+
 	$.ajax({
 	    url: url,
 	    dataType: 'json',
@@ -210,7 +209,7 @@ class Kids extends React.Component {
 	    }
 	});
     }
-    
+
     handleKidDelete = (kid) => {
 	var url = this.props.instructor ?
 		  "/instructor" + this.props.url :
@@ -235,7 +234,7 @@ class Kids extends React.Component {
 	    }
 	});
     }
-    
+
     handleRemoveAnnouncement = () => {
 	$.ajax({
 	    url: "/instructor" + this.props.url,
@@ -257,29 +256,29 @@ class Kids extends React.Component {
 	    }
 	});
     }
-    
+
     handleSnackRequestClose = (reason) => {
 	if (reason) {
 	    this.setState({snackOpen: false});
 	    this.handleKidDelete(this.state.deletedKid);
 	}
     }
-    
+
     handleOkayQueueDeleted = (e) => {
 	this.props.onSelectQueue();
     }
-    
+
     handleWindowClose = (e) => {
 	if (this.state.deletedKid) {
 	    this.deleteKid();
 	}
     }
-    
+
     getDocumentTitle = () => {
 	if (this.props.queueId == 0) {
 	    return "q.cs";
 	}
-	
+
 	var len = this.state.data.length;
 	var lenstring = "";
 
@@ -289,7 +288,7 @@ class Kids extends React.Component {
 
 	return lenstring + this.props.queueName;
     }
-    
+
     tentativeKidDelete = (kid) => {
 	if (this.state.deletedKid) {
 	    /* No op; just let the previous one delete. */
@@ -297,40 +296,40 @@ class Kids extends React.Component {
 	}
 
 	var tempData = this.rejectDeletedKid(this.state.data, kid);
-	
+
 	this.setState({deletedKid: kid,
 		       snackOpen: true,
 		       data: tempData,
 	});
     }
-    
+
     deleteKid = () => {
 	this.handleKidDelete(this.state.deletedKid);
     }
-    
+
     undoKidDelete = () => {
 	this.setState({deletedKid: null,
 		       snackOpen: false,
 	});
 	this.refreshKidsFromServer();
     }
-    
+
     isEditing = () => {
 	return _.contains(_.pluck(this.state.data, "id"), this.props.username);
     }
-    
+
     handleAddExpandChange = (expanded) => {
 	this.setState({adding: !this.state.paused && expanded});
     }
-    
+
     handleAddOpen = () => {
 	this.setState({adding: true});
     }
-    
+
     handleAddReduceChange = () => {
 	this.setState({adding: false});
     }
-    
+
     render() {
 	return (
 	    <DocumentTitle title={this.getDocumentTitle()}>
