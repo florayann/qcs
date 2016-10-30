@@ -4,10 +4,16 @@ import Avatar from 'material-ui/Avatar';
 import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField';
 
-import _ from 'underscore';
-
-
 class AddKid extends React.Component {
+    static propTypes = {
+	adding: React.PropTypes.bool.isRequired,
+	editing: React.PropTypes.bool.isRequired,
+	onAddExpandChange: React.PropTypes.func.isRequired,
+	onAddReduceChange: React.PropTypes.func.isRequired,
+	onKidSubmit: React.PropTypes.func.isRequired,
+	paused: React.PropTypes.bool.isRequired,
+    }
+
     state = {
 	name: "",
 	room: "",
