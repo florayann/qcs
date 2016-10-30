@@ -16,6 +16,19 @@ var materialPalette = require("!json!./material_palette.json");
 
 
 class Kid extends React.Component {
+    static propTypes = {
+	answer: React.PropTypes.bool.isRequired,
+	id: React.PropTypes.string.isRequired,
+	instructor: React.PropTypes.bool.isRequired,
+	name: React.PropTypes.string.isRequired,
+	onKidAnswer: React.PropTypes.func.isRequired,
+	onKidDelete: React.PropTypes.func.isRequired,
+	question: React.PropTypes.string.isRequired,
+	room: React.PropTypes.string.isRequired,
+	timestamp: React.PropTypes.number.isRequired,
+	username: React.PropTypes.string.isRequired,
+    }
+
     constructor(props) {
 	super(props);
 	var color = this.generateColor();
