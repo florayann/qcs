@@ -28,6 +28,13 @@ function LoggedOut(props) {
 
 
 class App extends React.Component {
+    static propTypes = {
+	class_url: React.PropTypes.string.isRequired,
+	login_url: React.PropTypes.string.isRequired,
+	queue_url: React.PropTypes.string.isRequired,
+	queues_url: React.PropTypes.string.isRequired,
+    }
+
     state = {open: false,
 	     queueName: "q.cs",
 	     queueId: "0",
@@ -124,7 +131,7 @@ class App extends React.Component {
 		this.setState({classes: data});
 	    },
 	    error: (xhr, status, err) => {
-		console.error(this.props.url, status, err.toString());
+		console.error(this.props.class_url, status, err.toString());
 		if (xhr.status === 404) {
 		    setTimeout(this.loadClassesFromServer, 2000);
 		}
