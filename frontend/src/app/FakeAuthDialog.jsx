@@ -4,25 +4,31 @@ import TextField from 'material-ui/TextField';
 import Dialog from 'material-ui/Dialog';
 
 
-var FakeAuthDialog = React.createClass({
-    getInitialState: function() {
-	return {username: "", open: true, attemptedSubmit: false};
-    },
-    handleChange: function(e) {
+class FakeAuthDialog extends React.Component {
+    state = {
+	username: "",
+	open: true,
+	attemptedSubmit: false,
+    }
+
+    handleChange = (e) => {
 	this.setState({
 	    username: e.target.value,
 	});
-    },
-    handleLogin: function() {
+    }
+
+    handleLogin = () => {
 	this.props.onLogin({username: this.state.username});
 	this.setState({attemptedSubmit: true});
-    },
-    handleKeyPress: function(target) {
+    }
+
+    handleKeyPress = (target) => {
 	if (target.charCode == 13) {
             this.handleLogin();
 	}
-    },
-    render: function () {
+    }
+
+    render() {
 	const actions = [
 	    <FlatButton
 		label="Login"
@@ -52,7 +58,7 @@ var FakeAuthDialog = React.createClass({
             </Dialog>
 	);
     }
-});
+}
 
 
 export default FakeAuthDialog;
