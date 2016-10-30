@@ -109,6 +109,8 @@ class Kid extends React.Component {
 	    );
 	}
 
+	let noOp = function () {};
+
 	return (
 	    <Card>
 		<ListItem
@@ -123,7 +125,7 @@ class Kid extends React.Component {
 			<Avatar backgroundColor={this.state.color}>
 						{this.props.name[0]}
 			</Avatar>}
-		    onTouchTap={this.props.instructor ? this.handleTouchTap : undefined}
+		    onTouchTap={this.props.instructor ? this.handleTouchTap : noOp}
 		    leftIcon={answeringCircle}
 		    rightIconButton={doneButton}
 		/>
