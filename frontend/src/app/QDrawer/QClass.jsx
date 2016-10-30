@@ -7,12 +7,18 @@ import ActionDelete from 'material-ui/svg-icons/action/delete';
 import ActionClass from 'material-ui/svg-icons/action/class';
 import ActionToc from 'material-ui/svg-icons/action/toc';
 import IconButton from 'material-ui/IconButton';
-import {List, ListItem} from 'material-ui/List';
-import Subheader from 'material-ui/Subheader';
+import {ListItem} from 'material-ui/List';
 import Dialog from 'material-ui/Dialog';
 
 
 class DeleteQueueDialog extends React.Component {
+    static propTypes = {
+	onClose: React.PropTypes.func.isRequired,
+	onConfirmDelete: React.PropTypes.func.isRequired,
+	deletingQueue: React.PropTypes.bool.isRequired,
+	name: React.PropTypes.string,
+    }
+
     render() {
 	const actions = [
 	    <FlatButton
@@ -34,8 +40,7 @@ class DeleteQueueDialog extends React.Component {
 		modal={false}
 		open={this.props.deletingQueue}
 		onRequestClose={this.props.onClose}
-	    >
-	    </Dialog>
+	    />
 	);
     }
 }
@@ -48,7 +53,7 @@ class AddQueueDialog extends React.Component {
 	onNameChange: React.PropTypes.func.isRequired,
 	onKeyPress: React.PropTypes.func.isRequired,
 	addingQueue: React.PropTypes.bool.isRequired,
-	name: React.PropTypes.string.isRequired,
+	name: React.PropTypes.string,
     }
 
     render() {
@@ -61,10 +66,12 @@ class AddQueueDialog extends React.Component {
 	    <FlatButton
 		label="Save"
 		primary={true}
-		onTouchTap={() => {this.props.onSubmit(this.props.name);}}
+		onTouchTap={() => {
+			this.props.onSubmit(this.props.name);
+		    }}
 	    />,
 	];
-	
+
 	return (
 	    <Dialog
 		title="Name"
@@ -81,13 +88,21 @@ class AddQueueDialog extends React.Component {
 		    onKeyPress={this.props.onKeyPress}
 		/>
 	    </Dialog>
-	)
+	);
     }
-    
+
 }
 
 
 class QClass extends React.Component {
+    static propTypes = {
+	onSelectQueue: React.PropTypes.func.isRequired,
+	drawerOpen: React.PropTypes.bool.isRequired,
+	url: React.PropTypes.string.isRequired,
+	name: React.PropTypes.string,
+	classId: React.PropTypes.string.isRequired,
+    }
+
     state = {queues: {},
 	     open: false,
 	     instructor: false,
@@ -95,7 +110,7 @@ class QClass extends React.Component {
 	     deletingQueue: false,
 	     name: "",
     };
-    
+
     constructor(props) {
 	super(props);
 	this.loadQueuesFromServer();
@@ -103,12 +118,12 @@ class QClass extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-	if ((prevProps.drawerOpen != this.props.drawerOpen) &&
+	if ((prevProps.drawerOpen !== this.props.drawerOpen) &&
 	    (prevProps.drawerOpen)) {
 	    this.loadQueuesFromServer();
 	}
     }
-    
+
     handleNestedListToggle = (item) => {
 	if (item.state.open) {
 	    this.handleAddQueue("");
@@ -140,16 +155,16 @@ class QClass extends React.Component {
 		this.setState({queues: data});
 		this.handleAddClose();
 		if (name) {
-		    var ids = Object.keys(data);
-		    var queueId = ids[ids.length - 1];
+		    let ids = Object.keys(data);
+		    let queueId = ids[ids.length - 1];
 		    this.props.onSelectQueue(queueId, data[queueId]);
 		}
 	    },
 	    error: (xhr, status, err) => {
-		if (status = 403) {
+		if (status === 403) {
 		    this.setState({instructor: false});
 		}
-	    }
+	    },
 	});
     }
 
@@ -166,7 +181,7 @@ class QClass extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-	    }
+	    },
 	});
     }
 
@@ -184,12 +199,12 @@ class QClass extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-	    }
+	    },
 	});
     }
-    
+
     handleKeyPress = (target) => {
-	if (target.charCode == 13) {
+	if (target.charCode === 13) {
 	    this.handleAddQueue(this.state.name);
 	}
     }
@@ -213,7 +228,7 @@ class QClass extends React.Component {
 			  key={queueId}
 			  onTouchTap={() => {
 				  this.props.onSelectQueue(queueId,
-							   this.state.queues[queueId])
+							   this.state.queues[queueId]);
 			      }}
 			  leftIcon={<ActionToc />}
 			  rightIconButton=
@@ -228,7 +243,7 @@ class QClass extends React.Component {
 		/>
 	    );
 	});
-	
+
 	if (this.state.instructor) {
 	    queueNodes.push(<ListItem primaryText="New Queue"
 				      key="0"
@@ -236,7 +251,7 @@ class QClass extends React.Component {
 				      leftIcon={<ContentAdd />}
 			    />);
 	}
-	
+
 	return (
 	    <div>
 		<ListItem primaryText={this.props.name}
