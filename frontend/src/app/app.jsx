@@ -80,8 +80,8 @@ class App extends React.Component {
 	    type: 'POST',
 	    contentType: 'application/json; charset=UTF-8',
 	    data: JSON.stringify(data),
-	    success: (data) => {
-		this.setState({username: data.username});
+	    success: (response) => {
+		this.setState({username: response.username});
 		this.setState({open: true});
 	    },
 	    error: (xhr, status, err) => {
