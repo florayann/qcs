@@ -9,8 +9,8 @@ import MenuItem from 'material-ui/MenuItem';
 
 class QAppBarMenu extends React.Component {
     static propTypes = {
-	onRefresh: React.PropTypes.func.required,
-	onLogout: React.PropTypes.func.required,
+	onRefresh: React.PropTypes.func.isRequired,
+	onLogout: React.PropTypes.func.isRequired,
     }
 
     render() {
@@ -34,10 +34,10 @@ class QAppBarMenu extends React.Component {
 
 class QAppBar extends React.Component {
     static propTypes = {
-	queueName: React.PropTypes.string.required,
-	onRefresh: React.PropTypes.func.required,
-	onLogout: React.PropTypes.func.required,
-	onLeftIconButtonTouchTap: React.PropTypes.func.required,
+	queueName: React.PropTypes.string.isRequired,
+	onRefresh: React.PropTypes.func.isRequired,
+	onLogout: React.PropTypes.func.isRequired,
+	onLeftIconButtonTouchTap: React.PropTypes.func.isRequired,
     }
 
     render() {
