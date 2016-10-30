@@ -1,15 +1,21 @@
 import React from 'react';
 import AppBar from 'material-ui/AppBar';
-import $ from 'jquery';
 import Drawer from 'material-ui/Drawer';
-import {List, ListItem} from 'material-ui/List';
+import {List} from 'material-ui/List';
 import Subheader from 'material-ui/Subheader';
 
 import QControls from './QControls';
 import QClass from './QClass';
 
-var ClassList = React.createClass({
-    render: function() {
+class ClassList extends React.Component {
+    static propTypes = {
+	classes: React.PropTypes.object.isRequired,
+	onSelectQueue: React.PropTypes.func.isRequired,
+	url: React.PropTypes.string.isRequired,
+	drawerOpen: React.PropTypes.bool.isRequired,
+    }
+
+    render() {
 	var classNodes = Object.keys(this.props.classes).map(function (classId) {
 	    return (
 		<QClass classId={classId}
@@ -28,18 +34,32 @@ var ClassList = React.createClass({
 	    </List>
 	);
     }
-});
+}
 
-var QDrawer = React.createClass({
-    handleRequestChange: function(open, reason) {
+class QDrawer extends React.Component {
+    static propTypes = {
+	classes: React.PropTypes.object.isRequired,
+	onSelectQueue: React.PropTypes.func.isRequired,
+	onRequestChange: React.PropTypes.func.isRequired,
+	open: React.PropTypes.bool.isRequired,
+	url: React.PropTypes.string.isRequired,
+	queue_url: React.PropTypes.string.isRequired,
+	queueId: React.PropTypes.string.isRequired,
+	instructor: React.PropTypes.bool.isRequired,
+    }
+    handleRequestChange = (open, reason) => {
 	if (!open) {
 	    this.props.onRequestChange();
 	}
-    },
-    render: function() {
+    }
+
+    render() {
 	return (
 	    <div>
-		<Drawer open={this.props.open} docked={false} onRequestChange={this.handleRequestChange}>
+		<Drawer open={this.props.open}
+			docked={false}
+			onRequestChange={this.handleRequestChange}
+		>
 		    <AppBar title="q.cs" showMenuIconButton={false}/>
 		    <ClassList classes={this.props.classes}
 			       onSelectQueue={this.props.onSelectQueue}
@@ -56,7 +76,7 @@ var QDrawer = React.createClass({
 	    </div>
 	);
     }
-});
+}
 
 
 export default QDrawer;

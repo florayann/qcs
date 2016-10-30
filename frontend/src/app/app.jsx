@@ -30,7 +30,7 @@ function LoggedOut(props) {
 class App extends React.Component {
     state = {open: false,
 	     queueName: "q.cs",
-	     queueId: 0,
+	     queueId: "0",
 	     queueInstructor: false,
 	     classes: {},
 	     username: "",
@@ -46,7 +46,7 @@ class App extends React.Component {
 	this.setState({open: !this.state.open});
     }
 
-    handleSelectQueue = (queueId=0, queueName="q.cs") => {
+    handleSelectQueue = (queueId="0", queueName="q.cs") => {
 	this.setState({queueId: queueId, queueName: queueName, queueInstructor: false});
 	this.setState({open: false});
 	this.isQueueInstructor(queueId);
@@ -156,7 +156,7 @@ class App extends React.Component {
 			 {__FAKEAUTH__ && !this.state.username ?
 			  <FakeAuthDialog onLogin={this.handleLogin} /> : null}
 
-			 {this.state.queueId == 0 ? null :
+			 {this.state.queueId === "0" ? null :
 			  <Kids url={this.props.queue_url + this.state.queueId}
 				queueId={this.state.queueId}
 				queueName={this.state.queueName}
