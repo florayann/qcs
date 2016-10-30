@@ -5,6 +5,10 @@ import Dialog from 'material-ui/Dialog';
 
 
 class FakeAuthDialog extends React.Component {
+    static propTypes = {
+	onLogin: React.PropTypes.func.isRequired,
+    }
+
     state = {
 	username: "",
 	open: true,
@@ -23,7 +27,7 @@ class FakeAuthDialog extends React.Component {
     }
 
     handleKeyPress = (target) => {
-	if (target.charCode == 13) {
+	if (target.charCode === 13) {
             this.handleLogin();
 	}
     }
@@ -36,7 +40,7 @@ class FakeAuthDialog extends React.Component {
 		onTouchTap={this.handleLogin}
 	    />,
 	];
-	
+
 	return (
 	    <Dialog
 		title="Login"
@@ -46,7 +50,7 @@ class FakeAuthDialog extends React.Component {
             >
 		<TextField
 		    hintText="NetID"
-		    errorText={(!this.state.attemptedSubmit || this.state.username) ?
+		    errorText={!this.state.attemptedSubmit || this.state.username ?
 			       "" :
 			       "This field is required"}
 		    floatingLabelText="NetID"
