@@ -31,7 +31,7 @@ class Kid extends React.Component {
 
     constructor(props) {
 	super(props);
-	var color = this.generateColor();
+	let color = this.generateColor();
 	this.state = {color: color,
 		      complement: tinycolor(color).complement().toHexString(),
 		      timeDescription: "",
@@ -58,7 +58,7 @@ class Kid extends React.Component {
     handleButtonTouchTap = (e) => {
 	this.props.onKidDelete({id: this.props.id});
     }
-    
+
     handleTouchTap = (e) => {
 	this.props.onKidAnswer({id: this.props.id,
 				name: this.props.name,
@@ -101,7 +101,7 @@ class Kid extends React.Component {
 	    );
 	}
 
-	if (this.props.instructor || this.props.username == this.props.id) {
+	if (this.props.instructor || this.props.username === this.props.id) {
 	    doneButton = (
 		<IconButton onTouchTap={this.handleButtonTouchTap}>
 		    <ActionDone/>
