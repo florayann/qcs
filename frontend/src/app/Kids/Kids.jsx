@@ -12,6 +12,18 @@ import styles from '../styles';
 import KidsList from './KidsList';
 
 class Kids extends React.Component {
+    static propTypes = {
+	clearTimeout: React.PropTypes.func.isRequired,
+	instructor: React.PropTypes.bool.isRequired,
+	onSelectQueue: React.PropTypes.func.isRequired,
+	queueId: React.PropTypes.string.isRequired,
+	queueName: React.PropTypes.string.isRequired,
+	refresh: React.PropTypes.bool.isRequired,
+	setTimeout: React.PropTypes.func.isRequired,
+	url: React.PropTypes.string.isRequired,
+	username: React.PropTypes.string.isRequired,
+    }
+
     state = {
 	data: [],
 	timestamps: [],
@@ -136,7 +148,7 @@ class Kids extends React.Component {
 					     function () {},
 		    );
 		}
-	    }
+	    },
 	});
 	this.pendingXhr = pendingXhr;
     }
@@ -152,7 +164,7 @@ class Kids extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		console.error(this.props.url, status, err.toString());
-	    }
+	    },
 	});
 	/* Touching the timer will prevent returning requests from setting another */
 	this.clearAndSetTimeout("loadKidsTimerId",
@@ -208,7 +220,7 @@ class Kids extends React.Component {
 		else if (xhr.status === 409) {
 		    this.displayNotification("Submission has been disabled", 2000);
 		}
-	    }
+	    },
 	});
     }
 
@@ -233,7 +245,7 @@ class Kids extends React.Component {
 		else {
 		    this.setState({deletedKid: null});
 		}
-	    }
+	    },
 	});
     }
 
@@ -255,7 +267,7 @@ class Kids extends React.Component {
 					    2000,
 					    );
 		}
-	    }
+	    },
 	});
     }
 
@@ -281,8 +293,8 @@ class Kids extends React.Component {
 	    return "q.cs";
 	}
 
-	var len = this.state.data.length;
-	var lenstring = "";
+	let len = this.state.data.length;
+	let lenstring = "";
 
 	if (len) {
 	    lenstring = "(" + len + ") ";
@@ -297,7 +309,7 @@ class Kids extends React.Component {
 	    return;
 	}
 
-	var tempData = this.rejectDeletedKid(this.state.data, kid);
+	let tempData = this.rejectDeletedKid(this.state.data, kid);
 
 	this.setState({deletedKid: kid,
 		       snackOpen: true,
