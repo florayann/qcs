@@ -12,7 +12,7 @@ import moment from 'moment';
 
 import styles from '../styles';
 
-var materialPalette = require("!json!./material_palette.json");
+import materialPalette from './MaterialPalette.jsx';
 
 
 class Kid extends React.Component {

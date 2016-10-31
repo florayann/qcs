@@ -1,4 +1,4 @@
-{
+var materialPalette = {
     "Red":{
 	"500":"#f44336",
 	"600":"#e53935",
@@ -159,4 +159,6 @@
 	"800":"#37474f",
 	"900":"#263238"
     }
-}
+};
+
+export default materialPalette;
