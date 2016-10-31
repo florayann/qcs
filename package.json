@@ -50,6 +50,7 @@
     "automock": true,
     "unmockedModulePathPatterns": [
       "node_modules/react/",
+      "react",
       "node_modules/enzyme/",
       "node_modules/material-ui/",
       "node_modules/react-document-title/",

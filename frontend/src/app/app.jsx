@@ -160,7 +160,8 @@ class App extends React.Component {
 			     instructor={this.state.queueInstructor}
 			 />
 
-			 {__FAKEAUTH__ && !this.state.username ?
+			 {process.env.NODE_ENV === "test" ||
+			  __FAKEAUTH__ && !this.state.username ?
 			  <FakeAuthDialog onLogin={this.handleLogin} /> : null}
 
 			 {this.state.queueId === "0" ? null :
@@ -179,13 +180,17 @@ class App extends React.Component {
     }
 }
 
-ReactDOM.render(
-    <DocumentTitle title="q.cs">
-	<App class_url="/classes"
-	     queue_url="/queue/"
-	     queues_url="/class/"
-	     login_url="/auth"
-	/>
-    </DocumentTitle>,
-    document.getElementById('app')
-);
+if (process.env.NODE_ENV !== "test") {
+    ReactDOM.render(
+	<DocumentTitle title="q.cs">
+	    <App class_url="/classes"
+		 queue_url="/queue/"
+		 queues_url="/class/"
+		 login_url="/auth"
+	    />
+	</DocumentTitle>,
+	document.getElementById('app')
+    );
+}
+
+export default App;
