@@ -138,4 +138,28 @@ describe('user experience', () => {
 		.toEqual('');
 	});
     });
+
+    describe('queue states', () => {
+	const addKid = shallow(<AddKid adding={false}
+				       editing={false}
+				       onAddExpandChange={() => {}}
+				       onAddReduceChange={() => {}}
+				       onKidSubmit={() => {}}
+				       paused={false}
+			       />);
+
+	it('notifies that submission is disabled', () => {
+	    addKid.setProps({paused: true});
+	    expect(addKid.find('CardHeader')
+			 .props().subtitle).toBe('Submission currently disabled!');
+	});
+
+	it('notifies when editing', () => {
+	    expect(addKid.find('CardHeader')
+			 .props().title).toBe('New Question');
+	    addKid.setProps({editing: true});
+	    expect(addKid.find('CardHeader')
+			 .props().title).toBe('Edit Question');
+	});
+    });
 });
