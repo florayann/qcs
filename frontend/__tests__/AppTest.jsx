@@ -67,11 +67,11 @@ describe('request handling', () => {
 
     it('retries loading classes if disconnected', () => {
 	sinon.spy(App.prototype, 'componentDidMount');
-	mount(<App class_url="/classes"
-		   queue_url="/queue/"
-		   queues_url="/class/"
-		   login_url="/auth"
-	      />);
+	const app = mount(<App class_url="/classes"
+			       queue_url="/queue/"
+			       queues_url="/class/"
+			       login_url="/auth"
+			  />);
 	jest.useFakeTimers();
 	expect(App.prototype.componentDidMount.calledOnce).toEqual(true);
 	$.ajax.mock.calls[0][0].success('user');
@@ -80,6 +80,9 @@ describe('request handling', () => {
 	jest.runOnlyPendingTimers();
 	$.ajax.mock.calls[2][0].error({status: 404}, 'error', 'Not Found');
 	expect(setTimeout.mock.calls.length).toBe(2);
+	jest.runOnlyPendingTimers();
+	$.ajax.mock.calls[2][0].success({1: 'CS 233', 2: 'CS 421'});
+	expect(app.state().classes).toEqual({1: 'CS 233', 2: 'CS 421'});
     });
 
     it('logs in and logs out', () => {
