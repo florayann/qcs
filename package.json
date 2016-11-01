@@ -25,6 +25,7 @@
     "jest": "^16.0.2",
     "react-addons-test-utils": "^15.3.2",
     "react-hot-loader": "^1.3.0",
+    "sinon": "^1.17.6",
     "transfer-webpack-plugin": "^0.1.4",
     "webpack": "^1.12.9",
     "webpack-dev-server": "^1.14.0"
@@ -54,6 +55,7 @@
       "node_modules/enzyme/",
       "node_modules/material-ui/",
       "node_modules/react-document-title/",
+      "node_modules/sinon/",
       "node_modules/react-timeout/"
     ],
     "moduleFileExtensions": [
