@@ -61,6 +61,7 @@
       "js",
       "jsx"
     ],
-    "rootDir": "frontend"
+    "rootDir": "frontend",
+    "testPathIgnorePatterns": [".*TestData.js"]
   }
 }
