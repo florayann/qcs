@@ -28,6 +28,8 @@ describe('select queue', () => {
 	expect(app.state().queueName).toEqual('q.cs');
 	expect(app.state().queueId).toEqual('0');
 	expect(app.state().queueInstructor).toEqual(false);
+	app.update();
+	expect(app.find('ReactTimeout').length).toBe(0);
     });
 
     it('updates queue info properly', () => {
@@ -35,6 +37,8 @@ describe('select queue', () => {
 	expect(app.state().queueName).toEqual('CS 233');
 	expect(app.state().queueId).toEqual('1');
 	expect(app.state().queueInstructor).toEqual(true);
+	app.update();
+	expect(app.find('ReactTimeout').length).not.toBe(0);
     });
 
     it('toggles refresh', () => {
