@@ -55,8 +55,8 @@ describe('user experience', () => {
     it('renders kids properly when data exists', () => {
 	const kidsList = shallow(<KidsList {...dummyProps}
 				 />);
-	kidsList.setProps({data: testData});
-	expect(kidsList.find('Kid').length).toBe(testData.length);
+	kidsList.setProps({data: testData.short});
+	expect(kidsList.find('Kid').length).toBe(testData.short.length);
     });
 });
 

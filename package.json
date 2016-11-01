@@ -55,13 +55,15 @@
       "node_modules/material-ui/",
       "node_modules/react-document-title/",
       "node_modules/sinon/",
-      "node_modules/react-timeout/"
+      "node_modules/underscore"
     ],
     "moduleFileExtensions": [
       "js",
       "jsx"
     ],
     "rootDir": "frontend",
-    "testPathIgnorePatterns": [".*TestData.js"]
+    "testPathIgnorePatterns": [".*TestData.js",
+                               "#.*"
+                              ]
   }
 }

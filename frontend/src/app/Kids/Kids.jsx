@@ -295,7 +295,7 @@ class Kids extends React.Component {
     }
 
     getDocumentTitle = () => {
-	if (this.props.queueId === 0) {
+	if (this.props.queueId === "0") {
 	    return "q.cs";
 	}
 
