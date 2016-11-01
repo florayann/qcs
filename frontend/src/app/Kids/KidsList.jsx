@@ -3,6 +3,7 @@ import {List} from 'material-ui/List';
 
 import FlipMove from 'react-flip-move';
 import Visibility from 'visibilityjs';
+import muiThemeable from 'material-ui/styles/muiThemeable';
 
 import styles from '../styles';
 import Kid from './Kid';
@@ -30,6 +31,8 @@ class KidsList extends React.Component {
     state = {
 	s: styles.container,
     }
+
+    ThemedAnnouncement = muiThemeable()(Announcement);
 
     constructor(props) {
 	super(props);
@@ -70,14 +73,15 @@ class KidsList extends React.Component {
 		/>
 	    );
 	});
+
 	return (
 	    <div className="kidsList" style={this.state.s}>
 		<List style={styles.list}>
 		    {this.props.announcement ?
-		     <Announcement key={-41}
-				   message={this.props.announcement}
-				   onRemove={this.props.onRemoveAnnouncement}
-				   instructor={this.props.instructor}
+		     <this.ThemedAnnouncement key={-41}
+					      message={this.props.announcement}
+					      onRemove={this.props.onRemoveAnnouncement}
+					      instructor={this.props.instructor}
 		     /> :
 		     null}
 		<FlipMove enterAnimation={"elevator"}

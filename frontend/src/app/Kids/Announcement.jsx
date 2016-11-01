@@ -5,7 +5,6 @@ import ActionDelete from 'material-ui/svg-icons/action/delete';
 import ActionAnnouncement from 'material-ui/svg-icons/action/announcement';
 import IconButton from 'material-ui/IconButton';
 
-import muiThemeable from 'material-ui/styles/muiThemeable';
 import {darkBlack} from 'material-ui/styles/colors';
 
 
@@ -44,4 +43,4 @@ class Announcement extends React.Component {
     }
 }
 
-export default muiThemeable()(Announcement);
+export default Announcement;
