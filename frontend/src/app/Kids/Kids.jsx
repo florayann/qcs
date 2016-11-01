@@ -3,7 +3,6 @@ import ContentAdd from 'material-ui/svg-icons/content/add';
 import Snackbar from 'material-ui/Snackbar';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
 
-import ReactTimeout from 'react-timeout';
 import DocumentTitle from 'react-document-title';
 import _ from 'underscore';
 import $ from 'jquery';
@@ -13,13 +12,11 @@ import KidsList from './KidsList';
 
 class Kids extends React.Component {
     static propTypes = {
-	clearTimeout: React.PropTypes.func.isRequired,
 	instructor: React.PropTypes.bool.isRequired,
 	onSelectQueue: React.PropTypes.func.isRequired,
 	queueId: React.PropTypes.string.isRequired,
 	queueName: React.PropTypes.string.isRequired,
 	refresh: React.PropTypes.bool.isRequired,
-	setTimeout: React.PropTypes.func.isRequired,
 	url: React.PropTypes.string.isRequired,
 	username: React.PropTypes.string.isRequired,
     }
@@ -59,6 +56,9 @@ class Kids extends React.Component {
     }
 
     componentWillUnmount() {
+	_.values(this.timerIds).forEach((timerId) => {
+	    clearTimeout(timerId);
+	});
 	window.removeEventListener("beforeunload", this.handleWindowClose);
     }
 
@@ -76,9 +76,9 @@ class Kids extends React.Component {
     }
 
     clearAndSetTimeout = (timerIdProperty, ...rest) => {
-	this.props.clearTimeout(this.state[timerIdProperty]);
+	clearTimeout(this.state[timerIdProperty]);
 
-	let timerId = this.props.setTimeout(...rest);
+	let timerId = setTimeout(...rest);
 
 	this.timerIds[timerIdProperty] = timerId;
 
@@ -398,4 +398,4 @@ class Kids extends React.Component {
     }
 }
 
-export default ReactTimeout(Kids);
+export default Kids;

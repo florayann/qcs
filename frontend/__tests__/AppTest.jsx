@@ -38,7 +38,7 @@ describe('select queue', () => {
 	expect(app.state().queueId).toEqual('1');
 	expect(app.state().queueInstructor).toEqual(true);
 	app.update();
-	expect(app.find('ReactTimeout').length).not.toBe(0);
+	expect(app.find('Kids').length).not.toBe(0);
     });
 
     it('toggles refresh', () => {
