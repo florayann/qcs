@@ -59,6 +59,13 @@ class Kids extends React.Component {
 	_.values(this.timerIds).forEach((timerId) => {
 	    clearTimeout(timerId);
 	});
+
+	this.timerIds.loadKidsTimerId = null;
+
+	if (this.pendingXhr) {
+	    this.pendingXhr.abort();
+	}
+
 	window.removeEventListener("beforeunload", this.handleWindowClose);
     }
 
@@ -169,7 +176,6 @@ class Kids extends React.Component {
 	/* Touching the timer will prevent returning requests from setting another */
 	this.clearAndSetTimeout("loadKidsTimerId",
 				this.loadKidsFromServer,
-				0,
 				0,
 	);
     }
