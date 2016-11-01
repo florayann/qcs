@@ -99,3 +99,16 @@ describe('request handling', () => {
     });
 });
 
+describe('interface handling', () => {
+    it('opens drawer on left icon touch tap', () => {
+	const app = shallow(<App class_url="/classes"
+			       queue_url="/queue/"
+			       queues_url="/class/"
+			       login_url="/auth"
+			  />);
+	app.instance().handleLeftIconButtonTouchTap();
+	app.update();
+	expect(app.find('QDrawer').first().props().open).toBeTruthy();
+    });
+});
+
