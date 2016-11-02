@@ -41,6 +41,13 @@ class Kids extends React.Component {
 
     pendingXhr = null;
 
+    audioNotification = null;
+
+    constructor(props) {
+	super(props);
+	this.audioNotification = new Audio('/notify.wav');
+    }
+
     componentDidUpdate(prevProps, prevState) {
 	if ((prevProps.refresh !== this.props.refresh) ||
 	    (prevProps.url !== this.props.url)) {
@@ -131,7 +138,7 @@ class Kids extends React.Component {
 		if (oldUrl === this.props.url) {
 		    this.updateQueue(data);
 		    if (this.props.instructor && len < this.state.data.length) {
-			this.refs.notify.play();
+			this.audioNotification.play();
 		    }
 		    /* If nobody touched the timer before I get back, I will reset it */
 		    if (timerId === this.timerIds.loadKidsTimerId) {
@@ -372,9 +379,6 @@ class Kids extends React.Component {
 			  onAddExpandChange={this.handleAddExpandChange}
 			  onAddReduceChange={this.handleAddReduceChange}
 		/>
-		<audio ref="notify">
-		    <source src="/notify.wav" type="audio/wav"/>
-		</audio>
 
 		<Snackbar
 		    open={this.state.snackOpen}
