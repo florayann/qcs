@@ -260,11 +260,11 @@ describe('notifications', () => {
 
 	beforeAll(() => {
 	    kidsWrapper.instance().undoKidDelete = jest.fn();
-	    kidsWrapper.instance().handleSnackRequestClose = jest.fn();
+	    kidsWrapper.instance().handleKidDelete = jest.fn();
 	});
 
 	it('opens on snackOpen', () => {
-	    kidsWrapper.setState({snackOpen: true});
+	    kidsWrapper.instance().tentativeKidDelete({id: 'test'});
 	    kidsWrapper.update();
 	    expect(kidsWrapper.find('Snackbar[action="undo"]').props().open).toBe(true);
 	});
@@ -276,10 +276,12 @@ describe('notifications', () => {
 
 	it('calls undo snack request close on dismiss', () => {
 	    kidsWrapper.find('Snackbar[action="undo"]').simulate('requestClose');
-	    expect(kidsWrapper.instance().handleSnackRequestClose).toHaveBeenCalled();
+	    expect(kidsWrapper.find('Snackbar[action="undo"]').props().open).toBe(false);
+	    expect(kidsWrapper.instance().handleKidDelete).toHaveBeenCalled();
 	});
     });
 });
 
 describe('event handlers', () => {
+    
 });

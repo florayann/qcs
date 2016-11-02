@@ -290,10 +290,8 @@ class Kids extends React.Component {
     }
 
     handleSnackRequestClose = (reason) => {
-	if (reason) {
-	    this.setState({snackOpen: false});
-	    this.handleKidDelete(this.state.deletedKid);
-	}
+	this.setState({snackOpen: false});
+	this.handleKidDelete(this.state.deletedKid);
     }
 
     handleOkayQueueDeleted = (e) => {
