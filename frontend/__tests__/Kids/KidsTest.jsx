@@ -140,6 +140,34 @@ describe('utility functions', () => {
 	    expect(clearTimeout).toHaveBeenLastCalledWith(timerId);
 	});
     });
+
+    describe('is editing', () => {
+	const myUsername = 'weirdo';
+	const kidsWrapper = shallow(<Kids {...dummyProps}
+					  username={myUsername}
+				    />);
+
+	it('returns false when empty', () => {
+	    kidsWrapper.setState({data: testData.empty});
+	    expect(kidsWrapper.instance().isEditing()).toBe(false);
+	});
+
+	it('returns false when I am not on the queue', () => {
+	    kidsWrapper.setState({data: testData.short});
+	    expect(kidsWrapper.instance().isEditing()).toBe(false);
+	    kidsWrapper.setState({data: testData.long});
+	    expect(kidsWrapper.instance().isEditing()).toBe(false);
+	});
+
+	it('returns true when I am on the queue', () => {
+	    kidsWrapper.setState({data: testData.short});
+	    kidsWrapper.setProps({username: testData.short[0].id});
+	    expect(kidsWrapper.instance().isEditing()).toBe(true);
+	    kidsWrapper.setState({data: testData.long});
+	    kidsWrapper.setProps({username: _.last(testData.long).id});
+	    expect(kidsWrapper.instance().isEditing()).toBe(true);
+	});
+    });
 });
 
 describe('notifications', () => {
