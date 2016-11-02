@@ -39,7 +39,6 @@
     "react-tap-event-plugin": "^1.0.0",
     "seedrandom": "^2.4.2",
     "react-flip-move": "^2.4.2",
-    "react-document-title": "2.0.2",
     "underscore": "1.8.3",
     "tinycolor2": "1.4.1",
     "visibilityjs": "1.2.4",
@@ -53,7 +52,6 @@
       "react",
       "node_modules/enzyme/",
       "node_modules/material-ui/",
-      "node_modules/react-document-title/",
       "node_modules/sinon/",
       "node_modules/underscore"
     ],

@@ -4,7 +4,6 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import {Card, CardHeader} from 'material-ui/Card';
 import $ from 'jquery';
-import DocumentTitle from 'react-document-title';
 
 import QAppBar from './QAppBar';
 import QDrawer from './QDrawer/QDrawer';
@@ -45,6 +44,7 @@ class App extends React.Component {
     }
 
     componentDidMount() {
+	this.setDocumentTitle('q.cs');
 	this.checkLoggedIn();
 	this.loadClassesFromServer();
     }
@@ -54,9 +54,16 @@ class App extends React.Component {
     }
 
     handleSelectQueue = (queueId="0", queueName="q.cs") => {
+	if (queueId === '0') {
+	    this.setDocumentTitle();
+	}
 	this.setState({queueId: queueId, queueName: queueName, queueInstructor: false});
 	this.setState({open: false});
 	this.isQueueInstructor(queueId);
+    }
+
+    setDocumentTitle(title='q.cs') {
+	document.title = title;
     }
 
     isQueueInstructor = (queueId) => {
@@ -172,6 +179,7 @@ class App extends React.Component {
 				username={this.state.username}
 				refresh={this.state.refresh}
 				onSelectQueue={this.handleSelectQueue}
+				setDocumentTitle={this.setDocumentTitle}
 			  />}
 
 		     </div>) : <LoggedOut />}
@@ -182,13 +190,11 @@ class App extends React.Component {
 
 if (process.env.NODE_ENV !== "test") {
     ReactDOM.render(
-	<DocumentTitle title="q.cs">
 	    <App class_url="/classes"
 		 queue_url="/queue/"
 		 queues_url="/class/"
 		 login_url="/auth"
-	    />
-	</DocumentTitle>,
+	    />,
 	document.getElementById('app')
     );
 }

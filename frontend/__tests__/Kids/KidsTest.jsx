@@ -6,7 +6,6 @@ import _ from 'underscore';
 
 jest.unmock('../../src/app/Kids/Kids');
 jest.unmock('./TestData');
-jest.unmock('react-document-title');
 
 const dummyProps = {
     instructor: false,
@@ -14,6 +13,7 @@ const dummyProps = {
     queueId: '1',
     queueName: 'CS 233',
     refresh: false,
+    setDocumentTitle: () => {},
     url: '/queue/',
     username: 'me',
 };
@@ -50,7 +50,7 @@ describe('utility functions', () => {
 	const kidsWrapper = shallow(<Kids {...dummyProps} />);
 
 	beforeEach(() => {
-	    console.log(kidsWrapper.props());
+	    kidsWrapper.setProps(dummyProps);
 	});
 
 	it('resets to q.cs when no queue selected', () => {
@@ -61,16 +61,27 @@ describe('utility functions', () => {
 	it('displays only the queue name when queue is empty', () => {
 	    kidsWrapper.setState({data: testData.empty});
 	    expect(kidsWrapper.instance().getDocumentTitle())
-		.toBe(kidsWrapper.props().queueName);
+		.toBe(kidsWrapper.instance().props.queueName);
 	});
 
 	it('displays number of people on queue when not empty', () => {
+	    let queueName = kidsWrapper.instance().props.queueName;
 	    kidsWrapper.setState({data: testData.short});
 	    expect(kidsWrapper.instance().getDocumentTitle())
-		.toBe(`(${testData.short.length}) ${kidsWrapper.props().queueName}`);
+		.toBe(`(${testData.short.length}) ${queueName}`);
 	    kidsWrapper.setState({data: testData.long});
 	    expect(kidsWrapper.instance().getDocumentTitle())
-		.toBe(`(${testData.long.length}) ${kidsWrapper.props().queueName}`);
+		.toBe(`(${testData.long.length}) ${queueName}`);
+	});
+
+	it('updates when queue name changes', () => {
+	    kidsWrapper.setState({data: testData.short});
+	    kidsWrapper.setProps({queueName: 'hi'});
+	    expect(kidsWrapper.instance().getDocumentTitle())
+		.toBe(`(${testData.short.length}) hi`);
+	    kidsWrapper.setProps({queueName: 'CS 233'});
+	    expect(kidsWrapper.instance().getDocumentTitle())
+		.toBe(`(${testData.short.length}) CS 233`);
 	});
     });
 });

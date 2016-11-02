@@ -3,7 +3,6 @@ import ContentAdd from 'material-ui/svg-icons/content/add';
 import Snackbar from 'material-ui/Snackbar';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
 
-import DocumentTitle from 'react-document-title';
 import _ from 'underscore';
 import $ from 'jquery';
 
@@ -17,6 +16,7 @@ class Kids extends React.Component {
 	queueId: React.PropTypes.string.isRequired,
 	queueName: React.PropTypes.string.isRequired,
 	refresh: React.PropTypes.bool.isRequired,
+	setDocumentTitle: React.PropTypes.func.isRequired,
 	url: React.PropTypes.string.isRequired,
 	username: React.PropTypes.string.isRequired,
     }
@@ -45,6 +45,11 @@ class Kids extends React.Component {
 	if ((prevProps.refresh !== this.props.refresh) ||
 	    (prevProps.url !== this.props.url)) {
 	    this.refreshKidsFromServer();
+	}
+
+	if (prevState.data.length !== this.state.data.length ||
+	    this.props.queueName !== prevProps.queueName) {
+	    this.props.setDocumentTitle(this.getDocumentTitle());
 	}
     }
 
@@ -352,7 +357,6 @@ class Kids extends React.Component {
 
     render() {
 	return (
-	    <DocumentTitle title={this.getDocumentTitle()}>
 	    <div className="Kids">
 		<KidsList data={this.state.data}
 			  onKidSubmit={this.handleKidSubmit}
@@ -399,7 +403,6 @@ class Kids extends React.Component {
 		    <ContentAdd />
 		</FloatingActionButton>
 	    </div>
-	    </DocumentTitle>
 	);
     }
 }
