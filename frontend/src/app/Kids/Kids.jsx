@@ -95,7 +95,7 @@ class Kids extends React.Component {
     }
 
     clearAndSetTimeout = (timerIdProperty, ...rest) => {
-	clearTimeout(this.state[timerIdProperty]);
+	clearTimeout(this.timerIds[timerIdProperty]);
 
 	let timerId = setTimeout(...rest);
 

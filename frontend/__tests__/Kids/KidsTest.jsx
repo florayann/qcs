@@ -106,6 +106,40 @@ describe('utility functions', () => {
 	    expect(kidsWrapper.state().data).toEqual(_.rest(testData.long));
 	});
     });
+
+    describe('clear and set timeout', () => {
+	const kidsWrapper = shallow(<Kids {...dummyProps} />);
+
+	beforeAll(() => {
+	    jest.useFakeTimers();
+	});
+
+	beforeEach(() => {
+	    jest.clearAllMocks();
+	});
+
+	it('runs function with correct args after timeout', () => {
+	    const fn = jest.fn();
+	    kidsWrapper.instance().clearAndSetTimeout('a', fn, 1000, 1, 2, 3, 4, 5);
+	    expect(_.last(setTimeout.mock.calls)[0]).toBe(fn);
+	    expect(_.last(setTimeout.mock.calls)[1]).toBe(1000);
+	    jest.runOnlyPendingTimers();
+	    expect(fn).toHaveBeenCalledWith(1, 2, 3, 4, 5);
+	});
+
+	it('saves the timerid', () => {
+	    let timerId = kidsWrapper.instance()
+				     .clearAndSetTimeout('test', () => {}, 1000, 1, 2);
+	    expect(kidsWrapper.instance().timerIds.test).toBe(timerId);
+	});
+
+	it('clears the previous timerid', () => {
+	    let timerId = kidsWrapper.instance()
+				     .clearAndSetTimeout('b', () => {}, 1000, 4, 5);
+	    kidsWrapper.instance().clearAndSetTimeout('b', () => {}, 1000, 4, 5);
+	    expect(clearTimeout).toHaveBeenLastCalledWith(timerId);
+	});
+    });
 });
 
 describe('notifications', () => {
