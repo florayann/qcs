@@ -2,7 +2,7 @@ import React from 'react';
 import {mount, shallow} from 'enzyme';
 import KidsList from '../../src/app/Kids/KidsList';
 import styles from '../../src/app/styles';
-import testData from './TestData';
+import {testData} from './TestData';
 
 jest.unmock('../../src/app/Kids/KidsList');
 jest.unmock('../../src/app/Kids/Announcement');
