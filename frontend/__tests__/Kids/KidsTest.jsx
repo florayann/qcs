@@ -3,6 +3,7 @@ import {mount, shallow} from 'enzyme';
 import Kids from '../../src/app/Kids/Kids';
 import {testData, testResponse} from './TestData';
 import _ from 'underscore';
+import $ from 'jquery';
 
 jest.unmock('../../src/app/Kids/Kids');
 jest.unmock('./TestData');
@@ -140,8 +141,60 @@ describe('notifications', () => {
 	});
     });
 
+    describe('audio notification', () => {
+	const kidsWrapper = shallow(<Kids {...dummyProps}
+					  instructor={true}
+				    />);
+
+	beforeAll(() => {
+	    kidsWrapper.instance().clearAndSetTimeout = () => {};
+	    kidsWrapper.instance().audioNotification = {play: jest.fn()};
+	});
+
+	beforeEach(() => {
+	    kidsWrapper.instance().audioNotification.play.mockClear();
+	});
+
+	it('plays when queue grows', () => {
+	    kidsWrapper.instance().loadKidsFromServer();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.short);
+	    expect(kidsWrapper.instance().audioNotification.play).toHaveBeenCalled();
+	    kidsWrapper.instance().audioNotification.play.mockClear();
+	    kidsWrapper.instance().loadKidsFromServer();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.long);
+	    expect(kidsWrapper.instance().audioNotification.play).toHaveBeenCalled();
+	});
+
+	it('does not play when queue shrinks', () => {
+	    kidsWrapper.instance().loadKidsFromServer();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.long);
+	    kidsWrapper.instance().audioNotification.play.mockClear();
+	    kidsWrapper.instance().loadKidsFromServer();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.short);
+	    expect(kidsWrapper.instance().audioNotification.play).not.toHaveBeenCalled();
+	    kidsWrapper.instance().loadKidsFromServer();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.empty);
+	    expect(kidsWrapper.instance().audioNotification.play).not.toHaveBeenCalled();
+	});
+
+	it('does not play as student', () => {
+	    kidsWrapper.setProps({instructor: false});
+	    kidsWrapper.instance().loadKidsFromServer();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.empty);
+	    kidsWrapper.instance().loadKidsFromServer();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.short);
+	    kidsWrapper.instance().loadKidsFromServer();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.long);
+	    kidsWrapper.instance().loadKidsFromServer();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.short);
+	    kidsWrapper.instance().loadKidsFromServer();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.empty);
+	    expect(kidsWrapper.instance().audioNotification.play).not.toHaveBeenCalled();
+	});
+    });
+
     describe('undo notification', () => {
-	let kidsWrapper = shallow(<Kids {...dummyProps} />);
+	const kidsWrapper = shallow(<Kids {...dummyProps} />);
 
 	beforeAll(() => {
 	    kidsWrapper.instance().undoKidDelete = jest.fn();
