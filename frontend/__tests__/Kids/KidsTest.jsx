@@ -283,5 +283,41 @@ describe('notifications', () => {
 });
 
 describe('event handlers', () => {
-    
+    describe('adding to the queue', () => {
+	const kidsWrapper = shallow(<Kids {...dummyProps} />);
+
+	beforeEach(() => {
+	    kidsWrapper.setState({adding: false});
+	});
+
+	it('is allowed when not paused', () => {
+	    kidsWrapper.setState({paused: false});
+	    kidsWrapper.find('KidsList').simulate('addExpandChange', true);
+	    expect(kidsWrapper.state().adding).toBe(true);
+	    kidsWrapper.find('KidsList').simulate('addExpandChange', false);
+	    expect(kidsWrapper.state().adding).toBe(false);
+	});
+
+	it('is not allowed when paused', () => {
+	    kidsWrapper.setState({paused: true});
+	    kidsWrapper.find('KidsList').simulate('addExpandChange', true);
+	    expect(kidsWrapper.state().adding).toBe(false);
+	    kidsWrapper.find('KidsList').simulate('addExpandChange', false);
+	    expect(kidsWrapper.state().adding).toBe(false);
+	});
+
+	it('happens on handle add open', () => {
+	    kidsWrapper.find('FloatingActionButton')
+		       .simulate('touchTap');
+	    expect(kidsWrapper.state().adding).toBe(true);
+	});
+
+	it('closes on handle add reduce change', () => {
+	    kidsWrapper.find('FloatingActionButton')
+		       .simulate('touchTap');
+	    kidsWrapper.find('KidsList')
+		       .simulate('addReduceChange');
+	    expect(kidsWrapper.state().adding).toBe(false);
+	});
+    });
 });
