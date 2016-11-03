@@ -150,7 +150,6 @@ class Kids extends React.Component {
 	    },
 	    error: (xhr, status, err) => {
 		this.pendingXhr = null;
-		console.error(this.props.url, status, err.toString());
 		if (xhr.status !== 410) {
 		    if (this.timerIds.loadKidsTimerId === timerId) {
 			this.clearAndSetTimeout("loadKidsTimerId",
@@ -228,7 +227,6 @@ class Kids extends React.Component {
 		this.updateQueue(data);
 	    },
 	    error: (xhr, status, err) => {
-		console.error(this.props.url, status, err.toString());
 		if (xhr.status === 404) {
 		    this.clearAndSetTimeout("submitKidTimerId",
 					    this.handleKidSubmit,
@@ -256,7 +254,6 @@ class Kids extends React.Component {
 		this.updateQueue(data);
 	    },
 	    error: (xhr, status, err) => {
-		console.error(this.props.url, status, err.toString());
 		if (xhr.status === 404) {
 		    this.clearAndSetTimeout("deleteKidTimerId", this.handleKidDelete, 2000, kid);
 		}
@@ -278,7 +275,6 @@ class Kids extends React.Component {
 		this.updateQueue(data);
 	    },
 	    error: (xhr, status, err) => {
-		console.error(this.props.url, status, err.toString());
 		if (xhr.status === 404) {
 		    this.clearAndSetTimeout("removeAnnouncementTimerId",
 					    this.handleRemoveAnnouncement,
