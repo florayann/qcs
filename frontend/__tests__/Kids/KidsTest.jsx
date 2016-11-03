@@ -15,9 +15,16 @@ const dummyProps = {
     queueName: 'CS 233',
     refresh: false,
     setDocumentTitle: () => {},
-    url: '/queue/',
+    url: '/queue/1',
     username: 'me',
 };
+
+function selectQueue(wrapper, queueId, queueName) {
+    wrapper.setProps({url: '/queue/' + queueId,
+		      queueId: queueId,
+		      queueName: queueName,
+    });
+}
 
 describe('utility functions', () => {
     it('compares IDs correctly', () => {
@@ -280,9 +287,37 @@ describe('notifications', () => {
 	    expect(kidsWrapper.instance().handleKidDelete).toHaveBeenCalled();
 	});
     });
+
+    describe('queue deleted notification', () => {
+	const kidsWrapper = shallow(<Kids {...dummyProps}
+					  onSelectQueue={jest.fn()}
+				    />);
+
+	beforeAll(() => {
+	    kidsWrapper.instance().loadKidsFromServer();
+	});
+
+	it('displays on 410', () => {
+	    _.last($.ajax.mock.calls)[0].error({status: 410}, '', '');
+	    kidsWrapper.update();
+	    expect(kidsWrapper.find('Snackbar[action="Okay"]')
+			      .props().open).toBe(true);
+	});
+
+	it('should not be dismissable', () => {
+	    kidsWrapper.find('Snackbar[action="Okay"]').simulate('requestClose');
+	    kidsWrapper.update();
+	    expect(kidsWrapper.find('Snackbar[action="Okay"]').props().open).toBe(true);
+	});
+
+	it('selects home queue on action touch tap', () => {
+	    kidsWrapper.find('Snackbar[action="Okay"]').simulate('actionTouchTap');
+	    expect(kidsWrapper.instance().props.onSelectQueue).toHaveBeenCalled();
+	});
+    });
 });
 
-describe('event handlers', () => {
+describe('queue actions', () => {
     describe('adding to the queue', () => {
 	const kidsWrapper = shallow(<Kids {...dummyProps} />);
 
@@ -319,5 +354,173 @@ describe('event handlers', () => {
 		       .simulate('addReduceChange');
 	    expect(kidsWrapper.state().adding).toBe(false);
 	});
+    });
+
+    describe('load kids from server', () => {
+	beforeAll(() => {
+	    jest.useFakeTimers();
+	    $.ajax.mockImplementation((request) => {
+		return {abort: jest.fn()};
+	    });
+	});
+
+	beforeEach(() => {
+	    jest.clearAllMocks();
+	    jest.clearAllTimers();
+	});
+
+	describe('xhr', () => {
+	    const kidsWrapper = shallow(<Kids {...dummyProps} />);
+
+	    it('aborts previous xhr', () => {
+		kidsWrapper.instance().loadKidsFromServer();
+		let pendingXhr = kidsWrapper.instance().pendingXhr;
+		kidsWrapper.instance().loadKidsFromServer();
+		expect(pendingXhr.abort).toHaveBeenCalled();
+	    });
+
+	    it('clears pending xhr when request returns', () => {
+		kidsWrapper.instance().loadKidsFromServer();
+		expect(kidsWrapper.instance().pendingXhr).not.toBe(null);
+		_.last($.ajax.mock.calls)[0].success(testResponse.empty);
+		expect(kidsWrapper.instance().pendingXhr).toBe(null);
+		kidsWrapper.instance().loadKidsFromServer();
+		expect(kidsWrapper.instance().pendingXhr).not.toBe(null);
+		_.last($.ajax.mock.calls)[0].error({status: 0}, '', '');
+		expect(kidsWrapper.instance().pendingXhr).toBe(null);
+	    });
+	});
+
+	describe('updating queue', () => {
+	    const kidsWrapper = shallow(<Kids {...dummyProps} />);
+
+	    it('happens under normal conditions', () => {
+		kidsWrapper.instance().loadKidsFromServer();
+		_.last($.ajax.mock.calls)[0].success(testResponse.empty);
+		expect(kidsWrapper.state().data).toEqual(testData.empty);
+		kidsWrapper.instance().loadKidsFromServer();
+		_.last($.ajax.mock.calls)[0].success(testResponse.short);
+		expect(kidsWrapper.state().data).toEqual(testData.short);
+		kidsWrapper.instance().loadKidsFromServer();
+		_.last($.ajax.mock.calls)[0].success(testResponse.long);
+		expect(kidsWrapper.state().data).toEqual(testData.long);
+	    });
+
+	    it('does not happen when a different queue is selected', () => {
+		kidsWrapper.instance().loadKidsFromServer();
+		_.last($.ajax.mock.calls)[0].success(testResponse.empty);
+		kidsWrapper.instance().loadKidsFromServer();
+
+		let newQueueId = kidsWrapper.instance().props.queueId + 1;
+		selectQueue(kidsWrapper, newQueueId, 'queue');
+
+		_.last($.ajax.mock.calls)[0].success(testResponse.short);
+		expect(kidsWrapper.state().data).toEqual(testData.empty);
+		kidsWrapper.instance().loadKidsFromServer();
+
+		newQueueId = kidsWrapper.instance().props.queueId + 1;
+		selectQueue(kidsWrapper, newQueueId, 'queue');
+
+		_.last($.ajax.mock.calls)[0].success(testResponse.long);
+		expect(kidsWrapper.state().data).toEqual(testData.empty);
+	    });
+	});
+
+	describe('connection', () => {
+	    const kidsWrapper = shallow(<Kids {...dummyProps} />);
+	    const errorCodes = [404, 500];
+
+	    it('is maintained on successful ajax', () => {
+		kidsWrapper.instance().loadKidsFromServer();
+		_.last($.ajax.mock.calls)[0].success(testResponse.short);
+		expect(setTimeout).toHaveBeenCalled();
+		jest.runOnlyPendingTimers();
+		$.ajax.mock.calls[1][0].success(testResponse.long);
+		expect(setTimeout).toHaveBeenCalledTimes(2);
+		expect(setTimeout.mock.calls[1][0])
+		    .toBe(kidsWrapper.instance().loadKidsFromServer);
+	    });
+
+	    _.each(errorCodes, (errorCode) => {
+		it(`is maintained on ${errorCode}`, () => {
+		    kidsWrapper.instance().loadKidsFromServer();
+		    _.last($.ajax.mock.calls)[0].error({status: errorCode}, '', '');
+		    expect(setTimeout).toHaveBeenCalled();
+		    jest.runOnlyPendingTimers();
+		    _.last($.ajax.mock.calls)[0].error({status: errorCode}, '', '');
+		    expect(setTimeout).toHaveBeenCalledTimes(2);
+		    expect(setTimeout.mock.calls[1][0])
+			.toBe(kidsWrapper.instance().loadKidsFromServer);
+		});
+	    });
+
+	    it('does not leak on multiple calls', () => {
+		_.times(10, kidsWrapper.instance().loadKidsFromServer);
+
+		_.each($.ajax.mock.calls, (call, index) => {
+		    if (index % 2) {
+			call[0].error({status: 404}, '', '');
+		    }
+		    else {
+			call[0].success(testResponse.short);
+		    }
+		});
+
+		$.ajax.mockClear();
+		jest.runOnlyPendingTimers();
+
+		expect($.ajax).toHaveBeenCalledTimes(1);
+	    });
+	});
+    });
+});
+
+describe('Life cycle', () => {
+    const UnrenderedKids = require('../../src/app/Kids/Kids').default;
+
+    beforeAll(() => {
+	UnrenderedKids.prototype.render = () => {
+	    return <div />;
+	};
+    });
+
+    beforeEach(() => {
+	jest.clearAllMocks();
+	jest.clearAllTimers();
+    });
+
+    describe('connection', () => {
+	it('establishes on mount', () => {
+	    const unKidsWrapper = mount(<UnrenderedKids {...dummyProps} />);
+	    expect($.ajax).toHaveBeenCalled();
+	    _.last($.ajax.mock.calls)[0].success(testResponse.empty);
+	    expect(setTimeout.mock.calls[0][0])
+		.toBe(unKidsWrapper.instance().loadKidsFromServer);
+	});
+
+	it('does not leak on change queue', () => {
+	    const unKidsWrapper = mount(<UnrenderedKids {...dummyProps} />);
+	    let newQueueId;
+
+	    _.times(10, () => {
+		newQueueId = unKidsWrapper.instance().props.queueId + 1;
+		selectQueue(unKidsWrapper, newQueueId, 'queue');
+	    });
+
+	    _.each($.ajax.mock.calls, (call, index) => {
+		if (index % 2) {
+		    call[0].error({status: 404}, '', '');
+		}
+		else {
+		    call[0].success(testResponse.short);
+		}
+	    });
+
+	    $.ajax.mockClear();
+	    jest.runOnlyPendingTimers();
+
+	    expect($.ajax).toHaveBeenCalledTimes(1);
+	});
+
     });
 });
