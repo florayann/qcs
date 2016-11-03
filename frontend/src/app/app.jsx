@@ -4,7 +4,6 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import {Card, CardHeader} from 'material-ui/Card';
 import $ from 'jquery';
-import DocumentTitle from 'react-document-title';
 
 import QAppBar from './QAppBar';
 import QDrawer from './QDrawer/QDrawer';
@@ -45,6 +44,7 @@ class App extends React.Component {
     }
 
     componentDidMount() {
+	this.setDocumentTitle('q.cs');
 	this.checkLoggedIn();
 	this.loadClassesFromServer();
     }
@@ -54,9 +54,16 @@ class App extends React.Component {
     }
 
     handleSelectQueue = (queueId="0", queueName="q.cs") => {
+	if (queueId === '0') {
+	    this.setDocumentTitle();
+	}
 	this.setState({queueId: queueId, queueName: queueName, queueInstructor: false});
 	this.setState({open: false});
 	this.isQueueInstructor(queueId);
+    }
+
+    setDocumentTitle(title='q.cs') {
+	document.title = title;
     }
 
     isQueueInstructor = (queueId) => {
@@ -84,9 +91,6 @@ class App extends React.Component {
 		this.setState({username: response.username});
 		this.setState({open: true});
 	    },
-	    error: (xhr, status, err) => {
-		console.error(this.props.login_url, status, err.toString());
-	    },
 	});
     }
 
@@ -98,9 +102,6 @@ class App extends React.Component {
 	    success: (data) => {
 		this.setState({username: data});
 	    },
-	    error: (xhr, status, err) => {
-		console.error(this.props.login_url, status, err.toString());
-	    },
 	});
     }
 
@@ -111,9 +112,6 @@ class App extends React.Component {
 	    type: 'DELETE',
 	    success: (data) => {
 		this.setState({username: null});
-	    },
-	    error: (xhr, status, err) => {
-		console.error(this.props.login_url, status, err.toString());
 	    },
 	});
     }
@@ -131,7 +129,6 @@ class App extends React.Component {
 		this.setState({classes: data});
 	    },
 	    error: (xhr, status, err) => {
-		console.error(this.props.class_url, status, err.toString());
 		if (xhr.status === 404) {
 		    setTimeout(this.loadClassesFromServer, 2000);
 		}
@@ -160,7 +157,8 @@ class App extends React.Component {
 			     instructor={this.state.queueInstructor}
 			 />
 
-			 {__FAKEAUTH__ && !this.state.username ?
+			 {process.env.NODE_ENV === "test" ||
+			  __FAKEAUTH__ && !this.state.username ?
 			  <FakeAuthDialog onLogin={this.handleLogin} /> : null}
 
 			 {this.state.queueId === "0" ? null :
@@ -171,6 +169,7 @@ class App extends React.Component {
 				username={this.state.username}
 				refresh={this.state.refresh}
 				onSelectQueue={this.handleSelectQueue}
+				setDocumentTitle={this.setDocumentTitle}
 			  />}
 
 		     </div>) : <LoggedOut />}
@@ -179,13 +178,15 @@ class App extends React.Component {
     }
 }
 
-ReactDOM.render(
-    <DocumentTitle title="q.cs">
-	<App class_url="/classes"
-	     queue_url="/queue/"
-	     queues_url="/class/"
-	     login_url="/auth"
-	/>
-    </DocumentTitle>,
-    document.getElementById('app')
-);
+if (process.env.NODE_ENV !== "test") {
+    ReactDOM.render(
+	    <App class_url="/classes"
+		 queue_url="/queue/"
+		 queues_url="/class/"
+		 login_url="/auth"
+	    />,
+	document.getElementById('app')
+    );
+}
+
+export default App;

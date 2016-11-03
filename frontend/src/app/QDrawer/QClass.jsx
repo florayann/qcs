@@ -161,7 +161,7 @@ class QClass extends React.Component {
 		}
 	    },
 	    error: (xhr, status, err) => {
-		if (status === 403) {
+		if (xhr.status === 403) {
 		    this.setState({instructor: false});
 		}
 	    },
@@ -179,9 +179,6 @@ class QClass extends React.Component {
 		this.setState({queues: data});
 		this.closeDelete();
 	    },
-	    error: (xhr, status, err) => {
-		console.error(this.props.url, status, err.toString());
-	    },
 	});
     }
 
@@ -196,9 +193,6 @@ class QClass extends React.Component {
 		if (this.props.drawerOpen) {
 		    setTimeout(this.loadQueuesFromServer, 10000);
 		}
-	    },
-	    error: (xhr, status, err) => {
-		console.error(this.props.url, status, err.toString());
 	    },
 	});
     }

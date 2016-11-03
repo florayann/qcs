@@ -12,7 +12,7 @@ import moment from 'moment';
 
 import styles from '../styles';
 
-var materialPalette = require("!json!./material_palette.json");
+import materialPalette from './MaterialPalette.jsx';
 
 
 class Kid extends React.Component {
@@ -90,6 +90,8 @@ class Kid extends React.Component {
 	});
     }
 
+    static noOp = () => {};
+
     render() {
 	var answeringCircle = null;
 	var doneButton = null;
@@ -111,8 +113,6 @@ class Kid extends React.Component {
 	    );
 	}
 
-	let noOp = function () {};
-
 	return (
 	    <Card>
 		<ListItem
@@ -127,7 +127,7 @@ class Kid extends React.Component {
 			<Avatar backgroundColor={this.state.color}>
 						{this.props.name[0]}
 			</Avatar>}
-		    onTouchTap={this.props.instructor ? this.handleTouchTap : noOp}
+		    onTouchTap={this.props.instructor ? this.handleTouchTap : this.noOp}
 		    leftIcon={answeringCircle}
 		    rightIconButton={doneButton}
 		/>
