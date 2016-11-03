@@ -65,6 +65,17 @@ describe('request handling', () => {
 	expect(app.state().queueInstructor).toEqual(false);
     });
 
+    it('marks as instructor on success', () => {
+	const app = shallow(<App class_url="/classes"
+				 queue_url="/queue/"
+				 queues_url="/class/"
+				 login_url="/auth"
+			    />);
+	app.instance().handleSelectQueue('1', 'CS 233');
+	$.ajax.mock.calls[0][0].success({message: ''});
+	expect(app.state().queueInstructor).toEqual(true);
+    });
+
     it('retries loading classes if disconnected', () => {
 	sinon.spy(App.prototype, 'componentDidMount');
 	const app = mount(<App class_url="/classes"
@@ -99,6 +110,9 @@ describe('request handling', () => {
 	expect(app.state().username).toBe(null);
 	app.update();
 	expect(app.find('QAppBar').length).toBe(0);
+	expect(app.find('LoggedOut').length).toBe(1);
+	jest.mock('material-ui/Card');
+	app.find('LoggedOut').shallow();
     });
 });
 

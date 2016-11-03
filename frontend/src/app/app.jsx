@@ -92,7 +92,6 @@ class App extends React.Component {
 		this.setState({open: true});
 	    },
 	    error: (xhr, status, err) => {
-		console.error(this.props.login_url, status, err.toString());
 	    },
 	});
     }
@@ -106,7 +105,6 @@ class App extends React.Component {
 		this.setState({username: data});
 	    },
 	    error: (xhr, status, err) => {
-		console.error(this.props.login_url, status, err.toString());
 	    },
 	});
     }
@@ -120,7 +118,6 @@ class App extends React.Component {
 		this.setState({username: null});
 	    },
 	    error: (xhr, status, err) => {
-		console.error(this.props.login_url, status, err.toString());
 	    },
 	});
     }
@@ -138,7 +135,6 @@ class App extends React.Component {
 		this.setState({classes: data});
 	    },
 	    error: (xhr, status, err) => {
-		console.error(this.props.class_url, status, err.toString());
 		if (xhr.status === 404) {
 		    setTimeout(this.loadClassesFromServer, 2000);
 		}
