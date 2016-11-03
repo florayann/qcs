@@ -270,7 +270,7 @@ describe('notifications', () => {
 	    kidsWrapper.instance().handleKidDelete = jest.fn();
 	});
 
-	it('opens on snackOpen', () => {
+	it('opens on tentative kid delete', () => {
 	    kidsWrapper.instance().tentativeKidDelete({id: 'test'});
 	    kidsWrapper.update();
 	    expect(kidsWrapper.find('Snackbar[action="undo"]').props().open).toBe(true);
@@ -511,6 +511,74 @@ describe('queue actions', () => {
 	    expect(kidsWrapper.find('Snackbar[open=true]').props().message)
 		.toBe("Submission has been disabled");
 	});
+    });
+
+    describe('delete kid', () => {
+	const kidsWrapper = shallow(<Kids {...dummyProps} />);
+	let modKidsWrapper;
+
+	beforeAll(() => {
+	    jest.useFakeTimers();
+	});
+
+	beforeEach(() => {
+	    modKidsWrapper = shallow(<Kids {...dummyProps} />);
+	    modKidsWrapper.instance().handleKidDelete = jest.fn();
+	    jest.clearAllMocks();
+	});
+
+	it('gets called on window close if in the middle of deletion', () => {
+	    modKidsWrapper.instance().tentativeKidDelete({id: 'test'});
+	    modKidsWrapper.instance().handleWindowClose();
+	    expect(modKidsWrapper.instance().handleKidDelete).toHaveBeenCalled();
+	});
+
+	it('does not do more than one tentative deletion at a time', () => {
+	    modKidsWrapper.instance().tentativeKidDelete({id: 'test'});
+	    modKidsWrapper.instance().tentativeKidDelete({id: 'other'});
+	    expect(modKidsWrapper.state().deletedKid).toEqual({id: 'test'});
+	});
+
+	it('hides the tentatively deleted kid', () => {
+	    _.times(testData.long.length, (index) => {
+		modKidsWrapper.setState({data: testData.long});
+		modKidsWrapper.find('KidsList').simulate('kidDelete',
+							 testData.long[index]);
+		expect(_.contains(_.pluck(modKidsWrapper.state().data, 'id'),
+				  testData.long[index].id
+		)).toBe(false);
+		modKidsWrapper.setState({deletedKid: null});
+	    });
+	});
+
+	it('clears tentatively deleted kid on successful deletion', () => {
+	    kidsWrapper.find('KidsList').simulate('kidDelete',
+						  {id: 'test'});
+	    kidsWrapper.instance().handleKidDelete({id: 'test'});
+	    _.last($.ajax.mock.calls)[0].success(testResponse.empty);
+	    expect(kidsWrapper.state().deletedKid).toBe(null);
+	});
+
+	it('retries on 404', () => {
+	    kidsWrapper.instance().handleKidDelete({id: 'test'});
+	    _.last($.ajax.mock.calls)[0].error({status: 404});
+	    expect(setTimeout).toHaveBeenCalled();
+	    jest.runOnlyPendingTimers();
+	    _.last($.ajax.mock.calls)[0].error({status: 404});
+	    expect(setTimeout).toHaveBeenCalledTimes(2);
+	    _.last($.ajax.mock.calls)[0].error({status: 500});
+	    expect(kidsWrapper.state().deletedKid).toBe(null);
+	});
+
+	it('undos on undo', () => {
+	    kidsWrapper.instance().refreshKidsFromServer = jest.fn();
+	    kidsWrapper.setState({data: testData.long});
+	    kidsWrapper.instance().tentativeKidDelete({id: 'test'});
+	    kidsWrapper.instance().undoKidDelete();
+	    expect(kidsWrapper.state().deletedKid).toBe(null);
+	    expect(kidsWrapper.instance().refreshKidsFromServer).toHaveBeenCalled();
+	});
+    });
     });
 });
 
