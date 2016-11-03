@@ -48,9 +48,7 @@ class QDrawer extends React.Component {
 	instructor: React.PropTypes.bool.isRequired,
     }
     handleRequestChange = (open, reason) => {
-	if (!open) {
-	    this.props.onRequestChange();
-	}
+	this.props.onRequestChange();
     }
 
     render() {
