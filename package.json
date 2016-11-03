@@ -1,6 +1,6 @@
 {
   "name": "qcs",
-  "version": "0.2.0-0",
+  "version": "0.2.0",
   "description": "Queue for answering questions",
   "repository": {
     "type": "git",
@@ -60,8 +60,9 @@
       "jsx"
     ],
     "rootDir": "frontend",
-    "testPathIgnorePatterns": [".*TestData.js",
-                               "#.*"
-                              ]
+    "testPathIgnorePatterns": [
+      ".*TestData.js",
+      "#.*"
+    ]
   }
 }
