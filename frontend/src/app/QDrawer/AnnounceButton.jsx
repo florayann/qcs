@@ -44,9 +44,6 @@ class AnnounceButton extends React.Component {
 	    success: (data) => {
 		this.handleClose();
 	    },
-	    error: (xhr, status, err) => {
-		console.error(this.props.url, status, err.toString());
-	    },
 	});
     }
 
