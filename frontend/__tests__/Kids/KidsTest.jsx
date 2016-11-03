@@ -579,6 +579,31 @@ describe('queue actions', () => {
 	    expect(kidsWrapper.instance().refreshKidsFromServer).toHaveBeenCalled();
 	});
     });
+
+    describe('announcement removal', () => {
+	const kidsWrapper = shallow(<Kids {...dummyProps} />);
+
+	beforeAll(() => {
+	    jest.useFakeTimers();
+	});
+
+	beforeEach(() => {
+	    jest.clearAllMocks();
+	});
+
+	it('sends blank announcement on removal', () => {
+	    kidsWrapper.find('KidsList').simulate('removeAnnouncement');
+	    expect(JSON.parse($.ajax.mock.calls[0][0].data).message).toBe('');
+	    _.last($.ajax.mock.calls)[0].success(testResponse.empty);
+	});
+
+	it('retries on 404', () => {
+	    kidsWrapper.find('KidsList').simulate('removeAnnouncement');
+	    _.last($.ajax.mock.calls)[0].error({status: 404});
+	    /* expect(setTimeout).toHaveBeenCalled();*/
+	    expect(setTimeout.mock.calls[0][0])
+		.toBe(kidsWrapper.instance().handleRemoveAnnouncement);
+	});
     });
 });
 
