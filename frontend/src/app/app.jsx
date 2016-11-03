@@ -91,8 +91,6 @@ class App extends React.Component {
 		this.setState({username: response.username});
 		this.setState({open: true});
 	    },
-	    error: (xhr, status, err) => {
-	    },
 	});
     }
 
@@ -104,8 +102,6 @@ class App extends React.Component {
 	    success: (data) => {
 		this.setState({username: data});
 	    },
-	    error: (xhr, status, err) => {
-	    },
 	});
     }
 
@@ -116,8 +112,6 @@ class App extends React.Component {
 	    type: 'DELETE',
 	    success: (data) => {
 		this.setState({username: null});
-	    },
-	    error: (xhr, status, err) => {
 	    },
 	});
     }
