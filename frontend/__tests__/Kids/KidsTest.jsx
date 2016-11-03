@@ -473,6 +473,45 @@ describe('queue actions', () => {
 	    });
 	});
     });
+
+    describe('submit kid', () => {
+	const kidsWrapper = shallow(<Kids {...dummyProps} />);
+
+	beforeAll(() => {
+	    jest.useFakeTimers();
+	});
+
+	afterEach(() => {
+	    jest.clearAllTimers();
+	    jest.clearAllMocks();
+	});
+
+	it('updates queue on success', () => {
+	    kidsWrapper.find('KidsList').simulate('kidSubmit');
+	    _.last($.ajax.mock.calls)[0].success(testResponse.short);
+	    expect(kidsWrapper.state().data).toEqual(testData.short);
+	});
+
+	it('retries on 404', () => {
+	    kidsWrapper.find('KidsList').simulate('kidSubmit');
+	    _.last($.ajax.mock.calls)[0].error({status: 404}, '', '');
+	    expect(setTimeout).toHaveBeenCalled();
+	    jest.runOnlyPendingTimers();
+	    kidsWrapper.setProps({instructor: true});
+	    _.last($.ajax.mock.calls)[0].error({status: 404}, '', '');
+	    expect(setTimeout).toHaveBeenCalledTimes(2);
+	    _.last($.ajax.mock.calls)[0].success(testResponse.short);
+	    expect(kidsWrapper.state().data).toEqual(testData.short);
+	});
+
+	it('notifies failure due to paused queue', () => {
+	    kidsWrapper.find('KidsList').simulate('kidSubmit');
+	    _.last($.ajax.mock.calls)[0].error({status: 409}, '', '');
+	    kidsWrapper.update();
+	    expect(kidsWrapper.find('Snackbar[open=true]').props().message)
+		.toBe("Submission has been disabled");
+	});
+    });
 });
 
 describe('Life cycle', () => {
