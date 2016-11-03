@@ -50,9 +50,6 @@ class QControls extends React.Component {
 	    success: (data) => {
 		this.setState({paused: data.paused});
 	    },
-	    error: (xhr, status, err) => {
-		console.error(this.props.url, status, err.toString());
-	    },
 	});
     }
 
@@ -64,9 +61,6 @@ class QControls extends React.Component {
 	    cache: false,
 	    success: (data) => {
 		this.setState({paused: data.paused});
-	    },
-	    error: (xhr, status, err) => {
-		console.error(this.props.url, status, err.toString());
 	    },
 	});
     }
