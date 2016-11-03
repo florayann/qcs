@@ -482,6 +482,13 @@ describe('Life cycle', () => {
 	UnrenderedKids.prototype.render = () => {
 	    return <div />;
 	};
+
+	$.ajax.mockImplementation((request) => {
+	    return {abort: jest.fn()};
+	});
+
+	window.addEventListener = jest.fn();
+	window.removeEventListener = jest.fn();
     });
 
     beforeEach(() => {
@@ -522,5 +529,48 @@ describe('Life cycle', () => {
 	    expect($.ajax).toHaveBeenCalledTimes(1);
 	});
 
+	it('refreshes on toggle refresh', () => {
+	    const unKidsWrapper = mount(<UnrenderedKids {...dummyProps} />);
+	    unKidsWrapper.instance().loadKidsFromServer = jest.fn();
+	    unKidsWrapper.setProps({refresh: !unKidsWrapper.instance().props.refresh});
+	    jest.runOnlyPendingTimers();
+	    expect(unKidsWrapper.instance().loadKidsFromServer).toHaveBeenCalled();
+	});
+    });
+
+    describe('clean up', () => {
+	let unKidsWrapper;
+	let unKidsWrapperInstance;
+
+	beforeAll(() => {
+	    jest.useFakeTimers();
+	});
+
+	beforeEach(() => {
+	    unKidsWrapper = mount(<UnrenderedKids {...dummyProps} />);
+	    unKidsWrapperInstance = unKidsWrapper.instance();
+	    unKidsWrapper.unmount();
+	});
+
+	it('adds window event handler on mount', () => {
+	    expect(window.addEventListener)
+		.toHaveBeenCalledWith('beforeunload',
+				      unKidsWrapperInstance.handleWindowClose);
+	});
+
+	it('clears all timers', () => {
+	    expect(clearTimeout)
+		.toHaveBeenCalledTimes(_.size(unKidsWrapperInstance.timerIds));
+	});
+
+	it('aborts pending xhr request', () => {
+	    expect(unKidsWrapperInstance.pendingXhr.abort).toHaveBeenCalled();
+	});
+
+	it('removes window event handler', () => {
+	    expect(window.removeEventListener)
+		.toHaveBeenCalledWith('beforeunload',
+				      unKidsWrapperInstance.handleWindowClose);
+	});
     });
 });
