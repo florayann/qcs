@@ -471,6 +471,12 @@ describe('queue actions', () => {
 
 		expect($.ajax).toHaveBeenCalledTimes(1);
 	    });
+
+	    it('is refreshed by refreshKidsFromServer', () => {
+		kidsWrapper.instance().refreshKidsFromServer();
+		jest.runOnlyPendingTimers();
+		expect(_.last($.ajax.mock.calls)[0].data).toEqual({rev: 0});
+	    });
 	});
     });
 

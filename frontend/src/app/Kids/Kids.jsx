@@ -172,21 +172,10 @@ class Kids extends React.Component {
     }
 
     refreshKidsFromServer = (props=this.props) => {
-	$.ajax({
-	    url: this.props.url,
-	    dataType: 'json',
-	    cache: false,
-	    data: {rev: 0},
-	    success: (data) => {
-		this.updateQueue(data);
-	    },
-	    error: (xhr, status, err) => {
-		console.error(this.props.url, status, err.toString());
-	    },
-	});
 	/* Touching the timer will prevent returning requests from setting another */
 	this.clearAndSetTimeout("loadKidsTimerId",
 				this.loadKidsFromServer,
+				0,
 				0,
 	);
     }
